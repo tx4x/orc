@@ -129,7 +129,7 @@ const node = new orc.Node({
   logger,
   transport,
   contact,
-  claims: !!parseInt(config.AllowDirectStorageClaims),
+  claims: config.AllowDirectStorageClaims,
   privateExtendedKey: xprivkey,
   keyDerivationIndex: parseInt(config.ChildDerivationIndex)
 });
