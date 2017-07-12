@@ -222,11 +222,16 @@ describe('@module orc (end-to-end)', function() {
     renter.subscribeCapacityAnnouncement(['01010202'], (err, stream) => {
       stream.once('data', (data) => {
         capacities.push(data);
-        expect(capacities[0][0]).to.equal(shard.length);
+        expect(capacities[0][0].available).to.equal(shard.length);
         done();
       });
     });
-    farmer.publishCapacityAnnouncement('01010202', shard.length);
+    setTimeout(() => {
+      farmer.publishCapacityAnnouncement('01010202', {
+        available: shard.length,
+        allocated: shard.length
+      });
+    }, 2500);
   });
 
   it('should succeed in claiming the space', function(done) {
