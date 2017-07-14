@@ -55,7 +55,7 @@
 			<li class="dropdown">
 				<a href="tutorials.list.html" class="dropdown-toggle" data-toggle="dropdown">Tutorials<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="tutorial-config.html">Configuration Guide</a></li><li><a href="tutorial-install.html">Manual Installation</a></li><li><a href="tutorial-usage.html">Basic Usage Guide</a></li>
+					<li><a href="tutorial-config.html">Configuration Guide</a></li><li><a href="tutorial-install.html">Manual Installation</a></li><li><a href="tutorial-transfers.html">Uploading and Downloading</a></li><li><a href="tutorial-usage.html">Basic Usage Guide</a></li>
 				</ul>
 			</li>
 			
@@ -387,6 +387,7 @@ class Rules {
       return next(new Error('Currently rejecting claims'));
     }
 
+    contract.set('payment_destination', '?'); // TODO: z_getnewaddress here
     contract.set('farmer_id', this.node.identity.toString('hex'));
     contract.set('farmer_hd_key', this.node.contact.xpub);
     contract.set('farmer_hd_index', this.node.contact.index);

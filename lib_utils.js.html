@@ -55,7 +55,7 @@
 			<li class="dropdown">
 				<a href="tutorials.list.html" class="dropdown-toggle" data-toggle="dropdown">Tutorials<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="tutorial-config.html">Configuration Guide</a></li><li><a href="tutorial-install.html">Manual Installation</a></li><li><a href="tutorial-usage.html">Basic Usage Guide</a></li>
+					<li><a href="tutorial-config.html">Configuration Guide</a></li><li><a href="tutorial-install.html">Manual Installation</a></li><li><a href="tutorial-transfers.html">Uploading and Downloading</a></li><li><a href="tutorial-usage.html">Basic Usage Guide</a></li>
 				</ul>
 			</li>
 			
@@ -252,9 +252,10 @@ module.exports.createComplexKeyFromSeed = function(seed64) {
  * @param {array} farmer - Farmer contact object
  * @param {string} hash - The hash of the shard to upload
  * @param {string} token - The authorized transfer token
+ * @param {Agent} [agent]
  * @returns {https.ClientRequest}
  */
-module.exports.createShardUploader = function(farmer, hash, token) {
+module.exports.createShardUploader = function(farmer, hash, token, agent) {
   const [, contact] = farmer;
 
   function _createUploadStream() {
@@ -267,7 +268,8 @@ module.exports.createShardUploader = function(farmer, hash, token) {
       path: `/shards/${hash}?token=${token}`,
       headers: {
         'content-type': 'application/octet-stream'
-      }
+      },
+      agent: agent
     });
   }
 
@@ -300,9 +302,10 @@ module.exports.createShardUploader = function(farmer, hash, token) {
  * @param {array} farmer - Farmer contact object
  * @param {string} hash - The hash of the shard to upload
  * @param {string} token - The authorized transfer token
+ * @param {Agent} [agent]
  * @returns {https.ClientRequest}
  */
-module.exports.createShardDownloader = function(farmer, hash, token) {
+module.exports.createShardDownloader = function(farmer, hash, token, agent) {
   const [, contact] = farmer;
 
   function _createDownloadStream() {
@@ -314,7 +317,8 @@ module.exports.createShardDownloader = function(farmer, hash, token) {
       path: `/shards/${hash}?token=${token}`,
       headers: {
         'content-type': 'application/octet-stream'
-      }
+      },
+      agent: agent
     });
   }
 

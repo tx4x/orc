@@ -55,7 +55,7 @@
 			<li class="dropdown">
 				<a href="tutorials.list.html" class="dropdown-toggle" data-toggle="dropdown">Tutorials<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="tutorial-config.html">Configuration Guide</a></li><li><a href="tutorial-install.html">Manual Installation</a></li><li><a href="tutorial-usage.html">Basic Usage Guide</a></li>
+					<li><a href="tutorial-config.html">Configuration Guide</a></li><li><a href="tutorial-install.html">Manual Installation</a></li><li><a href="tutorial-transfers.html">Uploading and Downloading</a></li><li><a href="tutorial-usage.html">Basic Usage Guide</a></li>
 				</ul>
 			</li>
 			
@@ -511,16 +511,18 @@ class Node extends KademliaNode {
    * Announces to interested renter nodes that this node has capacity
    * available for renting.
    * @param {string[]} descriptorCode - See {@tutorial protocol}
-   * @param {number} bytesAvailable - Total bytes capacity available
+   * @param {number} data
+   * @param {number} data.available - Total bytes capacity available
+   * @param {number} data.allocated - Total bytes capacity allocated
    * @param {Node~publishCapacityAnnouncementCallback} callback
    */
-  publishCapacityAnnouncement(descriptorCode, bytesAvailable, callback) {
+  publishCapacityAnnouncement(descriptorCode, data, callback) {
     const contents = [
-      bytesAvailable,
+      data,
       [this.identity.toString('hex'), this.contact]
     ];
 
-    this.claims = bytesAvailable > 0 ? this.claims : [];
+    this.claims = data.available > 0 ? this.claims : [];
 
     this.quasarPublish(`0c${descriptorCode}`, contents, callback);
   }

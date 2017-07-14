@@ -55,7 +55,7 @@
 			<li class="dropdown">
 				<a href="tutorials.list.html" class="dropdown-toggle" data-toggle="dropdown">Tutorials<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="tutorial-config.html">Configuration Guide</a></li><li><a href="tutorial-install.html">Manual Installation</a></li><li><a href="tutorial-usage.html">Basic Usage Guide</a></li>
+					<li><a href="tutorial-config.html">Configuration Guide</a></li><li><a href="tutorial-install.html">Manual Installation</a></li><li><a href="tutorial-transfers.html">Uploading and Downloading</a></li><li><a href="tutorial-usage.html">Basic Usage Guide</a></li>
 				</ul>
 			</li>
 			
@@ -2597,7 +2597,7 @@ descriptor-turned-contract, see storage-contracts for details
             
 <hr>
 <dt>
-    <h4 class="name" id="publishCapacityAnnouncement"><span class="type-signature"></span>publishCapacityAnnouncement(descriptorCode, bytesAvailable, callback)</h4>
+    <h4 class="name" id="publishCapacityAnnouncement"><span class="type-signature"></span>publishCapacityAnnouncement(descriptorCode, data, callback)</h4>
     
     
 </dt>
@@ -2665,7 +2665,50 @@ available for renting.
 
         <tr>
             
-                <td class="name"><code>bytesAvailable</code></td>
+                <td class="name"><code>data</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">
+                <h6 class="method-params-label method-subparams-label">Properties</h6>
+                
+
+<table class="params table table-striped">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>available</code></td>
             
 
             <td class="type">
@@ -2683,6 +2726,37 @@ available for renting.
             
 
             <td class="description last">Total bytes capacity available</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>allocated</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Total bytes capacity allocated</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
         </tr>
 
     
