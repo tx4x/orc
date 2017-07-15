@@ -24,9 +24,6 @@ module.exports = {
   // Trusted Renter Nodes
   AllowDirectStorageClaims: ['*'],
 
-  // Directory Storage
-  DirectoryStorageBaseDir: datadir,
-
   // Server SSL
   TransportServiceKeyPath: join(datadir, 'service_key.pem'),
   TransportCertificatePath: join(datadir, 'certificate.pem'),
@@ -61,7 +58,7 @@ module.exports = {
   OnionServicePrivateKeyPath: join(datadir, 'onion_key'),
 
   // Node Profiles
-  ProfilesEnabled: [], // renter, farmer
+  ProfilesEnabled: [], // renter, farmer, directory
 
   // Renter Profile
   RenterListenTopics: [
@@ -82,6 +79,15 @@ module.exports = {
   BridgeMetaStoragePath: join(datadir, 'objects.meta'),
   BridgeTempStagingBaseDir: join(datadir, '__bridge.staging'),
   BridgeShardAuditInterval: '5DAYS',
+
+  // Directory Server
+  DirectoryStorageBaseDir: datadir,
+  DirectoryPort: '4446',
+  DirectoryHostname: '127.0.0.1',
+  DirectoryUseSSL: '0',
+  DirectoryServiceKeyPath: join(datadir, 'service_key.pem'),
+  DirectoryCertificatePath: join(datadir, 'certificate.pem'),
+  DirectoryCapacityCachePath: join(datadir, 'capacity.cache'),
 
   // Wallet Connection
   WalletHostname: 'localhost',

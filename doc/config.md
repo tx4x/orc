@@ -74,7 +74,16 @@ AllowDirectStorageClaims[] = *
 ; Set the base directory (parent) for where the directory.db folder will be 
 ; placed. The directory.db holds key-value pairs for the distributed hash 
 ; table, which serve various purposes such as reputation data on other peers.
+; In addition, if the directory profile is enabled, use the supplied hostname, 
+; port, and optional SSL configuration to serve a public (clearnet) statistics 
+; API.
 DirectoryStorageBaseDir = /home/bookchin/.config/orc
+DirectoryPort = 4446
+DirectoryHostname = 127.0.0.1
+DirectoryUseSSL = 0
+DirectoryServiceKeyPath: /home/bookchin/.config/orc/directory_key.pem
+DirectoryCertificatePath: /home/bookchin/.config/orc/directory_cert.pem
+DirectoryCapacityCachePath = /home/bookchin/.config/orc/capacity.cache
 
 ; Paths to this node's SSL key and certificat. If you don't have one, you can 
 ; generate one with the following:

@@ -89,6 +89,9 @@ module.exports.Contract = require('./lib/contract');
 /** {@link Bridge} */
 module.exports.Bridge = require('./lib/bridge');
 
+/** {@link Directory} */
+module.exports.Directory = require('./lib/directory');
+
 /** {@link module:orc/constants} */
 module.exports.constants = require('./lib/constants');
 
