@@ -87,6 +87,7 @@ module.exports = {
   DirectoryUseSSL: '0',
   DirectoryServiceKeyPath: join(datadir, 'service_key.pem'),
   DirectoryCertificatePath: join(datadir, 'certificate.pem'),
+  DirectoryAuthorityChains: [],
   DirectoryCapacityCachePath: join(datadir, 'capacity.cache'),
 
   // Wallet Connection

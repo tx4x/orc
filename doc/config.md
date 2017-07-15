@@ -84,6 +84,7 @@ DirectoryUseSSL = 0
 DirectoryServiceKeyPath: /home/bookchin/.config/orc/directory_key.pem
 DirectoryCertificatePath: /home/bookchin/.config/orc/directory_cert.pem
 DirectoryCapacityCachePath = /home/bookchin/.config/orc/capacity.cache
+;DirectoryAuthorityChains[] = /home/bookchin/.config/fullchain.pem
 
 ; Paths to this node's SSL key and certificat. If you don't have one, you can 
 ; generate one with the following:
