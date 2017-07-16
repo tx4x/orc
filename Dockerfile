@@ -1,13 +1,13 @@
 FROM debian:sid
 LABEL maintainer "gordonh@member.fsf.org"
 RUN apt-get update
-RUN apt-get -y upgrade
-RUN apt-get -y install wget apt-transport-https gnupg
+RUN DEBIAN_FRONTEND=noninteractive apt-get -yq upgrade
+RUN DEBIAN_FRONTEND=noninteractive apt-get -yq install wget apt-transport-https gnupg
 RUN wget -qO - https://apt.z.cash/zcash.asc | apt-key add -
 RUN wget -qO - https://deb.nodesource.com/setup_6.x | bash -
 RUN echo "deb [arch=amd64] https://apt.z.cash/ jessie main" | tee /etc/apt/sources.list.d/zcash.list
 RUN apt-get update; \
-    apt-get -y install vim libssl-dev git python build-essential tor zcash nodejs
+    DEBIAN_FRONTEND=noninteractive apt-get -yq install vim libssl-dev git python build-essential tor zcash nodejs
 RUN zcash-fetch-params
 RUN git clone https://github.com/orcproject/orc ~/orc; \
     cd ~/orc && npm install && npm link && cd
