@@ -41,7 +41,7 @@
 			<li class="dropdown">
 				<a href="classes.list.html" class="dropdown-toggle" data-toggle="dropdown">Classes<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="Audit.html">Audit</a></li><li><a href="Bridge.html">Bridge</a></li><li><a href="Contract.html">Contract</a></li><li><a href="module-orc_profiles-FarmerProfile.html">orc/profiles~FarmerProfile</a></li><li><a href="module-orc_profiles-Profile.html">orc/profiles~Profile</a></li><li><a href="module-orc_profiles-RenterProfile.html">orc/profiles~RenterProfile</a></li><li><a href="Node.html">Node</a></li><li><a href="Offers.html">Offers</a></li><li><a href="Proof.html">Proof</a></li><li><a href="Rules.html">Rules</a></li><li><a href="Server.html">Server</a></li><li><a href="Shards.html">Shards</a></li><li><a href="Transport.html">Transport</a></li>
+					<li><a href="Audit.html">Audit</a></li><li><a href="Bridge.html">Bridge</a></li><li><a href="Contract.html">Contract</a></li><li><a href="Directory.html">Directory</a></li><li><a href="module-orc_profiles-DirectoryProfile.html">orc/profiles~DirectoryProfile</a></li><li><a href="module-orc_profiles-FarmerProfile.html">orc/profiles~FarmerProfile</a></li><li><a href="module-orc_profiles-Profile.html">orc/profiles~Profile</a></li><li><a href="module-orc_profiles-RenterProfile.html">orc/profiles~RenterProfile</a></li><li><a href="Node.html">Node</a></li><li><a href="Offers.html">Offers</a></li><li><a href="Proof.html">Proof</a></li><li><a href="Rules.html">Rules</a></li><li><a href="Server.html">Server</a></li><li><a href="Shards.html">Shards</a></li><li><a href="Transport.html">Transport</a></li>
 				</ul>
 			</li>
 			
@@ -55,7 +55,7 @@
 			<li class="dropdown">
 				<a href="tutorials.list.html" class="dropdown-toggle" data-toggle="dropdown">Tutorials<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="tutorial-config.html">Configuration Guide</a></li><li><a href="tutorial-install.html">Manual Installation</a></li><li><a href="tutorial-transfers.html">Uploading and Downloading</a></li><li><a href="tutorial-usage.html">Basic Usage Guide</a></li>
+					<li><a href="tutorial-config.html">Configuration Guide</a></li><li><a href="tutorial-farming.html">Setting Up Farming</a></li><li><a href="tutorial-install.html">Manual Installation</a></li><li><a href="tutorial-transfers.html">Uploading and Downloading</a></li><li><a href="tutorial-usage.html">Basic Usage Guide</a></li>
 				</ul>
 			</li>
 			
@@ -115,6 +115,8 @@ const async = require('async');
 const ms = require('ms');
 const rimraf = require('rimraf');
 const { slice } = require('stream-slice');
+const BUFFER = require('buffer');
+const bytes = require('bytes');
 
 
 /**
@@ -308,7 +310,7 @@ class Bridge {
    * @param {object} response
    * @param {function} next
    */
-  upload(req, res) {
+  upload(req, res, next) {
     const busboy = new BusBoy({ headers: req.headers });
     const objects = [];
 
@@ -337,6 +339,15 @@ class Bridge {
         const digest = hash.digest('hex');
         const ciphertext = path.join(tmp, 'ciphertext');
 
+        // TODO: Fix max buffer size constraint somehow
+        if (size > BUFFER.kMaxLength) {
+          fs.unlink(path.join(tmp, 'ciphertext'), () => {
+            return next(new Error(
+              `File size exceeds max supported (${bytes(BUFFER.kMaxLength)})`
+            ));
+          });
+        }
+
         this.objects.set(id, {
           id,
           name,
@@ -354,10 +365,10 @@ class Bridge {
             id
           }, (err, object) => {
             if (err) {
-              res.writeHead(500);
-              return res.end(err.message);
+              return next(err);
             }
 
+            delete object._key;
             res.writeHead(201, { 'Content-Type': 'application/json' });
             res.end(JSON.stringify(object));
           });
@@ -394,7 +405,7 @@ class Bridge {
         let { size } = rsparams;
 
         for (let i = 0; i &lt; rsparams.parity; i++) {
-          parity.push(new Buffer(rsparams.size));
+          parity.push(Buffer.alloc(rsparams.size));
         }
 
         file = Buffer.concat([file, Buffer.concat(parity)]);
@@ -488,6 +499,10 @@ class Bridge {
               return callback(err);
             }
 
+            capacities = capacities.filter(
+              (c) => (Date.now() - ms('24HR')) &lt; c.timestamp
+            );
+
             let proposal = shard.proposal.toObject();
             let target = null;
             let contact = null;
@@ -561,7 +576,10 @@ class Bridge {
               fs.createReadStream(shard.path)
                 .on('data', (data) => uploadStream.write(data))
                 .on('end', () => uploadStream.end())
-                .on('error', done);
+                .on('error', (err) => {
+                  uploadStream.removeAllListeners();
+                  done(err);
+                });
             });
           });
         }, next);
@@ -624,7 +642,6 @@ class Bridge {
 
       downloadStream.on('end', () => {
         buffer.fill(tmpBuffer, shard.size * i, (shard.size * i) + shard.size);
-        buffer = Buffer.concat([buffer, new Buffer(shard.size)]);
         callback();
       });
     };
@@ -652,7 +669,13 @@ class Bridge {
       let rsparams = utils.getErasureParameters(size);
       let rs = new ReedSolomon(rsparams.shards, rsparams.parity);
 
-      buffer = new Buffer(size);
+      if (size > BUFFER.kMaxLength) {
+        return next(new Error(
+          `File size exceeds max supported (${bytes(BUFFER.kMaxLength)})`
+        ));
+      }
+
+      buffer = Buffer.alloc(size);
 
       async.eachOfLimit(object.shards, 3, (shard, i, done) => {
         this.node.authorizeRetrieval(
@@ -678,7 +701,11 @@ class Bridge {
           const decipher = utils.createDecipher(this.node.spartacus.publicKey,
                                                 this.node.spartacus.privateKey);
 
-          res.writeHead(200, { 'Content-Type': object.mimetype });
+          res.writeHead(200, {
+            'Content-Type': object.mimetype,
+            'Content-Length': object.size,
+            'Transfer-Encoding': ''
+          });
           decipher.pipe(slice(0, object.size)).pipe(res);
           decipher.end(buffer);
         })

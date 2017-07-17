@@ -4,7 +4,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width">
-	<title>ORC Source: index.js</title>
+	<title>ORC Tutorial: Setting Up Farming</title>
 
 	<!--[if lt IE 9]>
 	<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
@@ -83,128 +83,57 @@
 	<div class="col-md-12">
 	
 		<div id="main">
-			
+			<section class="tutorial-section">
 
-		<h1 class="page-title">Source: index.js</h1>
+<header>
     
-<section>
-    <article>
-        <pre
-            class="sunlight-highlight-javascript ">/**
- * @module orc
- * @license AGPL-3.0
- */
 
-'use strict';
+    <h2>Setting Up Farming</h2>
+</header>
 
-const { spawn } = require('child_process');
-const { join } = require('path');
+<article>
+    <p>Farming is the most important part of of the ORC network. More farmers means 
+stronger security, more anonymity, higher resilience to data loss, and more 
+space for storing objects. Farmers &quot;rent&quot; out their space hard drive space in 
+exchange for Zcash.</p>
+<p>It's easy to configure ORC for farming. Check out the <a href="tutorial-config.html">Configuration Guide</a> for 
+an overview of all configuration properties - this guide only covers what is 
+needed for farming. This guide also assumes you have properly installed ORC via 
+the provided Docker image or have completed the <a href="tutorial-install.html">Manual Installation</a> guide.</p>
+<h3>Allocate Storage Capacity</h3><p>Set the base directory (parent) for where the contracts.db folder will be 
+placed. The contracts.db holds storage contracts between you and other nodes.</p>
+<pre class="prettyprint source"><code>ContractStorageBaseDir = /home/bookchin/.config/orc</code></pre><p>Set the base directory (parent) for where the shards folder will be placed. The 
+shards stores other nodes data shards, so be sure you set this to where you 
+intend to store farmed shards.</p>
+<pre class="prettyprint source"><code>ShardStorageBaseDir = /home/bookchin/.config/orc</code></pre><p>Define the maximum size you wish to allocate for farming shards. This can be 
+increased later, but decreasing it will not delete existing data.</p>
+<pre class="prettyprint source"><code>ShardStorageMaxAllocation = 0GB</code></pre><p>Enables renter nodes to directly claim storage capacity based on any capacity 
+announcements you have made. If you are farming, set this value once for every 
+trusted renter public extended key from which you will accept claims or once 
+with a value of *. </p>
+<pre class="prettyprint source"><code>AllowDirectStorageClaims[] = *</code></pre><h3>Connect Zcash Wallet</h3><p>Complete information about how orc should connect to the Zcash RPC server. 
+Orc needs this to generate addresses for farmers, send payments from renters, 
+check balances, etc.</p>
+<pre class="prettyprint source"><code>WalletHostname = localhost
+WalletPort = 8232
+WalletUser = orc
+WalletPassword = orc
+WalletShieldedTransactions = 0</code></pre><h3>Enable Farming Profile</h3><p>Pre-scripted profiles to enable after bootstrapping.Farmer profiles publish 
+capacity announcements and listen for contracts to store data. </p>
+<pre class="prettyprint source"><code>ProfilesEnabled[] = farmer</code></pre><h3>Fine Tune Farmer Behavior</h3><p>Topic codes to use when operating under the farmer profile for subscibing to
+contract publications and announcing capacity. See the protocol specification 
+for more details. It is mostly reccommended to leave these at their default 
+values.</p>
+<pre class="prettyprint source"><code>FarmerAdvertiseTopics[] = 01020202
+FarmerAdvertiseTopics[] = 02020202
+FarmerAdvertiseTopics[] = 03020202</code></pre><p>How often a farmer profile should scan contract database to reap expired 
+shards it is storing.</p>
+<pre class="prettyprint source"><code>FarmerShardReaperInterval = 24HR</code></pre><p>How often a farmer profile should publish a capacity announcement to it's
+neighboring nodes.</p>
+<pre class="prettyprint source"><code>FarmerAnnounceInterval = 15M</code></pre>
+</article>
 
-
-/**
- * Forks a child orc process and returns the child process and a controller
- * client for sending commands to it
- * @function
- * @param {object|string} config - Configuration properties as object or path
- * to a configuration file. See {@tutorial config} for details.
- * connect to the control port
- * @returns {object}
- */
-/* istanbul ignore next */
-module.exports = function(config = {}) {
-  /* eslint max-statements: [2, 18] */
-  const cport = config.ControlPort || require('./bin/_config').ControlPort;
-  const caddr = config.ControlPort || require('./bin/_config').ControlHostname;
-  const controller = new module.exports.control.Client();
-
-  let envs = {};
-  let args = [join(__dirname, './bin/orc.js')];
-  let trys = 10;
-  let opts = { env: envs };
-
-  if (typeof config === 'string') {
-    args = args.concat(['--config', config]);
-  } else {
-    for (let prop in config) {
-      envs[`orc_${prop}`] = config[prop];
-    }
-  }
-
-  const child = spawn(process.execPath, args, opts);
-
-  function connect() {
-    controller.once('error', () => {
-      controller.removeAllListeners();
-      if (trys !== 0) {
-        trys--;
-        setTimeout(connect, 1000);
-      }
-    });
-    controller.on('ready', () => controller.removeAllListeners('error'));
-    controller.connect(cport, caddr);
-  }
-
-  process.on('exit', () => child.kill());
-  child.stdout.once('data', () => setTimeout(() => connect(), 1000));
-  child.stderr.once('data', (msg) => child.emit('error', new Error(msg)));
-
-  return { child, controller };
-};
-
-/** {@link Node} */
-module.exports.Node = require('./lib/node');
-
-/** {@link Rules} */
-module.exports.Rules = require('./lib/rules');
-
-/** {@link Transport} */
-module.exports.Transport = require('./lib/transport');
-
-/** {@link Server} */
-module.exports.Server = require('./lib/server');
-
-/** {@link Audit} */
-module.exports.Audit = require('./lib/audit');
-
-/** {@link Proof} */
-module.exports.Proof = require('./lib/proof');
-
-/** {@link Offers} */
-module.exports.Offers = require('./lib/offers');
-
-/** {@link Shards} */
-module.exports.Shards = require('./lib/shards');
-
-/** {@link Contract} */
-module.exports.Contract = require('./lib/contract');
-
-/** {@link Bridge} */
-module.exports.Bridge = require('./lib/bridge');
-
-/** {@link Directory} */
-module.exports.Directory = require('./lib/directory');
-
-/** {@link module:orc/constants} */
-module.exports.constants = require('./lib/constants');
-
-/** {@link module:orc/profiles} */
-module.exports.profiles = require('./lib/profiles');
-
-/** {@link module:orc/utils} */
-module.exports.utils = require('./lib/utils');
-
-/** {@link module:orc/version} */
-module.exports.version = require('./lib/version');
-
-/** @see https://github.com/bookchin/boscar */
-module.exports.control = require('boscar');
-</pre>
-    </article>
 </section>
-
-
-
-
 
 		</div>
 	</div>

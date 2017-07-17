@@ -4,7 +4,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width">
-	<title>ORC Source: index.js</title>
+	<title>ORC Class: Directory</title>
 
 	<!--[if lt IE 9]>
 	<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
@@ -80,128 +80,543 @@
 <div class="row">
 
 	
-	<div class="col-md-12">
+	<div class="col-md-8">
 	
 		<div id="main">
 			
 
-		<h1 class="page-title">Source: index.js</h1>
-    
+	<h1 class="page-title">Class: Directory</h1>
 <section>
-    <article>
-        <pre
-            class="sunlight-highlight-javascript ">/**
- * @module orc
- * @license AGPL-3.0
- */
 
-'use strict';
+<header>
+    
+        <h2>
+        Directory
+        </h2>
+        
+            <div class="class-description">Serves a single endpoint for retreiving network statistics</div>
+        
+    
+</header>
 
-const { spawn } = require('child_process');
-const { join } = require('path');
+
+<article>
+    <div class="container-overview">
+    
+        
+<hr>
+<dt>
+    <h4 class="name" id="Directory"><span class="type-signature"></span>new Directory(node, options)</h4>
+    
+    
+</dt>
+<dd>
+
+    
+
+    
+
+    
+
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>node</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="Node.html">Node</a></span>
 
 
-/**
- * Forks a child orc process and returns the child process and a controller
- * client for sending commands to it
- * @function
- * @param {object|string} config - Configuration properties as object or path
- * to a configuration file. See {@tutorial config} for details.
- * connect to the control port
- * @returns {object}
- */
-/* istanbul ignore next */
-module.exports = function(config = {}) {
-  /* eslint max-statements: [2, 18] */
-  const cport = config.ControlPort || require('./bin/_config').ControlPort;
-  const caddr = config.ControlPort || require('./bin/_config').ControlHostname;
-  const controller = new module.exports.control.Client();
 
-  let envs = {};
-  let args = [join(__dirname, './bin/orc.js')];
-  let trys = 10;
-  let opts = { env: envs };
+            
+            </td>
 
-  if (typeof config === 'string') {
-    args = args.concat(['--config', config]);
-  } else {
-    for (let prop in config) {
-      envs[`orc_${prop}`] = config[prop];
-    }
-  }
+            
 
-  const child = spawn(process.execPath, args, opts);
+            
 
-  function connect() {
-    controller.once('error', () => {
-      controller.removeAllListeners();
-      if (trys !== 0) {
-        trys--;
-        setTimeout(connect, 1000);
-      }
-    });
-    controller.on('ready', () => controller.removeAllListeners('error'));
-    controller.connect(cport, caddr);
-  }
+            <td class="description last"></td>
+        </tr>
 
-  process.on('exit', () => child.kill());
-  child.stdout.once('data', () => setTimeout(() => connect(), 1000));
-  child.stderr.once('data', (msg) => child.emit('error', new Error(msg)));
+    
 
-  return { child, controller };
-};
+        <tr>
+            
+                <td class="name"><code>options</code></td>
+            
 
-/** {@link Node} */
-module.exports.Node = require('./lib/node');
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
 
-/** {@link Rules} */
-module.exports.Rules = require('./lib/rules');
 
-/** {@link Transport} */
-module.exports.Transport = require('./lib/transport');
 
-/** {@link Server} */
-module.exports.Server = require('./lib/server');
+            
+            </td>
 
-/** {@link Audit} */
-module.exports.Audit = require('./lib/audit');
+            
 
-/** {@link Proof} */
-module.exports.Proof = require('./lib/proof');
+            
 
-/** {@link Offers} */
-module.exports.Offers = require('./lib/offers');
+            <td class="description last">
+                <h6 class="method-params-label method-subparams-label">Properties</h6>
+                
 
-/** {@link Shards} */
-module.exports.Shards = require('./lib/shards');
+<table class="params table table-striped">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
 
-/** {@link Contract} */
-module.exports.Contract = require('./lib/contract');
+        <th>Type</th>
 
-/** {@link Bridge} */
-module.exports.Bridge = require('./lib/bridge');
+        
 
-/** {@link Directory} */
-module.exports.Directory = require('./lib/directory');
+        
 
-/** {@link module:orc/constants} */
-module.exports.constants = require('./lib/constants');
+        <th class="last">Description</th>
+    </tr>
+    </thead>
 
-/** {@link module:orc/profiles} */
-module.exports.profiles = require('./lib/profiles');
+    <tbody>
+    
 
-/** {@link module:orc/utils} */
-module.exports.utils = require('./lib/utils');
+        <tr>
+            
+                <td class="name"><code>capacityCache</code></td>
+            
 
-/** {@link module:orc/version} */
-module.exports.version = require('./lib/version');
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
 
-/** @see https://github.com/bookchin/boscar */
-module.exports.control = require('boscar');
-</pre>
-    </article>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Capacity cache object</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>enableSSL</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Use SSL</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>serviceKeyPath</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Path to PEM private key</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>certificatePath</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Path to PEM certificate</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>authorityChains</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;string></span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Path to PEM CA certificates</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+    
+
+    
+<dl class="details">
+    
+
+	
+
+	
+
+	
+
+    
+
+    
+
+    
+
+    
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
+	<dd class="tag-source">
+		<ul class="dummy">
+			<li>
+				<a href="lib_directory.js.html">lib/directory.js</a>
+			</li>
+		</ul>
+	</dd>
+	
+
+	
+
+	
+
+	
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dd>
+
+    
+    </div>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h3 class="subsection-title">Methods</h3>
+
+        <dl>
+            
+<hr>
+<dt>
+    <h4 class="name" id="listen"><span class="type-signature"></span>listen(port, hostname, callback)</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        Start the server on the supplied port and hostname
+    </div>
+    
+
+    
+
+    
+
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>port</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>hostname</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>callback</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+    
+
+    
+<dl class="details">
+    
+
+	
+
+	
+
+	
+
+    
+
+    
+
+    
+
+    
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
+	<dd class="tag-source">
+		<ul class="dummy">
+			<li>
+				<a href="lib_directory.js.html">lib/directory.js</a>
+			</li>
+		</ul>
+	</dd>
+	
+
+	
+
+	
+
+	
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dd>
+
+        </dl>
+    
+
+    
+
+    
+</article>
+
 </section>
-
 
 
 
@@ -211,6 +626,10 @@ module.exports.control = require('boscar');
 
 	<div class="clearfix"></div>
 
+	
+		<div class="col-md-3">
+			<div id="toc" class="col-md-3 hidden-xs hidden-sm hidden-md"></div>
+		</div>
 	
 
 </div>

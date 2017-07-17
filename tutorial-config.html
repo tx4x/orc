@@ -41,7 +41,7 @@
 			<li class="dropdown">
 				<a href="classes.list.html" class="dropdown-toggle" data-toggle="dropdown">Classes<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="Audit.html">Audit</a></li><li><a href="Bridge.html">Bridge</a></li><li><a href="Contract.html">Contract</a></li><li><a href="module-orc_profiles-FarmerProfile.html">orc/profiles~FarmerProfile</a></li><li><a href="module-orc_profiles-Profile.html">orc/profiles~Profile</a></li><li><a href="module-orc_profiles-RenterProfile.html">orc/profiles~RenterProfile</a></li><li><a href="Node.html">Node</a></li><li><a href="Offers.html">Offers</a></li><li><a href="Proof.html">Proof</a></li><li><a href="Rules.html">Rules</a></li><li><a href="Server.html">Server</a></li><li><a href="Shards.html">Shards</a></li><li><a href="Transport.html">Transport</a></li>
+					<li><a href="Audit.html">Audit</a></li><li><a href="Bridge.html">Bridge</a></li><li><a href="Contract.html">Contract</a></li><li><a href="Directory.html">Directory</a></li><li><a href="module-orc_profiles-DirectoryProfile.html">orc/profiles~DirectoryProfile</a></li><li><a href="module-orc_profiles-FarmerProfile.html">orc/profiles~FarmerProfile</a></li><li><a href="module-orc_profiles-Profile.html">orc/profiles~Profile</a></li><li><a href="module-orc_profiles-RenterProfile.html">orc/profiles~RenterProfile</a></li><li><a href="Node.html">Node</a></li><li><a href="Offers.html">Offers</a></li><li><a href="Proof.html">Proof</a></li><li><a href="Rules.html">Rules</a></li><li><a href="Server.html">Server</a></li><li><a href="Shards.html">Shards</a></li><li><a href="Transport.html">Transport</a></li>
 				</ul>
 			</li>
 			
@@ -55,7 +55,7 @@
 			<li class="dropdown">
 				<a href="tutorials.list.html" class="dropdown-toggle" data-toggle="dropdown">Tutorials<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="tutorial-config.html">Configuration Guide</a></li><li><a href="tutorial-install.html">Manual Installation</a></li><li><a href="tutorial-transfers.html">Uploading and Downloading</a></li><li><a href="tutorial-usage.html">Basic Usage Guide</a></li>
+					<li><a href="tutorial-config.html">Configuration Guide</a></li><li><a href="tutorial-farming.html">Setting Up Farming</a></li><li><a href="tutorial-install.html">Manual Installation</a></li><li><a href="tutorial-transfers.html">Uploading and Downloading</a></li><li><a href="tutorial-usage.html">Basic Usage Guide</a></li>
 				</ul>
 			</li>
 			
@@ -154,7 +154,17 @@ AllowDirectStorageClaims[] = *
 ; Set the base directory (parent) for where the directory.db folder will be 
 ; placed. The directory.db holds key-value pairs for the distributed hash 
 ; table, which serve various purposes such as reputation data on other peers.
+; In addition, if the directory profile is enabled, use the supplied hostname, 
+; port, and optional SSL configuration to serve a public (clearnet) statistics 
+; API.
 DirectoryStorageBaseDir = /home/bookchin/.config/orc
+DirectoryPort = 4446
+DirectoryHostname = 127.0.0.1
+DirectoryUseSSL = 0
+DirectoryServiceKeyPath: /home/bookchin/.config/orc/directory_key.pem
+DirectoryCertificatePath: /home/bookchin/.config/orc/directory_cert.pem
+DirectoryCapacityCachePath = /home/bookchin/.config/orc/capacity.cache
+;DirectoryAuthorityChains[] = /home/bookchin/.config/fullchain.pem
 
 ; Paths to this node's SSL key and certificat. If you don't have one, you can 
 ; generate one with the following:
@@ -207,9 +217,9 @@ NetworkBootstrapNodes[] = https://orcjfg52ty6ljv54.onion:443
 NetworkBootstrapNodes[] = https://orce4nqoa6muz3gt.onion:443
 NetworkBootstrapNodes[] = https://orcwfkilxjxo63mr.onion:443
 
-; Instruct Tor to establish new circuits by sending the NEWNYM sigal every so
-; often. This helps mitigate Tor relays in your path going down after a while.
-CircuitRefreshInterval = 10M
+; Perform as self test for service availability every so often. If the check 
+; fails, re-establish service and switch to new Tor circuits
+ServiceAvailabilityCheckInterval = 10M
 
 ; Instruct Tor to establish a new rendezvous point for reaching your Orc node
 ; every so often. This helps mitigate Tor relays in your path going down after
@@ -272,7 +282,7 @@ FarmerShardReaperInterval = 24HR
 
 ; How often a farmer profile should publish a capacity announcement to it's
 ; neighboring nodes.
-FarmerAnnounceInterval = 1HR</code></pre>
+FarmerAnnounceInterval = 15M</code></pre>
 </article>
 
 </section>
