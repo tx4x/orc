@@ -2,6 +2,12 @@
   "config": {
     "title": "Configuration Guide"
   },
+  "farming": {
+    "title": "Setting Up Farming"
+  },
+  "directory": {
+    "title": "Running a Directory"
+  },
   "install": {
     "title": "Manual Installation"
   },

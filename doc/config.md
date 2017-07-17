@@ -56,8 +56,8 @@ ChildDerivationIndex = 0
 ; placed. The contracts.db holds storage contracts between you and other nodes.
 ContractStorageBaseDir = /home/bookchin/.config/orc
 
-; Set the base directory (parent) for where the shards.kfs folder will be 
-; placed. The shards.kfs stores other nodes data shards, so be sure you set 
+; Set the base directory (parent) for where the shards folder will be 
+; placed. The shards stores other nodes data shards, so be sure you set 
 ; this to where you intend to store farmed shards.
 ShardStorageBaseDir = /home/bookchin/.config/orc
 
@@ -185,8 +185,11 @@ WalletShieldedTransactions = 0
 ; exposing a bridge server for uploading and downloading data. 
 ; Farmer profiles publish capacity announcements and listen for contracts to 
 ; store data. 
+; Directory profiles collect network statistics and expose a clearnet API for 
+; fetching that data.
 ;ProfilesEnabled[] = renter
 ;ProfilesEnabled[] = farmer
+;ProfilesEnabled[] = directory
 
 ; Topic codes to use when operating under the farmer profile for subscibing to
 ; contract publications and announcing capacity. See the protocol specification 
@@ -202,5 +205,5 @@ FarmerShardReaperInterval = 24HR
 
 ; How often a farmer profile should publish a capacity announcement to it's
 ; neighboring nodes.
-FarmerAnnounceInterval = 1HR
+FarmerAnnounceInterval = 15M
 ```
