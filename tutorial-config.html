@@ -55,7 +55,7 @@
 			<li class="dropdown">
 				<a href="tutorials.list.html" class="dropdown-toggle" data-toggle="dropdown">Tutorials<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="tutorial-config.html">Configuration Guide</a></li><li><a href="tutorial-farming.html">Setting Up Farming</a></li><li><a href="tutorial-install.html">Manual Installation</a></li><li><a href="tutorial-transfers.html">Uploading and Downloading</a></li><li><a href="tutorial-usage.html">Basic Usage Guide</a></li>
+					<li><a href="tutorial-config.html">Configuration Guide</a></li><li><a href="tutorial-directory_.html">Running a Directory</a></li><li><a href="tutorial-farming.html">Setting Up Farming</a></li><li><a href="tutorial-install.html">Manual Installation</a></li><li><a href="tutorial-transfers.html">Uploading and Downloading</a></li><li><a href="tutorial-usage.html">Basic Usage Guide</a></li>
 				</ul>
 			</li>
 			
@@ -136,8 +136,8 @@ ChildDerivationIndex = 0
 ; placed. The contracts.db holds storage contracts between you and other nodes.
 ContractStorageBaseDir = /home/bookchin/.config/orc
 
-; Set the base directory (parent) for where the shards.kfs folder will be 
-; placed. The shards.kfs stores other nodes data shards, so be sure you set 
+; Set the base directory (parent) for where the shards folder will be 
+; placed. The shards stores other nodes data shards, so be sure you set 
 ; this to where you intend to store farmed shards.
 ShardStorageBaseDir = /home/bookchin/.config/orc
 
@@ -265,8 +265,11 @@ WalletShieldedTransactions = 0
 ; exposing a bridge server for uploading and downloading data. 
 ; Farmer profiles publish capacity announcements and listen for contracts to 
 ; store data. 
+; Directory profiles collect network statistics and expose a clearnet API for 
+; fetching that data.
 ;ProfilesEnabled[] = renter
 ;ProfilesEnabled[] = farmer
+;ProfilesEnabled[] = directory
 
 ; Topic codes to use when operating under the farmer profile for subscibing to
 ; contract publications and announcing capacity. See the protocol specification 

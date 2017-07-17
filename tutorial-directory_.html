@@ -4,7 +4,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width">
-	<title>ORC Source: index.js</title>
+	<title>ORC Tutorial: Running a Directory</title>
 
 	<!--[if lt IE 9]>
 	<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
@@ -83,128 +83,49 @@
 	<div class="col-md-12">
 	
 		<div id="main">
-			
+			<section class="tutorial-section">
 
-		<h1 class="page-title">Source: index.js</h1>
+<header>
     
-<section>
-    <article>
-        <pre
-            class="sunlight-highlight-javascript ">/**
- * @module orc
- * @license AGPL-3.0
- */
 
-'use strict';
+    <h2>Running a Directory</h2>
+</header>
 
-const { spawn } = require('child_process');
-const { join } = require('path');
+<article>
+    <p>Directories are &quot;passive&quot; ORC nodes that hang around the network and relay 
+publications for farmers and renters. During this process, directories maintain 
+a cache of all the farmers it has seen, their service contact information and 
+the available and allocated capacity they have. Using this cache, directories 
+expose an API (optionally over the clearnet) to aid applications in gaining 
+valuable insight into the state of the network.</p>
+<p>The ORC Project maintains a public directory node with an API exposed at 
+<a href="https://directory.orc.network">https://directory.orc.network</a>. Feel free to 
+use it or run your own!</p>
+<p>If you wish to run your own, this guide will show you how to properly configure 
+your node. This will only cover configuration specific to running a directory, 
+so for more information be sure to check out the <a href="tutorial-config.html">Configuration Guide</a>.</p>
+<h3>Set Location for Directory Data</h3><p>Set the base directory (parent) for where the directory.db folder will be 
+placed. The directory.db holds key-value pairs for the distributed hash 
+table, which serve various purposes such as reputation data on other peers.</p>
+<pre class="prettyprint source"><code>DirectoryStorageBaseDir = /home/bookchin/.config/orc
+DirectoryCapacityCachePath = /home/bookchin/.config/orc/capacity.cache</code></pre><h3>Enable the Directory Profile</h3><p>Directory profiles collect network statistics and expose a clearnet API for 
+fetching that data.</p>
+<pre class="prettyprint source"><code>ProfilesEnabled[] = directory</code></pre><h3>Listen for Publication Topics</h3><p>Topic codes used when running a renter profile for listening for capacity 
+announcements from the network. See the protocol specification for more 
+details. It is mostly reccommended to leave these at their default values.</p>
+<pre class="prettyprint source"><code>RenterListenTopics[] = 01020202
+RenterListenTopics[] = 02020202
+RenterListenTopics[] = 03020202</code></pre><h3>Configure Directory API</h3><p>When the directory profile is enabled, use the supplied hostname, port, and 
+optional SSL configuration to serve a public (clearnet) statistics API.</p>
+<pre class="prettyprint source"><code>DirectoryPort = 4446
+DirectoryHostname = 127.0.0.1
+DirectoryUseSSL = 0
+DirectoryServiceKeyPath: /home/bookchin/.config/orc/directory_key.pem
+DirectoryCertificatePath: /home/bookchin/.config/orc/directory_cert.pem
+DirectoryAuthorityChains[] = /home/bookchin/.config/fullchain.pem</code></pre>
+</article>
 
-
-/**
- * Forks a child orc process and returns the child process and a controller
- * client for sending commands to it
- * @function
- * @param {object|string} config - Configuration properties as object or path
- * to a configuration file. See {@tutorial config} for details.
- * connect to the control port
- * @returns {object}
- */
-/* istanbul ignore next */
-module.exports = function(config = {}) {
-  /* eslint max-statements: [2, 18] */
-  const cport = config.ControlPort || require('./bin/_config').ControlPort;
-  const caddr = config.ControlPort || require('./bin/_config').ControlHostname;
-  const controller = new module.exports.control.Client();
-
-  let envs = {};
-  let args = [join(__dirname, './bin/orc.js')];
-  let trys = 10;
-  let opts = { env: envs };
-
-  if (typeof config === 'string') {
-    args = args.concat(['--config', config]);
-  } else {
-    for (let prop in config) {
-      envs[`orc_${prop}`] = config[prop];
-    }
-  }
-
-  const child = spawn(process.execPath, args, opts);
-
-  function connect() {
-    controller.once('error', () => {
-      controller.removeAllListeners();
-      if (trys !== 0) {
-        trys--;
-        setTimeout(connect, 1000);
-      }
-    });
-    controller.on('ready', () => controller.removeAllListeners('error'));
-    controller.connect(cport, caddr);
-  }
-
-  process.on('exit', () => child.kill());
-  child.stdout.once('data', () => setTimeout(() => connect(), 1000));
-  child.stderr.once('data', (msg) => child.emit('error', new Error(msg)));
-
-  return { child, controller };
-};
-
-/** {@link Node} */
-module.exports.Node = require('./lib/node');
-
-/** {@link Rules} */
-module.exports.Rules = require('./lib/rules');
-
-/** {@link Transport} */
-module.exports.Transport = require('./lib/transport');
-
-/** {@link Server} */
-module.exports.Server = require('./lib/server');
-
-/** {@link Audit} */
-module.exports.Audit = require('./lib/audit');
-
-/** {@link Proof} */
-module.exports.Proof = require('./lib/proof');
-
-/** {@link Offers} */
-module.exports.Offers = require('./lib/offers');
-
-/** {@link Shards} */
-module.exports.Shards = require('./lib/shards');
-
-/** {@link Contract} */
-module.exports.Contract = require('./lib/contract');
-
-/** {@link Bridge} */
-module.exports.Bridge = require('./lib/bridge');
-
-/** {@link Directory} */
-module.exports.Directory = require('./lib/directory');
-
-/** {@link module:orc/constants} */
-module.exports.constants = require('./lib/constants');
-
-/** {@link module:orc/profiles} */
-module.exports.profiles = require('./lib/profiles');
-
-/** {@link module:orc/utils} */
-module.exports.utils = require('./lib/utils');
-
-/** {@link module:orc/version} */
-module.exports.version = require('./lib/version');
-
-/** @see https://github.com/bookchin/boscar */
-module.exports.control = require('boscar');
-</pre>
-    </article>
 </section>
-
-
-
-
 
 		</div>
 	</div>
