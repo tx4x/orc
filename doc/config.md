@@ -137,9 +137,9 @@ NetworkBootstrapNodes[] = https://orcjfg52ty6ljv54.onion:443
 NetworkBootstrapNodes[] = https://orce4nqoa6muz3gt.onion:443
 NetworkBootstrapNodes[] = https://orcwfkilxjxo63mr.onion:443
 
-; Instruct Tor to establish new circuits by sending the NEWNYM sigal every so
-; often. This helps mitigate Tor relays in your path going down after a while.
-CircuitRefreshInterval = 10M
+; Perform as self test for service availability every so often. If the check 
+; fails, re-establish service and switch to new Tor circuits
+ServiceAvailabilityCheckInterval = 10M
 
 ; Instruct Tor to establish a new rendezvous point for reaching your Orc node
 ; every so often. This helps mitigate Tor relays in your path going down after

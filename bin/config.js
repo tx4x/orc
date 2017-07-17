@@ -41,8 +41,7 @@ module.exports = {
   ],
 
   // Tor Behavior
-  CircuitRefreshInterval: '10m',
-  ServiceRefreshInterval: '35m',
+  ServiceAvailabilityCheckInterval: '10M',
 
   // Bandwidth Metering
   BandwidthAccountingEnabled: '0',
