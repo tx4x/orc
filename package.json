@@ -1,6 +1,6 @@
 {
   "name": "@orcproject/orc",
-  "version": "v7.0.0-beta2",
+  "version": "7.0.0-beta3",
   "description": "distributed anonymous storage network",
   "main": "index.js",
   "bin": {
@@ -56,7 +56,7 @@
     "json-stable-stringify": "^1.0.1",
     "kad": "^2.3.2",
     "kad-hibernate": "^1.0.0",
-    "kad-onion": "^1.6.0",
+    "kad-onion": "^1.6.1",
     "kad-quasar": "^2.1.0",
     "kad-spartacus": "^2.2.1",
     "kad-traverse": "^1.1.1",
