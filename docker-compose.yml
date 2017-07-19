@@ -1,0 +1,18 @@
+version: '2'
+services:
+  orc:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    volumes:
+      - ./lib:/root/orc/lib
+      - ./test:/root/orc/test
+      - ./package.json:/root/orc/package.json
+      - ./index.js:/root/orc/index.js
+      - ~/orc:/root/.config/orc
+    ports:
+      - "4444:4444"
+      - "4445:4445"
+      - "4446:4446"
+    environment:
+      - .env
