@@ -20,10 +20,10 @@ RUN mkdir /root/.zcash; \
 RUN echo "#\!/bin/bash" >> /root/orc.sh; \
     echo "tor --runasdaemon 1" >> /root/orc.sh; \
     echo "zcashd -daemon" >> /root/orc.sh; \
-    echo "echo '# orc.sh'" >> /root/orc.sh;\
     echo "orc" >> /root/orc.sh \
 RUN chmod +x /root/orc.sh
 RUN mkdir -p /root/.config/orc
 VOLUME ["/root/.config/orc"]
-CMD /root/orc.sh
+EXPOSE 4443 4444 4445
+CMD ["/root/orc.sh"]
 ENTRYPOINT []

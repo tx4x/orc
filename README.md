@@ -50,15 +50,17 @@ for more information. If you prefer to install ORC manually, see the guide for
 configuration file using the `--config <path/to/config>` option.
 
 
-### Docker-compose 
+### Development 
 
-To boot up the docker-compose environment, you can run 
+To hack on the ORC project, you can run 
 
 ```
 $ docker-compose up
 ```
 
-This will volume mount the `lib` and `test` directories for development. 
+This will volume mount the `lib` and `test` directories for development, and then boots up the ORC container. 
+
+Happy hacking!
 
 ### Resources
 
