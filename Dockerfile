@@ -22,11 +22,8 @@ RUN echo "#\!/bin/bash" >> /root/orc.sh; \
     echo "zcashd -daemon" >> /root/orc.sh; \
     echo "echo '# orc.sh'" >> /root/orc.sh;\
     echo "orc" >> /root/orc.sh \
-    echo "echo '# orc sh'" >> /root/orc.sh;
 RUN chmod +x /root/orc.sh
 RUN mkdir -p /root/.config/orc
 VOLUME ["/root/.config/orc"]
-RUN echo "GOT HERE"
 CMD /root/orc.sh
-RUN echo "GOT HERRE 2"
 ENTRYPOINT []
