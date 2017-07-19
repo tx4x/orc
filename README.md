@@ -49,6 +49,17 @@ for more information. If you prefer to install ORC manually, see the guide for
 {@tutorial install}. Once installed, simply run `orc` with an optional 
 configuration file using the `--config <path/to/config>` option.
 
+
+### Docker-compose 
+
+To boot up the docker-compose environment, you can run 
+
+```
+$ docker-compose up
+```
+
+This will volume mount the `lib` and `test` directories for development. 
+
 ### Resources
 
 * [Documentation](https://orcproject.github.io/orc/)
