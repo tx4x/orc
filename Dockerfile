@@ -9,20 +9,24 @@ RUN echo "deb [arch=amd64] https://apt.z.cash/ jessie main" | tee /etc/apt/sourc
 RUN apt-get update; \
     DEBIAN_FRONTEND=noninteractive apt-get -yq install vim libssl-dev git python build-essential tor zcash nodejs
 RUN zcash-fetch-params
-RUN git clone https://github.com/orcproject/orc ~/orc; \
-    cd ~/orc && npm install && npm link && cd
-RUN mkdir ~/.zcash; \
-    echo "rpcuser=orc" >> ~/.zcash/zcash.conf; \
-    echo "rpcpassword=orc" >> ~/.zcash/zcash.conf; \
-    echo "proxy=127.0.0.1:9050" >> ~/.zcash/zcash.conf; \
-    echo "mainnet=1" >> ~/.zcash/zcash.conf; \
-    echo "addnode=mainnet.z.cash" >> ~/.zcash/zcash.conf
-RUN echo "#\!/bin/bash" >> ~/orc.sh; \
-    echo "tor --runasdaemon 1" >> ~/orc.sh; \
-    echo "zcashd -daemon" >> ~/orc.sh; \
-    echo "orc" >> ~/orc.sh
-RUN chmod +x ~/orc.sh
-RUN mkdir -p ~/.config/orc
+RUN git clone https://github.com/orcproject/orc /root/orc; \
+    cd /root/orc && npm install && npm link && cd
+RUN mkdir /root/.zcash; \
+    echo "rpcuser=orc" >> /root/.zcash/zcash.conf; \
+    echo "rpcpassword=orc" >> /root/.zcash/zcash.conf; \
+    echo "proxy=127.0.0.1:9050" >> /root/.zcash/zcash.conf; \
+    echo "mainnet=1" >> /root/.zcash/zcash.conf; \
+    echo "addnode=mainnet.z.cash" >> /root/.zcash/zcash.conf
+RUN echo "#\!/bin/bash" >> /root/orc.sh; \
+    echo "tor --runasdaemon 1" >> /root/orc.sh; \
+    echo "zcashd -daemon" >> /root/orc.sh; \
+    echo "echo '# orc.sh'" >> /root/orc.sh;\
+    echo "orc" >> /root/orc.sh \
+    echo "echo '# orc sh'" >> /root/orc.sh;
+RUN chmod +x /root/orc.sh
+RUN mkdir -p /root/.config/orc
 VOLUME ["/root/.config/orc"]
-CMD ~/orc.sh
+RUN echo "GOT HERE"
+CMD /root/orc.sh
+RUN echo "GOT HERRE 2"
 ENTRYPOINT []
