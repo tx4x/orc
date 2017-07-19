@@ -47,6 +47,6 @@ RUN echo "#\!/bin/bash" >> /root/orc.sh; \
 RUN chmod +x /root/orc.sh
 RUN mkdir -p /root/.config/orc
 VOLUME ["/root/.config/orc"]
-EXPOSE 4443 4444 4445
+EXPOSE 4443 4444 4445 4446
 CMD ["/root/orc.sh"]
 ENTRYPOINT []

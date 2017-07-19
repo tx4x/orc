@@ -52,15 +52,15 @@ configuration file using the `--config <path/to/config>` option.
 
 ### Development 
 
-To hack on the ORC project, you can run 
+To hack on the ORC project, clone this repository and use 
+[Docker Compose](https://docs.docker.com/compose/):
 
 ```
-$ docker-compose up
+docker-compose up
 ```
 
-This will volume mount the `lib` and `test` directories for development, and then boots up the ORC container. 
-
-Happy hacking!
+This will volume mount the `lib` and `test` directories for development, and 
+then boots up the ORC container. Happy hacking!
 
 ### Resources
 
