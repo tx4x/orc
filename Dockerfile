@@ -32,21 +32,21 @@ RUN curl -SLO "https://nodejs.org/dist/v$NODE_VERSION/node-v$NODE_VERSION-linux-
   && rm "node-v$NODE_VERSION-linux-x64.tar.xz" SHASUMS256.txt.asc SHASUMS256.txt \
   && ln -s /usr/local/bin/node /usr/local/bin/nodejs
 RUN zcash-fetch-params
-WORKDIR /root/orc
-RUN git clone https://github.com/orcproject/orc && \
-  npm install && \
-  npm link
-WORKDIR /root/.zcash
-RUN echo "rpcuser=orc" >> ./zcash.conf; \
-    echo "rpcpassword=orc" >> ./zcash.conf; \
-    echo "proxy=127.0.0.1:9050" >> ./zcash.conf; \
-    echo "mainnet=1" >> ./zcash.conf; \
-    echo "addnode=mainnet.z.cash" >> ./zcash.conf
-WORKDIR /root
-RUN echo "#\!/bin/bash" >> orc.sh; \
-    echo "tor --runasdaemon 1" >> orc.sh; \
-    echo "zcashd -daemon" >> orc.sh; \
-    echo "orc" >> orc.sh \
-RUN chmod +x orc.sh
-CMD ["orc.sh"]
+RUN git clone https://github.com/orcproject/orc /root/orc; \
+    cd /root/orc && npm install && npm link && cd
+RUN mkdir /root/.zcash; \
+    echo "rpcuser=orc" >> /root/.zcash/zcash.conf; \
+    echo "rpcpassword=orc" >> /root/.zcash/zcash.conf; \
+    echo "proxy=127.0.0.1:9050" >> /root/.zcash/zcash.conf; \
+    echo "mainnet=1" >> /root/.zcash/zcash.conf; \
+    echo "addnode=mainnet.z.cash" >> /root/.zcash/zcash.conf
+RUN echo "#\!/bin/bash" >> /root/orc.sh; \
+    echo "tor --runasdaemon 1" >> /root/orc.sh; \
+    echo "zcashd -daemon" >> /root/orc.sh; \
+    echo "orc" >> /root/orc.sh \
+RUN chmod +x /root/orc.sh
+RUN mkdir -p /root/.config/orc
+VOLUME ["/root/.config/orc"]
+EXPOSE 4443 4444 4445 4446
+CMD ["/bin/bash", "/root/orc.sh"]
 ENTRYPOINT []

@@ -261,6 +261,9 @@ function profiles() {
   });
 }
 
+// Print super dank orc ascii
+console.info(fs.readFileSync(path.join(__dirname, '../motd')).toString());
+
 // Bind to listening port and join the network
 logger.info('bootstrapping tor and establishing hidden service');
 node.listen(parseInt(config.ListenPort), () => {
