@@ -34,8 +34,7 @@ RUN curl -SLO "https://nodejs.org/dist/v$NODE_VERSION/node-v$NODE_VERSION-linux-
 RUN zcash-fetch-params
 RUN git clone https://github.com/orcproject/orc /root/orc;
 WORKDIR /root/orc
-COPY ["./package.json", "./index.js", "./lib", "./test", "./bin", "./"]
-RUN npm install && npm link 
+RUN npm install && npm link
 WORKDIR /root/.zcash
 RUN echo "rpcuser=orc" >> /root/.zcash/zcash.conf; \
     echo "rpcpassword=orc" >> /h.conf; \
@@ -45,8 +44,7 @@ RUN echo "rpcuser=orc" >> /root/.zcash/zcash.conf; \
 RUN echo "#\!/bin/bash" >> /root/orc.sh; \
     echo "tor --runasdaemon 1" >> /root/orc.sh; \
     echo "zcashd -daemon" >> /root/orc.sh; \
-    echo "orc" >> /root/orc.sh \
-WORKDIR /
+    echo "orc" >> /root/orc.sh;
 RUN chmod +x /root/orc.sh
 RUN mkdir -p /root/.config/orc
 VOLUME ["/root/.config/orc"]

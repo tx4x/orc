@@ -5,14 +5,15 @@ services:
       context: .
       dockerfile: ./Dockerfile.dev
     volumes:
+      - ./bin:/root/orc/bin
       - ./lib:/root/orc/lib
       - ./test:/root/orc/test
       - ./package.json:/root/orc/package.json
       - ./index.js:/root/orc/index.js
       - ~/orc:/root/.config/orc
     ports:
-      - "4444:4444"
-      - "4445:4445"
-      - "4446:4446"
+      - "127.0.0.1:4444:4444"
+      - "127.0.0.1:4445:4445"
+      - "127.0.0.1:4446:4446"
     environment:
       - .env
