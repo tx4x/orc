@@ -3,7 +3,7 @@ services:
   orc:
     build:
       context: .
-      dockerfile: ./Dockerfile
+      dockerfile: ./Dockerfile.dev
     volumes:
       - ./lib:/root/orc/lib
       - ./test:/root/orc/test
