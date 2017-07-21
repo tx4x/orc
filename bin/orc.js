@@ -246,6 +246,19 @@ function join() {
   });
 }
 
+// Configure dashboard and check enabled
+function dashboard() {
+  if (config.DashboardEnabled) {
+    return new orc.dashboard({
+      logger,
+      port: config.DashboardPort
+    });
+  }
+}
+
+// Initiate dashboard
+dashboard();
+
 function profiles() {
   if (config.ProfilesEnabled.length === 0) {
     logger.warn('no profiles are enabled, you are only a relay');

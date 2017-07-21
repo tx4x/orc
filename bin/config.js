@@ -79,6 +79,10 @@ module.exports = {
   BridgeTempStagingBaseDir: join(datadir, '__bridge.staging'),
   BridgeShardAuditInterval: '5DAYS',
 
+  // Local Node Dashboard and GUI
+  DashboardEnabled: '1',
+  DashboardPort: '8080',
+
   // Directory Server
   DirectoryStorageBaseDir: datadir,
   DirectoryPort: '4446',

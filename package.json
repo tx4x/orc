@@ -35,7 +35,9 @@
     "url": "https://github.com/orcproject/orc.git"
   },
   "author": "Gordon Hall <gordonh@member.fsf.org>",
-  "contributors": ["Dylan Lott <lott.dylan@gmail.com>"],
+  "contributors": [
+    "Dylan Lott <lott.dylan@gmail.com>"
+  ],
   "license": "AGPL-3.0",
   "engines": {
     "node": "6.x.x"
@@ -51,6 +53,7 @@
     "concat-stream": "^1.6.0",
     "connect": "^3.6.1",
     "du": "^0.1.0",
+    "finalhandler": "^1.0.3",
     "ip": "littleskunk/node-ip#b1e7ec0cbff9f7841b1584e50339a774363437c0",
     "jsen": "bugventure/jsen#9e57a9d653ff4ea47d364fc37da0f1659bfb8e89",
     "json-stable-stringify": "^1.0.1",
@@ -71,6 +74,7 @@
     "rc": "^1.2.1",
     "secp256k1": "^3.2.2",
     "semver": "^5.1.0",
+    "serve-static": "^1.12.3",
     "stream-slice": "^0.1.2",
     "tiny": "0.0.10",
     "zcash": "0.0.5"
