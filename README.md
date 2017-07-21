@@ -62,6 +62,10 @@ docker-compose up
 This will volume mount the `lib` and `test` directories for development, and 
 then boots up the ORC container. Happy hacking!
 
+> **Note!** If you are exposing services from the docker container to the host
+> you _must_ set the services `*Hostname` property to `0.0.0.0` in your ORC 
+> configuration!
+
 ### Resources
 
 * [Documentation](https://orcproject.github.io/orc/)
