@@ -43,6 +43,10 @@ RUN mkdir /root/.zcash; \
 RUN echo "#\!/bin/bash" >> /root/orc.sh; \
     echo "tor --runasdaemon 1" >> /root/orc.sh; \
     echo "zcashd -daemon" >> /root/orc.sh; \
+    echo "export orc_ControlHostname=0.0.0.0" >> /root/orc.sh; \
+    echo "export orc_BridgeHostname=0.0.0.0" >> /root/orc.sh; \
+    echo "export orc_DirectoryHostname=0.0.0.0" >> /root/orc.sh; \
+    echo "export orc_DashboardHostname=0.0.0.0" >> /root/orc.sh; \
     echo "orc" >> /root/orc.sh \
 RUN chmod +x /root/orc.sh
 RUN mkdir -p /root/.config/orc
