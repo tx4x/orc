@@ -248,7 +248,14 @@ function join() {
 
 // Configure dashboard and check enabled
 if (parseInt(config.DashboardEnabled)) {
-  const dashboard = new orc.Dashboard({ logger });
+  const dashboard = new orc.Dashboard({
+    logger,
+    control,
+    enableSSL: parseInt(config.DashboardUseSSL),
+    serviceKeyPath: config.DashboardServiceKeyPath,
+    certificatePath: config.DashboardCertificatePath,
+    authorityChains: config.DashboardAuthorityChains
+  });
 
   dashboard.listen(
     parseInt(config.DashboardPort),

@@ -72,6 +72,10 @@ module.exports = {
   BridgeStorageBaseDir: datadir,
   BridgeHostname: '127.0.0.1',
   BridgePort: '4445',
+  BridgeUseSSL: '0',
+  BridgeServiceKeyPath: join(datadir, 'service_key.pem'),
+  BridgeCertificatePath: join(datadir, 'certificate.pem'),
+  BridgeAuthorityChains: [],
   BridgeAuthenticationEnabled: '0',
   BridgeAuthenticationUser: 'orc',
   BridgeAuthenticationPassword: randomBytes(16).toString('hex'),
@@ -83,6 +87,10 @@ module.exports = {
   DashboardEnabled: '0',
   DashboardPort: '8080',
   DashboardHostname: '127.0.0.1',
+  DashboardUseSSL: '0',
+  DashboardServiceKeyPath: join(datadir, 'service_key.pem'),
+  DashboardCertificatePath: join(datadir, 'certificate.pem'),
+  DashboardAuthorityChains: [],
 
   // Directory Server
   DirectoryStorageBaseDir: datadir,

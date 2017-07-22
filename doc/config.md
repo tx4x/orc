@@ -141,11 +141,6 @@ NetworkBootstrapNodes[] = https://orcwfkilxjxo63mr.onion:443
 ; fails, re-establish service and switch to new Tor circuits
 ServiceAvailabilityCheckInterval = 10M
 
-; Instruct Tor to establish a new rendezvous point for reaching your Orc node
-; every so often. This helps mitigate Tor relays in your path going down after
-; a while.
-ServiceRefreshInterval = 35M
-
 ; When enabled via "renter" profile, bind a local bridge server that allows for
 ; GET and POST HTTP requests for uploading and downloading files from the 
 ; network. The bridge will handle encryption and erasure coding for you.
@@ -155,6 +150,10 @@ BridgeEnabled = 0
 BridgeStorageBaseDir = /home/bookchin/.config/orc
 BridgeHostname = 127.0.0.1
 BridgePort = 4445
+BridgeUseSSL = 0
+BridgeServiceKeyPath = /home/bookchin/.config/orc/service_key.pem
+BridgeCertificatePath = /home/bookchin/.config/orc/certificate.pem
+BridgeAuthorityChains[] = /home/bookchin/.config/orc/fullchain.pem
 BridgeAuthenticationEnabled = 0
 BridgeAuthenticationUser = orc
 BridgeAuthenticationPassword = 1b5d3daa16b3343560bcf0377547b1c0
@@ -206,4 +205,14 @@ FarmerShardReaperInterval = 24HR
 ; How often a farmer profile should publish a capacity announcement to it's
 ; neighboring nodes.
 FarmerAnnounceInterval = 15M
+
+; Enables a web-based graphical interface accessible at the hostname and port 
+; defined below.
+DashboardEnabled = 0
+DashboardPort = 8080
+DashboardHostname = 127.0.0.1
+DashboardUseSSL = 0
+DashboardServiceKeyPath = /home/bookchin/.config/orc/service_key.pem
+DashboardCertificatePath = /home/bookchin/.config/orc/certificate.pem
+DashboardAuthorityChains[] = /home/bookchin/.config/orc/fullchain.pem
 ```

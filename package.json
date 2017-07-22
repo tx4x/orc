@@ -77,6 +77,7 @@
     "serve-static": "^1.12.3",
     "stream-slice": "^0.1.2",
     "tiny": "0.0.10",
+    "ws": "^3.0.0",
     "zcash": "0.0.5"
   },
   "devDependencies": {
@@ -94,5 +95,9 @@
     "remove": "^0.1.5",
     "rimraf": "^2.6.1",
     "sinon": "^1.14.1"
+  },
+  "optionalDependencies": {
+    "bufferutil": "^3.0.2",
+    "utf-8-validate": "^3.0.3"
   }
 }
