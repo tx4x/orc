@@ -99,10 +99,7 @@
 const async = require('async');
 const ms = require('ms');
 const Contract = require('./contract');
-const Bridge = require('./bridge');
-const Directory = require('./directory');
 const Zcash = require('zcash');
-const tiny = require('tiny');
 
 
 /**
@@ -115,10 +112,12 @@ class Profile {
    * @constructor
    * @param {Node} node
    * @param {object} config
+   * @param {object} control
    */
-  constructor(node, config) {
+  constructor(node, config, control) {
     this.node = node;
     this.config = config;
+    this.control = control;
     this.wallet = this._createWallet();
 
     this._init();
@@ -346,45 +345,16 @@ class RenterProfile extends Profile {
    * @private
    */
   _init() {
-    this.capacity = tiny(this.config.RenterCapacityCachePath);
-
     this.node.logger.info('subscribing to network capacity announcements');
     this.node.subscribeCapacityAnnouncement(
       this.config.RenterListenTopics,
       (err, rs) => {
         rs.on('data', ([capacity, contact]) => {
           let timestamp = Date.now();
-          this.capacity.set(contact[0], { capacity, contact, timestamp });
+          this.node.capacity.set(contact[0], { capacity, contact, timestamp });
         });
       }
     );
-
-    if (!parseInt(this.config.BridgeEnabled)) {
-      return;
-    }
-
-    let opts = {
-      store: this.config.BridgeMetaStoragePath,
-      stage: this.config.BridgeTempStagingBaseDir,
-      auditInterval: ms(this.config.BridgeShardAuditInterval),
-      capacityCache: this.capacity
-    };
-
-    if (parseInt(this.config.BridgeAuthenticationEnabled)) {
-      opts.auth = {
-        user: this.config.BridgeAuthenticationUser,
-        pass: this.config.BridgeAuthenticationPassword
-      };
-    }
-
-    this.bridge = new Bridge(this.node, opts);
-
-    this.node.logger.info(
-      'establishing local bridge at ' +
-      `${this.config.BridgeHostname}:${this.config.BridgePort}`
-    );
-    this.bridge.listen(parseInt(this.config.BridgePort),
-                       this.config.BridgeHostname);
   }
 
 }
@@ -409,35 +379,16 @@ class DirectoryProfile extends Profile {
    * @private
    */
   _init() {
-    this.capacity = tiny(this.config.DirectoryCapacityCachePath);
-
     this.node.logger.info('subscribing to network capacity announcements');
     this.node.subscribeCapacityAnnouncement(
       this.config.RenterListenTopics,
       (err, rs) => {
         rs.on('data', ([capacity, contact]) => {
           let timestamp = Date.now();
-          this.capacity.set(contact[0], { capacity, contact, timestamp });
+          this.node.capacity.set(contact[0], { capacity, contact, timestamp });
         });
       }
     );
-
-    let opts = {
-      capacityCache: this.capacity,
-      enableSSL: !!parseInt(this.config.DirectoryUseSSL),
-      serviceKeyPath: this.config.DirectoryServiceKeyPath,
-      certificatePath: this.config.DirectoryCertificatePath,
-      authorityChains: this.config.DirectoryAuthorityChains
-    };
-
-    this.directory = new Directory(this.node, opts);
-
-    this.node.logger.info(
-      'establishing public directory server at ' +
-      `${this.config.DirectoryHostname}:${this.config.DirectoryPort}`
-    );
-    this.directory.listen(parseInt(this.config.DirectoryPort),
-                          this.config.DirectoryHostname);
   }
 
 }
