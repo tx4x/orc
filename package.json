@@ -52,6 +52,7 @@
     "commander": "^2.9.0",
     "concat-stream": "^1.6.0",
     "connect": "^3.6.1",
+    "cors": "^2.8.4",
     "du": "^0.1.0",
     "finalhandler": "^1.0.3",
     "ip": "littleskunk/node-ip#b1e7ec0cbff9f7841b1584e50339a774363437c0",

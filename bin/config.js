@@ -68,7 +68,7 @@ module.exports = {
   RenterCapacityCachePath: join(datadir, 'capacity.cache'),
 
   // Local Bridge
-  BridgeEnabled: '0',
+  BridgeEnabled: '1',
   BridgeStorageBaseDir: datadir,
   BridgeHostname: '127.0.0.1',
   BridgePort: '4445',
@@ -84,7 +84,7 @@ module.exports = {
   BridgeShardAuditInterval: '5DAYS',
 
   // Local Node Dashboard and GUI
-  DashboardEnabled: '0',
+  DashboardEnabled: '1',
   DashboardPort: '8080',
   DashboardHostname: '127.0.0.1',
   DashboardUseSSL: '0',
@@ -93,6 +93,7 @@ module.exports = {
   DashboardAuthorityChains: [],
 
   // Directory Server
+  DirectoryEnabled: '1',
   DirectoryStorageBaseDir: datadir,
   DirectoryPort: '4446',
   DirectoryHostname: '127.0.0.1',

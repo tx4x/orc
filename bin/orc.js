@@ -27,6 +27,7 @@ const { Transform } = require('stream');
 const config = require('rc')('orc', options);
 const boscar = require('boscar');
 const kad = require('kad');
+const tiny = require('tiny');
 
 
 program.version(`
@@ -133,6 +134,8 @@ const node = new orc.Node({
   privateExtendedKey: xprivkey,
   keyDerivationIndex: parseInt(config.ChildDerivationIndex)
 });
+
+node.capacity = tiny(config.CapacityCachePath);
 
 // Handle any fatal errors
 node.on('error', (err) => {
@@ -250,7 +253,6 @@ function join() {
 if (parseInt(config.DashboardEnabled)) {
   const dashboard = new orc.Dashboard({
     logger,
-    control,
     enableSSL: parseInt(config.DashboardUseSSL),
     serviceKeyPath: config.DashboardServiceKeyPath,
     certificatePath: config.DashboardCertificatePath,
@@ -268,6 +270,52 @@ if (parseInt(config.DashboardEnabled)) {
   );
 }
 
+if (parseInt(config.BridgeEnabled)) {
+  let opts = {
+    store: config.BridgeMetaStoragePath,
+    stage: config.BridgeTempStagingBaseDir,
+    auditInterval: ms(config.BridgeShardAuditInterval),
+    capacityCache: node.capacity,
+    enableSSL: parseInt(config.BridgeUseSSL),
+    serviceKeyPath: config.BridgeServiceKeyPath,
+    certificatePath: config.BridgeCertificatePath,
+    authorityChains: config.BridgeAuthorityChains,
+    control
+  };
+
+  if (parseInt(config.BridgeAuthenticationEnabled)) {
+    opts.auth = {
+      user: config.BridgeAuthenticationUser,
+      pass: config.BridgeAuthenticationPassword
+    };
+  }
+
+  const bridge = new orc.Bridge(node, opts);
+
+  node.logger.info(
+    'establishing local bridge at ' +
+    `${config.BridgeHostname}:${config.BridgePort}`
+  );
+  bridge.listen(parseInt(config.BridgePort), config.BridgeHostname);
+}
+
+if (parseInt(config.DirectoryEnabled)) {
+  let opts = {
+    capacityCache: node.capacity,
+    enableSSL: !!parseInt(config.DirectoryUseSSL),
+    serviceKeyPath: config.DirectoryServiceKeyPath,
+    certificatePath: config.DirectoryCertificatePath,
+    authorityChains: config.DirectoryAuthorityChains
+  };
+
+  const directory = new orc.Directory(node, opts);
+
+  node.logger.info(
+    'establishing public directory server at ' +
+    `${config.DirectoryHostname}:${config.DirectoryPort}`
+  );
+  directory.listen(parseInt(config.DirectoryPort), config.DirectoryHostname);
+}
 
 function profiles() {
   if (config.ProfilesEnabled.length === 0) {
@@ -279,7 +327,7 @@ function profiles() {
       logger.error(`failed to apply invalid profile "${profile}"`);
     } else {
       logger.info(`initializing ${profile} profile routines`);
-      orc.profiles[profile](node, config);
+      orc.profiles[profile](node, config, control);
     }
   });
 }

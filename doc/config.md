@@ -77,13 +77,13 @@ AllowDirectStorageClaims[] = *
 ; In addition, if the directory profile is enabled, use the supplied hostname, 
 ; port, and optional SSL configuration to serve a public (clearnet) statistics 
 ; API.
+DirectoryEnabled = 1
 DirectoryStorageBaseDir = /home/bookchin/.config/orc
 DirectoryPort = 4446
 DirectoryHostname = 127.0.0.1
 DirectoryUseSSL = 0
 DirectoryServiceKeyPath: /home/bookchin/.config/orc/directory_key.pem
 DirectoryCertificatePath: /home/bookchin/.config/orc/directory_cert.pem
-DirectoryCapacityCachePath = /home/bookchin/.config/orc/capacity.cache
 ;DirectoryAuthorityChains[] = /home/bookchin/.config/fullchain.pem
 
 ; Paths to this node's SSL key and certificat. If you don't have one, you can 
@@ -146,7 +146,7 @@ ServiceAvailabilityCheckInterval = 10M
 ; network. The bridge will handle encryption and erasure coding for you.
 ; Optionally, protect the local bridge access using HTTP Basic Authentication
 ; credentials defined here.
-BridgeEnabled = 0
+BridgeEnabled = 1
 BridgeStorageBaseDir = /home/bookchin/.config/orc
 BridgeHostname = 127.0.0.1
 BridgePort = 4445
@@ -167,8 +167,9 @@ BridgeShardAuditInterval = 5DAYS
 RenterListenTopics[] = 01020202
 RenterListenTopics[] = 02020202
 RenterListenTopics[] = 03020202
+
 ; Path to a file for caching network capacity announcements
-RenterCapacityCachePath = /home/bookchin/.config/orc/capacity.cache
+CapacityCachePath = /home/bookchin/.config/orc/capacity.cache
 
 ; Complete information about how orc should connect to the Zcash RPC server. 
 ; Orc needs this to generate addresses for farmers, send payments from renters, 
@@ -208,7 +209,7 @@ FarmerAnnounceInterval = 15M
 
 ; Enables a web-based graphical interface accessible at the hostname and port 
 ; defined below.
-DashboardEnabled = 0
+DashboardEnabled = 1
 DashboardPort = 8080
 DashboardHostname = 127.0.0.1
 DashboardUseSSL = 0
