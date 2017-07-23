@@ -65,7 +65,8 @@ module.exports = {
     '02020202',
     '03020202'
   ],
-  RenterCapacityCachePath: join(datadir, 'capacity.cache'),
+
+  CapacityCachePath: join(datadir, 'capacity.cache'),
 
   // Local Bridge
   BridgeEnabled: '1',
@@ -101,7 +102,6 @@ module.exports = {
   DirectoryServiceKeyPath: join(datadir, 'service_key.pem'),
   DirectoryCertificatePath: join(datadir, 'certificate.pem'),
   DirectoryAuthorityChains: [],
-  DirectoryCapacityCachePath: join(datadir, 'capacity.cache'),
 
   // Wallet Connection
   WalletHostname: 'localhost',
