@@ -19,16 +19,16 @@ docker pull orcproject/orc
 Create a data directory on the host.
 
 ```
-mkdir path/to/orc.data
+mkdir ~/.config/orc
 ```
 
 Run the ORC container and mount the data directory.
 
 ```
-docker run -v path/to/orc.data:/root/.config/orc -t orcproject/orc:latest
+docker run -v ~/.config/orc:/root/.config/orc -t orcproject/orc:latest
 ```
 
-Modify the created configuration at `path/to/orc.data/config` as desired (see 
+Modify the created configuration at `~/.config/orc/config` as desired (see 
 the {@tutorial config}) and restart the container for the changes to take 
 effect. You might wish to expose the ports defined for `ControlPort`, 
 `BridgePort`, `DirectoryPort`, and `DashboardPort` to the host (and update 
@@ -38,17 +38,19 @@ their corresponding `*Hostname` to `0.0.0.0`) and map them to the host.
 docker run \
   --publish 127.0.0.1:4444:4444 \
   --publish 127.0.0.1:4445:4445 \
-  --expose 4444 \
-  --expose 4445 \
-  --volume path/to/orc.data:/root/.config/orc \
+  --publish 127.0.0.1:4446:4446 \
+  --publish 127.0.0.1:8080:8080 \
+  --volume ~/.config/orc:/root/.config/orc \
   --tty orcproject/orc:latest
 ```
 
-See the [`docker run` documentation](https://docs.docker.com/engine/reference/commandline/run/) 
-for more information. If you prefer to install ORC manually, see the guide for 
-{@tutorial install}. Once installed, simply run `orc` with an optional 
-configuration file using the `--config <path/to/config>` option.
+> See the [`docker run` documentation](https://docs.docker.com/engine/reference/commandline/run/) 
+> for more information. If you prefer to install ORC manually, see the guide for 
+> {@tutorial install}. Once installed, simply run `orc` with an optional 
+> configuration file using the `--config <path/to/config>` option.
 
+Once the container has started, you can navigate in your browser to 
+`http://127.0.0.1:8080` to access your node's dashboard!
 
 ### Development 
 
