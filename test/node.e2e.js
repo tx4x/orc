@@ -36,6 +36,7 @@ describe('@module orc (end-to-end)', function() {
   });
 
   it('should join all nodes together', function(done) {
+    this.timeout(6000);
     async.eachOfSeries(nodes, (n, i, next) => {
       if (i === 0) {
         next();
