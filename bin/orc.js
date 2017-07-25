@@ -327,7 +327,7 @@ function profiles() {
       logger.error(`failed to apply invalid profile "${profile}"`);
     } else {
       logger.info(`initializing ${profile} profile routines`);
-      orc.profiles[profile](node, config, control);
+      orc.profiles[profile](node, config);
     }
   });
 }
