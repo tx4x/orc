@@ -305,4 +305,28 @@ describe('@module utils', function() {
 
   });
 
+  describe('@function getErasureParameters', function() {
+
+    it('should return the correct parameters', function() {
+      let params1 = utils.getErasureParameters(8 * (1024 * 1024));
+      let params2 = utils.getErasureParameters(32 * (1024 * 1024));
+      let params3 = utils.getErasureParameters(128 * (1024 * 1024));
+      let params4 = utils.getErasureParameters(512 * (1024 * 1024));
+      expect(params1.shards).to.equal(2);
+      expect(params1.parity).to.equal(1);
+      expect(params1.size).to.equal(4194304);
+      expect(params2.shards).to.equal(4);
+      expect(params2.parity).to.equal(2);
+      expect(params2.size).to.equal(8388608);
+      expect(params3.shards).to.equal(8);
+      expect(params3.parity).to.equal(4);
+      expect(params3.size).to.equal(16777216);
+      expect(params4.shards).to.equal(16);
+      expect(params4.parity).to.equal(8);
+      expect(params4.size).to.equal(33554432);
+
+    });
+
+  });
+
 });
