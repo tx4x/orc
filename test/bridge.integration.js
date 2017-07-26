@@ -54,9 +54,11 @@ describe('@class Bridge (integration)', function() {
   });
   let port = 0;
   let shards = [];
+  let createUploader = null;
+  let createDownloader = null
 
   before((done) => {
-    sandbox.stub(utils, 'createShardUploader', () => {
+    createUploader = sandbox.stub(utils, 'createShardUploader', () => {
       let uploader = new stream.Transform({
         write: function(d, e, cb) {
           shards.push(d);
@@ -66,13 +68,16 @@ describe('@class Bridge (integration)', function() {
           let uploadResponse = new EventEmitter();
           uploadResponse.statusCode = 200;
           this.emit('response', uploadResponse);
-          setTimeout(() => uploadResponse.emit('end'), 20);
+          setTimeout(() => {
+            uploadResponse.emit('data', 'Success');
+            uploadResponse.emit('end');
+          }, 20);
           cb();
         }
       });
       return uploader;
     });
-    sandbox.stub(utils, 'createShardDownloader', () => {
+    createDownloader = sandbox.stub(utils, 'createShardDownloader', () => {
       let done = false;
       let buf = shards.shift();
       let downloader = new stream.Readable({
@@ -112,7 +117,7 @@ describe('@class Bridge (integration)', function() {
   after(() => sandbox.restore());
 
   it('should start audit interval', function(done) {
-    let audit = sinon.stub(bridge, 'audit');
+    let audit = sinon.spy(bridge, 'audit');
     clock.tick(21600005);
     setImmediate(() => {
       audit.restore();
@@ -180,7 +185,69 @@ describe('@class Bridge (integration)', function() {
     });
   });
 
-  it('should respond with 1 object stored', function(done) {
+  it('should fail to upload if error loading capacity', function(done) {
+    let findQuery = sandbox.stub(
+      bridge.capacityCache,
+      'find'
+    ).returns(sinon.stub().callsArgWith(0, new Error('Failed')));
+    node.onion = { createSecureAgent: sandbox.stub() };
+    let form = new FormData();
+    form.append('file', file, {
+      filename: 'random-bytes',
+      filepath: '/dev/random',
+      contentType: 'application/octet-stream',
+      knownLength: 3000
+    });
+    form.submit({
+      hostname: 'localhost',
+      port,
+      path: '/',
+      method: 'POST',
+      auth: 'orctest:orctest'
+    }, (err, res) => {
+      findQuery.restore();
+      expect(res.statusCode).to.equal(500);
+      let body = '';
+      res.on('data', (data) => body += data);
+      res.on('end', () => {
+        expect(body).to.equal('Not enough capacity information');
+        done();
+      });
+    });
+  });
+
+  it('should fail to upload cannot claim capacity', function(done) {
+    let claimFarmerCapacity = sandbox.stub(
+      node,
+      'claimFarmerCapacity'
+    ).callsArgWith(2, new Error('Cannot claim capacity'));
+    node.onion = { createSecureAgent: sandbox.stub() };
+    let form = new FormData();
+    form.append('file', file, {
+      filename: 'random-bytes',
+      filepath: '/dev/random',
+      contentType: 'application/octet-stream',
+      knownLength: 3000
+    });
+    form.submit({
+      hostname: 'localhost',
+      port,
+      path: '/',
+      method: 'POST',
+      auth: 'orctest:orctest'
+    }, (err, res) => {
+      claimFarmerCapacity.restore();
+      expect(res.statusCode).to.equal(500);
+      let body = '';
+      res.on('data', (data) => body += data);
+      res.on('end', () => {
+        expect(body).to.equal('Cannot claim capacity');
+        done();
+      });
+    });
+  });
+
+  it('should respond with 3 objects', function(done) {
     let body = '';
     let req = http.request({
       auth: 'orctest:orctest',
@@ -193,7 +260,7 @@ describe('@class Bridge (integration)', function() {
       res.on('end', () => {
         body = JSON.parse(body);
         id = body[0].id;
-        expect(body).to.have.lengthOf(1);
+        expect(body).to.have.lengthOf(3);
         expect(body[0].shards).to.have.lengthOf(3);
         expect(body[0].shards[0].size).to.equal(1504);
         expect(body[0].shards[1].size).to.equal(1504);
@@ -251,7 +318,7 @@ describe('@class Bridge (integration)', function() {
     req.end();
   });
 
-  it('should respond with no objects stored', function(done) {
+  it('should respond with 2 objects', function(done) {
     let body = '';
     let req = http.request({
       auth: 'orctest:orctest',
@@ -263,7 +330,7 @@ describe('@class Bridge (integration)', function() {
       res.on('data', (data) => body += data.toString());
       res.on('end', () => {
         body = JSON.parse(body);
-        expect(body).to.have.lengthOf(0);
+        expect(body).to.have.lengthOf(2);
         done();
       });
     });
