@@ -115,6 +115,7 @@ const transport = new orc.Transport({
 
 // Initialize public contact data
 const contact = {
+  hostname: '127.0.0.1', // NB: Placeholder (kad-onion overrides this)
   protocol: 'https:',
   port: parseInt(config.PublicPort),
   xpub: parentkey.publicExtendedKey,
@@ -214,6 +215,9 @@ if (!!parseInt(config.VerboseLoggingEnabled)) {
     objectMode: true
   }));
 }
+
+// Print super dank orc ascii
+console.info(fs.readFileSync(path.join(__dirname, '../motd')).toString());
 
 let retry = null;
 
@@ -331,9 +335,6 @@ function profiles() {
     }
   });
 }
-
-// Print super dank orc ascii
-console.info(fs.readFileSync(path.join(__dirname, '../motd')).toString());
 
 // Bind to listening port and join the network
 logger.info('bootstrapping tor and establishing hidden service');

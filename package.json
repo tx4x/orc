@@ -60,7 +60,7 @@
     "json-stable-stringify": "^1.0.1",
     "kad": "^2.3.2",
     "kad-hibernate": "^1.0.0",
-    "kad-onion": "^1.6.1",
+    "kad-onion": "^1.6.2",
     "kad-quasar": "^2.1.0",
     "kad-spartacus": "^2.3.0",
     "kad-traverse": "^1.1.1",

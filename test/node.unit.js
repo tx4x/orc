@@ -1,5 +1,6 @@
 'use strict';
 
+const { EventEmitter } = require('events');
 const { expect } = require('chai');
 const sinon = require('sinon');
 const levelup = require('levelup');
@@ -9,14 +10,18 @@ const { utils: keyutils } = require('kad-spartacus');
 const utils = require('../lib/utils');
 const Contract = require('../lib/contract');
 const Node = require('../lib/node');
+const proxyquire = require('proxyquire');
 
 
-function createNode(opts) {
-  const node = new Node({
+function createNode(opts, NodeConstructor) {
+  let Ctor = NodeConstructor || Node;
+
+  const node = new Ctor({
     storage: levelup('dht', { db: memdown }),
     contracts: levelup('contracts', { db: memdown }),
     shards: opts.shards
   });
+
   return node;
 }
 
@@ -46,6 +51,16 @@ describe('@class Node', function() {
       });
     });
 
+    it('should setup transport identify listener', function(done) {
+      const node = createNode({});
+      node.transport.emit('identify', {}, {
+        end: (data) => {
+          expect(JSON.parse(data)[0]).to.equal(node.identity.toString('hex'));
+          done();
+        }
+      });
+    });
+
   });
 
   describe('@method listen', function() {
@@ -69,6 +84,77 @@ describe('@class Node', function() {
       expect(use.calledWithMatch('PROBE')).to.equal(true);
       expect(use.calledWithMatch('RENEW')).to.equal(true);
       expect(listen.called).to.equal(true);
+    });
+
+  });
+
+  describe('@method identifyService', function() {
+
+    it('should callback error if bad status code', function(done) {
+      const req = new EventEmitter();
+      req.end = sinon.stub();
+      const res = new EventEmitter();
+      const Node = proxyquire('../lib/node', {
+        https: {
+          request: sinon.stub().callsArgWith(1, res).returns(req)
+        }
+      })
+      const node = createNode({}, Node);
+      node.onion = { createSecureAgent: sinon.stub() };
+      node.identifyService('https://asdfghjkl.onion:443', (err) => {
+        expect(err.message).to.equal('Service down');
+        done();
+      });
+      setImmediate(() => {
+        res.statusCode = 504;
+        res.emit('data', 'Service down');
+        res.emit('end');
+      });
+    });
+
+    it('should callback error if cannot parse result', function(done) {
+      const req = new EventEmitter();
+      req.end = sinon.stub();
+      const res = new EventEmitter();
+      const Node = proxyquire('../lib/node', {
+        https: {
+          request: sinon.stub().callsArgWith(1, res).returns(req)
+        }
+      })
+      const node = createNode({}, Node);
+      node.onion = { createSecureAgent: sinon.stub() };
+      node.identifyService('https://asdfghjkl.onion:443', (err) => {
+        expect(err.message).to.equal('Failed to parse identity');
+        done();
+      });
+      setImmediate(() => {
+        res.statusCode = 200;
+        res.emit('data', 'I am not a valid service');
+        res.emit('end');
+      });
+    });
+
+    it('should callback contact info', function(done) {
+      const req = new EventEmitter();
+      req.end = sinon.stub();
+      const res = new EventEmitter();
+      const Node = proxyquire('../lib/node', {
+        https: {
+          request: sinon.stub().callsArgWith(1, res).returns(req)
+        }
+      })
+      const node = createNode({}, Node);
+      node.onion = { createSecureAgent: sinon.stub() };
+      node.identifyService('https://asdfghjkl.onion:443', (err, data) => {
+        expect(data[0]).to.equal('identity');
+        expect(data[1].contact).to.equal('data');
+        done();
+      });
+      setImmediate(() => {
+        res.statusCode = 200;
+        res.emit('data', '["identity",{"contact":"data"}]');
+        res.emit('end');
+      });
     });
 
   });
