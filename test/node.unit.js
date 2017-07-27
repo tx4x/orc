@@ -350,13 +350,12 @@ describe('@class Node', function() {
       ];
       const quasarSubscribe = sandbox.stub(
         node,
-        'quasarSubscribe',
-        function(codes, handler) {
-          setImmediate(() => descriptors.forEach((d) => {
-            handler([d, [d.farmer_id, { xpub: d.farmer_hd_key }]]);
-          }));
-        }
-      );
+        'quasarSubscribe'
+      ).callsFake(function(codes, handler) {
+        setImmediate(() => descriptors.forEach((d) => {
+          handler([d, [d.farmer_id, { xpub: d.farmer_hd_key }]]);
+        }));
+      });
       node.subscribeShardDescriptor(['topic1', 'topic2'], (err, stream) => {
         let count = 0;
         expect(err).to.equal(null);
@@ -666,9 +665,9 @@ describe('@class Node', function() {
     it('should callback with capacity stream', function(done) {
       const node = createNode({});
       const codes = ['01010101'];
-      const quasarSubscribe = sandbox.stub(node, 'quasarSubscribe', (c, h) => {
-        h([4096, ['identity', { xpub: 'xpubkey' }]]);
-      });
+      const quasarSubscribe = sandbox.stub(node, 'quasarSubscribe').callsFake(
+        (c, h) => h([4096, ['identity', { xpub: 'xpubkey' }]])
+      );
       node.subscribeCapacityAnnouncement(codes, (err, stream) => {
         expect(quasarSubscribe.args[0][0][0]).to.equal('0c01010101');
         expect(stream.read()[0]).to.equal(4096);

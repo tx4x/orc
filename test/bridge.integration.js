@@ -54,9 +54,10 @@ describe('@class Bridge (integration)', function() {
   });
   let port = 0;
   let shards = [];
+  let index = 0;
 
   before((done) => {
-    sandbox.stub(utils, 'createShardUploader', () => {
+    sandbox.stub(utils, 'createShardUploader').callsFake(() => {
       let uploader = new stream.Transform({
         write: function(d, e, cb) {
           shards.push(d);
@@ -75,9 +76,10 @@ describe('@class Bridge (integration)', function() {
       });
       return uploader;
     });
-    sandbox.stub(utils, 'createShardDownloader', () => {
+    sandbox.stub(utils, 'createShardDownloader').callsFake(() => {
       let done = false;
-      let buf = shards.shift();
+      let buf = index === 3 ? shards[index = 0] : shards[index];
+      index++
       let downloader = new stream.Readable({
         read: function() {
           if (done) {
@@ -273,11 +275,17 @@ describe('@class Bridge (integration)', function() {
 
   });
 
-  it('should download the file requested', function(done) {
+  it('should download the file requested and repair', function(done) {
     let authorizeRetrieval = sandbox.stub(
       node,
       'authorizeRetrieval'
     ).callsArgWith(2, null, ['token']);
+    authorizeRetrieval
+      .onCall(1)
+      .callsFake((a, b, cb) => {
+        index++;
+        cb(new Error('Timeout'));
+      });
     let body = Buffer.from([]);
     let req = http.request({
       auth: 'orctest:orctest',
@@ -288,6 +296,42 @@ describe('@class Bridge (integration)', function() {
     req.on('response', (res) => {
       res.on('data', (data) => body = Buffer.concat([body, data]));
       res.on('end', () => {
+        authorizeRetrieval.restore();
+        expect(authorizeRetrieval.callCount).to.equal(3);
+        expect(Buffer.compare(body, file)).to.equal(0);
+        done();
+      });
+    });
+    req.end();
+  });
+
+  it('should download the file requested and repair', function(done) {
+    let authorizeRetrieval = sandbox.stub(
+      node,
+      'authorizeRetrieval'
+    ).callsArgWith(2, null, ['token']);
+    utils.createShardDownloader
+      .resetHistory()
+      .onCall(2)
+      .callsFake(() => {
+        let downloader = new stream.Readable({
+          read: function() {
+            this.emit('error', new Error('Failed'));
+          }
+        });
+        return downloader;
+      });
+    let body = Buffer.from([]);
+    let req = http.request({
+      auth: 'orctest:orctest',
+      hostname: 'localhost',
+      port,
+      path: `/${id}`
+    });
+    req.on('response', (res) => {
+      res.on('data', (data) => body = Buffer.concat([body, data]));
+      res.on('end', () => {
+        authorizeRetrieval.restore();
         expect(authorizeRetrieval.callCount).to.equal(3);
         expect(Buffer.compare(body, file)).to.equal(0);
         done();

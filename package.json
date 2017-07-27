@@ -96,7 +96,7 @@
     "proxyquire": "^1.7.3",
     "remove": "^0.1.5",
     "rimraf": "^2.6.1",
-    "sinon": "^1.14.1"
+    "sinon": "^2.4.1"
   },
   "optionalDependencies": {
     "bufferutil": "^3.0.2",
