@@ -4,6 +4,9 @@ const { expect } = require('chai');
 const profiles = require('../lib/profiles');
 const sinon = require('sinon');
 const { Readable: ReadableStream } = require('stream');
+const Contract = require('../lib/contract');
+const ms = require('ms');
+const { randomBytes } = require('crypto');
 
 
 describe('@class Profile', function() {
@@ -36,7 +39,196 @@ describe('@class Profile', function() {
 
 describe('@class FarmerProfile', function() {
 
+  it('should initialize farmer profile', function(done) {
+    let clock = sinon.useFakeTimers('setInterval');
+    let info = sinon.stub();
+    let warn = sinon.stub();
+    let rs = new ReadableStream({ objectMode: true, read: () => null });
+    let profile = new profiles.FarmerProfile({
+      logger: { info, warn },
+      subscribeShardDescriptor: sinon.stub().callsArgWith(1, null, rs),
+      shards: {
+        size: sinon.stub().callsArgWith(0, null, {
+          allocated: 1000,
+          available: 1000
+        })
+      },
+      publishCapacityAnnouncement: sinon.stub().callsArg(2),
+      offerShardAllocation: sinon.stub().callsArg(2),
+      identity: '000000',
+      contact: {
+        xpub: '{xpub}',
+        index: 0
+      },
+      spartacus: {
+        privateKey: randomBytes(32)
+      }
+    }, {
+      FarmerShardReaperInterval: '1H',
+      FarmerAnnounceInterval: '2M',
+      FarmerAdvertiseTopics: ['1', '2', '3'],
+      WalletShieldedTransactions: '0'
+    });
+    let announceCapacity = sinon.spy(profile, 'announceCapacity');
+    sinon.stub(profile.wallet, 'getnewaddress').resolves('address');
+    setImmediate(() => {
+      rs.push([Contract.from({}), ['{identity}', { hostname: 'test.onion' }]]);
+      setTimeout(() => {
+        clock.tick(ms('2M'));
+        clock.restore();
+        expect(profile.node.offerShardAllocation.called).to.equal(true);
+        expect(announceCapacity.called).to.equal(true);
+        done();
+      }, 20);
+    });
+  });
 
+  describe('@method reapExpiredShards', function() {
+
+    it('should reap expired shards', function(done) {
+      let contracts = [
+        Contract.from({
+          store_end: 0
+        }).toObject(),
+        Contract.from({
+          store_end: Date.now() * 2
+        }).toObject()
+      ];
+      let rs = new ReadableStream({
+        read: function() {
+          if (contracts.length) {
+            this.push({
+              key: 'key',
+              value: contracts.shift()
+            });
+          } else {
+            this.push(null);
+          }
+        },
+        objectMode: true
+      });
+      let clock = sinon.useFakeTimers(Date.now(), 'setInterval');
+      let info = sinon.stub();
+      let warn = sinon.stub();
+      let error = sinon.stub();
+      let rs2 = new ReadableStream({ objectMode: true, read: () => null });
+      let profile = new profiles.FarmerProfile({
+        logger: { info, warn, error },
+        subscribeShardDescriptor: sinon.stub().callsArgWith(1, null, rs2),
+        shards: {
+          size: sinon.stub().callsArgWith(0, null, {
+            allocated: 1000,
+            available: 1000
+          }),
+          unlink: sinon.stub().callsArg(1)
+        },
+        contracts: {
+          createReadStream: sinon.stub().returns(rs),
+          del: sinon.stub().callsArg(1)
+        },
+        publishCapacityAnnouncement: sinon.stub().callsArg(2),
+        offerShardAllocation: sinon.stub().callsArg(2),
+        identity: '000000',
+        contact: {
+          xpub: '{xpub}',
+          index: 0
+        },
+        spartacus: {
+          privateKey: randomBytes(32)
+        }
+      }, {
+        FarmerShardReaperInterval: '1H',
+        FarmerAnnounceInterval: '2M',
+        FarmerAdvertiseTopics: ['1', '2', '3'],
+        WalletShieldedTransactions: '0'
+      });
+      setImmediate(() => {
+        clock.tick(ms('1H'));
+        setTimeout(() => {
+          clock.restore();
+          expect(profile.node.shards.unlink.callCount).to.equal(1);
+          expect(profile.node.contracts.del.callCount).to.equal(1);
+          done();
+        }, 20);
+      });
+    });
+
+    it('should handle unlink error and bubble stream errors', function(done) {
+      let contracts = [
+        Contract.from({
+          store_end: 0
+        }).toObject(),
+        Contract.from({
+          store_end: Date.now() * 2
+        }).toObject()
+      ];
+      let rs = new ReadableStream({
+        read: function() {
+          if (contracts.length === 2) {
+            this.push({
+              key: 'key',
+              value: contracts.shift()
+            });
+          } else {
+            this.emit('error', new Error('Failed'));
+          }
+        },
+        objectMode: true
+      });
+      let clock = sinon.useFakeTimers(Date.now(), 'setInterval');
+      let info = sinon.stub();
+      let warn = sinon.stub();
+      let error = sinon.stub();
+      let rs2 = new ReadableStream({ objectMode: true, read: () => null });
+      let profile = new profiles.FarmerProfile({
+        logger: { info, warn, error },
+        subscribeShardDescriptor: sinon.stub().callsArgWith(1, null, rs2),
+        shards: {
+          size: sinon.stub().callsArgWith(0, null, {
+            allocated: 1000,
+            available: 1000
+          }),
+          unlink: sinon.stub().callsFake((a, cb) => {
+            cb(new Error('Failed to unlink'));
+            rs.emit('error', new Error('Failed'));
+          })
+        },
+        contracts: {
+          createReadStream: sinon.stub().returns(rs),
+          del: sinon.stub().callsArg(1)
+        },
+        publishCapacityAnnouncement: sinon.stub().callsArg(2),
+        offerShardAllocation: sinon.stub().callsArg(2),
+        identity: '000000',
+        contact: {
+          xpub: '{xpub}',
+          index: 0
+        },
+        spartacus: {
+          privateKey: randomBytes(32)
+        }
+      }, {
+        FarmerShardReaperInterval: '1H',
+        FarmerAnnounceInterval: '2M',
+        FarmerAdvertiseTopics: ['1', '2', '3'],
+        WalletShieldedTransactions: '0'
+      });
+      setImmediate(() => {
+        clock.tick(ms('1H'));
+        setTimeout(() => {
+          clock.restore();
+          expect(profile.node.shards.unlink.callCount).to.equal(1);
+          expect(profile.node.contracts.del.callCount).to.equal(0);
+          expect(profile.node.logger.error.calledWithMatch(
+            'Failed'
+          )).to.equal(true);
+          done();
+        }, 20);
+      });
+    });
+
+
+  });
 
 });
 
