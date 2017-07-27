@@ -121,6 +121,7 @@ const BUFFER = require('buffer');
 const bytes = require('bytes');
 const querystring = require('querystring');
 const cors = require('cors');
+const url = require('url');
 
 
 /**
@@ -182,12 +183,13 @@ class Bridge {
     this.server = this._createServer();
     this.wallet = new Zcash(this.options.wallet);
     this.capacityCache = this.options.capacityCache;
-    this.control = options.control;
+    this.control = this.options.control;
     this.wss = new ws.Server({
       server: this.server,
       verifyClient: (info, cb) => this._verifyClient(info, cb)
     });
 
+    /* istanbul ignore else */
     if (!fs.existsSync(this.options.stage)) {
       mkdirp.sync(this.options.stage);
     }
@@ -202,6 +204,7 @@ class Bridge {
   _createServer() {
     let server = null;
 
+    /* istanbul ignore if */
     if (this.options.enableSSL) {
       server = https.createServer({
         key: fs.readFileSync(this.options.serviceKeyPath),
@@ -222,8 +225,9 @@ class Bridge {
    */
   _verifyClient(info, callback) {
     const { user, pass } = this.options.auth;
-    const { query } = info.req;
-    const creds = querystring.parse(query).auth;
+    const { query } = url.parse(info.req.url);
+
+    let creds = querystring.parse(query).auth;
 
     if (user &amp;&amp; pass) {
       if (!creds) {
@@ -415,6 +419,7 @@ class Bridge {
         const ciphertext = path.join(tmp, 'ciphertext');
 
         // TODO: Fix max buffer size constraint somehow
+        /* istanbul ignore if */
         if (size > BUFFER.kMaxLength) {
           fs.unlink(path.join(tmp, 'ciphertext'), () => {
             return next(new Error(
@@ -472,6 +477,7 @@ class Bridge {
 
     const encodeErasure = (callback) => {
       fs.readFile(filepath, (err, file) => {
+        /* istanbul ignore if */
         if (err) {
           return callback(err);
         }
@@ -485,11 +491,13 @@ class Bridge {
 
         file = Buffer.concat([file, Buffer.concat(parity)]);
         rs.encode(file, 0, file.length, size, 0, size, (err) => {
+          /* istanbul ignore if */
           if (err) {
             return callback(err);
           }
 
           this.objects.get(metadata.id, (err, object) => {
+            /* istanbul ignore if */
             if (err) {
               return callback(err);
             } else {
@@ -568,10 +576,11 @@ class Bridge {
         async.retry({ times: 5 }, (done) => {
           const query = this.capacityCache.find({}).bind(this.capacityCache);
 
-          /* eslint max-statements: [2, 18] */
+          /* eslint max-statements: [2, 20] */
           query((err, capacities) => {
             if (err) {
-              return callback(err);
+              this.node.logger.warn('failed to load capacity cache');
+              capacities = [];
             }
 
             capacities = capacities.filter(
@@ -579,12 +588,13 @@ class Bridge {
             );
 
             let proposal = shard.proposal.toObject();
-            let target = null;
-            let contact = null;
+            let target = undefined;
+            let contact = undefined;
 
             knuthShuffle(capacities);
 
             for (let i = 0; i &lt; capacities.length; i++) {
+              /* istanbul ignore if */
               if (capacities[i].capacity.available &lt; shard.size) {
                 continue;
               }
@@ -596,6 +606,7 @@ class Bridge {
                      ? [capacities[i]._key, contact]
                      : [capacities[i]._key, capacities[i].contact[1]];
 
+              /* istanbul ignore else */
               if (target !== undefined) {
                 break;
               }
@@ -603,11 +614,9 @@ class Bridge {
 
             if (target === undefined) {
               this.node.logger.warn(
-                'not enough capacity data collected to upload, waiting...'
+                'not enough capacity data collected to upload'
               );
-              return setTimeout(() => {
-                done(new Error('Not enough capacity information'));
-              }, ms('1m'));
+              return done(new Error('Not enough capacity information'));
             }
 
             this.node.claimFarmerCapacity(target, proposal, (err, data) => {
@@ -633,6 +642,7 @@ class Bridge {
                 let body = '';
                 res.on('data', (data) => body += data.toString());
                 res.on('end', () => {
+                  /* istanbul ignore if */
                   if (res.statusCode !== 200) {
                     this.node.logger.warn(
                       `failed to upload shard, reason: ${body}`
@@ -640,6 +650,7 @@ class Bridge {
                     return done(new Error(body));
                   }
 
+                  this.node.logger.debug(`shard uploaded to ${target[0]}`);
                   delete shard.proposal;
                   delete shard.path;
                   shard.service = target;
@@ -652,7 +663,9 @@ class Bridge {
                 .on('data', (data) => uploadStream.write(data))
                 .on('end', () => uploadStream.end())
                 .on('error', (err) => {
+                  /* istanbul ignore next */
                   uploadStream.removeAllListeners();
+                  /* istanbul ignore next */
                   done(err);
                 });
             });
@@ -693,6 +706,11 @@ class Bridge {
     let buffer = null;
     let uuid = req.url.substr(1);
 
+    function updateRecovery(shard, i) {
+      buffer.fill(0, shard.size * i, (shard.size * i) + shard.size);
+      targets |= (1 &lt;&lt; i);
+    }
+
     const downloadShard = (shard, token, i, callback) => {
       let downloadStream = utils.createShardDownloader(
         shard.service,
@@ -706,8 +724,7 @@ class Bridge {
         this.node.logger.warn(
           `failed to download, reason: ${err.message}`
         );
-        targets |= (1 &lt;&lt; i);
-        buffer.fill(0, shard.size * i, (shard.size * i) + shard.size);
+        updateRecovery(shard, i);
         callback();
       });
 
@@ -728,11 +745,13 @@ class Bridge {
         rs.decode(buffer, 0, size, object.shards[0].size, 0,
                   object.shards[0].size, targets, done);
       } catch (err) {
+        /* istanbul ignore next */
         callback(err);
       }
     };
 
     this.objects.get(uuid, (err, object) => {
+      /* istanbul ignore if */
       if (err) {
         return next(err);
       }
@@ -744,6 +763,7 @@ class Bridge {
       let rsparams = utils.getErasureParameters(size);
       let rs = new ReedSolomon(rsparams.shards, rsparams.parity);
 
+      /* istanbul ignore if */
       if (size > BUFFER.kMaxLength) {
         return next(new Error(
           `File size exceeds max supported (${bytes(BUFFER.kMaxLength)})`
@@ -759,8 +779,7 @@ class Bridge {
           (err, result) => {
             if (err) {
               this.node.logger.warn(err.message);
-              buffer.fill(0, shard.size * i, (shard.size * i) + shard.size);
-              targets |= (1 &lt;&lt; i);
+              updateRecovery(shard, i);
               return done();
             }
 
@@ -769,6 +788,7 @@ class Bridge {
         );
       }, () => {
         assembleShards(object, size, rs, err => {
+          /* istanbul ignore if */
           if (err) {
             return next(err);
           }
@@ -785,7 +805,7 @@ class Bridge {
             'Content-Length': object.size,
             'Transfer-Encoding': ''
           });
-          decipher.pipe(slice(0, object.size)).pipe(res);
+          decipher.pipe(slice(0, object.size - rsparams.padding)).pipe(res);
           decipher.end(buffer);
         })
       });
@@ -804,6 +824,7 @@ class Bridge {
     let now = Date.now();
 
     this.objects.get(uuid, (err, object) => {
+      /* istanbul ignore if */
       if (err) {
         return next(err);
       }
@@ -820,6 +841,7 @@ class Bridge {
                                          () => done());
       }, () => {
         this.objects.remove(uuid, (err) => {
+          /* istanbul ignore if */
           if (err) {
             return next(err);
           }
@@ -886,7 +908,7 @@ module.exports = Bridge;
 	</span>
 
 <span class="jsdoc-message">
-	Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a>
+	Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.3</a>
 	
 	using the <a href="https://github.com/docstrap/docstrap">DocStrap template</a>.
 </span>
