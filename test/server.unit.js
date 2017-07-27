@@ -169,6 +169,32 @@ describe('@class Server', function() {
       server.upload(req, res);
     });
 
+    it('should respond with 500 if shard cannot write', function(done) {
+      const server = new Server({
+        contracts,
+        identity,
+        shards: {
+          createWriteStream: sinon.stub().callsArgWith(1, new Error('Failed'))
+        }
+      });
+      const [req, res] = createMocks({
+        method: 'POST',
+        path: `/shards/${hash}`,
+        query: {
+          token: 'token'
+        },
+        params: {
+          hash: hash
+        }
+      });
+      res.on('end', () => {
+        expect(res.statusCode).to.equal(500);
+        done();
+      });
+      server.accept('token', hash, ['identity', { xpub: 'xpub' }]);
+      server.upload(req, res);
+    });
+
     it('should respond with 400 if size exceeds expected', function(done) {
       const shards = {
         createWriteStream: function(key, callback) {
