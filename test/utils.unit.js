@@ -312,6 +312,7 @@ describe('@module utils', function() {
       let params2 = utils.getErasureParameters(32 * (1024 * 1024));
       let params3 = utils.getErasureParameters(128 * (1024 * 1024));
       let params4 = utils.getErasureParameters(512 * (1024 * 1024));
+      let params5 = utils.getErasureParameters(100000001);
       expect(params1.shards).to.equal(2);
       expect(params1.parity).to.equal(1);
       expect(params1.size).to.equal(4194304);
@@ -324,6 +325,10 @@ describe('@module utils', function() {
       expect(params4.shards).to.equal(8);
       expect(params4.parity).to.equal(4);
       expect(params4.size).to.equal(67108864);
+      expect(params5.shards).to.equal(8);
+      expect(params5.parity).to.equal(4);
+      expect(params5.size).to.equal(12500001);
+      expect(params5.padding).to.equal(7);
     });
 
   });
