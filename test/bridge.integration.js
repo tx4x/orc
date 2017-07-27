@@ -54,11 +54,9 @@ describe('@class Bridge (integration)', function() {
   });
   let port = 0;
   let shards = [];
-  let createUploader = null;
-  let createDownloader = null
 
   before((done) => {
-    createUploader = sandbox.stub(utils, 'createShardUploader', () => {
+    sandbox.stub(utils, 'createShardUploader', () => {
       let uploader = new stream.Transform({
         write: function(d, e, cb) {
           shards.push(d);
@@ -77,7 +75,7 @@ describe('@class Bridge (integration)', function() {
       });
       return uploader;
     });
-    createDownloader = sandbox.stub(utils, 'createShardDownloader', () => {
+    sandbox.stub(utils, 'createShardDownloader', () => {
       let done = false;
       let buf = shards.shift();
       let downloader = new stream.Readable({

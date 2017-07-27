@@ -321,10 +321,9 @@ describe('@module utils', function() {
       expect(params3.shards).to.equal(8);
       expect(params3.parity).to.equal(4);
       expect(params3.size).to.equal(16777216);
-      expect(params4.shards).to.equal(16);
-      expect(params4.parity).to.equal(8);
-      expect(params4.size).to.equal(33554432);
-
+      expect(params4.shards).to.equal(8);
+      expect(params4.parity).to.equal(4);
+      expect(params4.size).to.equal(67108864);
     });
 
   });
