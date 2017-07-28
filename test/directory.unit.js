@@ -20,13 +20,13 @@ describe('@class Directory', function() {
   before((done) => {
     directory = new Directory({}, { capacityCache });
     directory.listen(0);
-    capacityCache.set('{identity}', {
+    capacityCache.set('{identity 2}', {
       capacity: {
         available: 1000,
         allocated: 2000
       },
       service: [
-        '{identity}',
+        '{identity 2}',
         {
           hostname: 'test.onion',
           port: 443,
@@ -35,7 +35,26 @@ describe('@class Directory', function() {
           index: 0,
           agent: 'orc-test/linux'
         }
-      ]
+      ],
+      timestamp: Date.now() - 1000
+    });
+    capacityCache.set('{identity 1}', {
+      capacity: {
+        available: 1000,
+        allocated: 2000
+      },
+      service: [
+        '{identity 1}',
+        {
+          hostname: 'test.onion',
+          port: 443,
+          protocol: 'https:',
+          xpub: '{xpubkey}',
+          index: 0,
+          agent: 'orc-test/linux'
+        }
+      ],
+      timestamp: Date.now()
     }, done);
   });
 
@@ -48,7 +67,7 @@ describe('@class Directory', function() {
         data = JSON.parse(data)[0];
         expect(data.capacity.allocated).to.equal(2000);
         expect(data.capacity.available).to.equal(1000);
-        expect(data.service[0]).to.equal('{identity}');
+        expect(data.service[0]).to.equal('{identity 1}');
         expect(data.service[1].hostname).to.equal('test.onion');
         expect(data.service[1].port).to.equal(443);
         expect(data.service[1].protocol).to.equal('https:');
