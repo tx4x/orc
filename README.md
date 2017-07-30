@@ -28,6 +28,9 @@ Run the ORC container and mount the data directory.
 docker run -v ~/.config/orc:/root/.config/orc -t orcproject/orc:latest
 ```
 
+> If running Docker for Windows, use the UNC formatted path: 
+> `\\machine\driveletter\.config\orc:/root/.config/orc`.
+
 Modify the created configuration at `~/.config/orc/config` as desired (see 
 the {@tutorial config}) and restart the container for the changes to take 
 effect. You might wish to expose the ports defined for `ControlPort`, 
