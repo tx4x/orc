@@ -66,6 +66,13 @@ module.exports = {
     '03020202'
   ],
 
+  // Directory Profile
+  DirectoryListenTopics: [
+    '01020202',
+    '02020202',
+    '03020202'
+  ],
+
   CapacityCachePath: join(datadir, 'capacity.cache'),
 
   // Local Bridge
