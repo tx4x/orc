@@ -236,7 +236,6 @@ describe('@class RenterProfile', function() {
 
   it('should subscribe to capacity announcements and cache', function(done) {
     let info = sinon.stub();
-    let clock = sinon.useFakeTimers('setInterval');
     let rs = new ReadableStream({
       read: () => null,
       objectMode: true
@@ -257,10 +256,8 @@ describe('@class RenterProfile', function() {
           expect(val.capacity.available).to.equal(1000);
           expect(val.contact[0]).to.equal('{identity}');
           expect(val.contact[1].hostname).to.equal('test.onion');
-          clock.tick(ms('30M'));
-          clock.restore();
-        },
-        compact: () => done()
+          done();
+        }
       }
     }, {
       RenterListenTopics: ['1', '2', '3']
@@ -287,7 +284,6 @@ describe('@class DirectoryProfile', function() {
 
   it('should subscribe to capacity announcements and cache', function(done) {
     let info = sinon.stub();
-    let clock = sinon.useFakeTimers('setInterval');
     let rs = new ReadableStream({
       read: () => null,
       objectMode: true
@@ -308,10 +304,8 @@ describe('@class DirectoryProfile', function() {
           expect(val.capacity.available).to.equal(1000);
           expect(val.contact[0]).to.equal('{identity}');
           expect(val.contact[1].hostname).to.equal('test.onion');
-          clock.tick(ms('35M'));
-          clock.restore();
-        },
-        compact: () => done()
+          done();
+        }
       }
     }, {
       DirectoryListenTopics: ['1', '2', '3']

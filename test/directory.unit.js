@@ -25,7 +25,7 @@ describe('@class Directory', function() {
         available: 1000,
         allocated: 2000
       },
-      service: [
+      contact: [
         '{identity 2}',
         {
           hostname: 'test.onion',
@@ -43,7 +43,7 @@ describe('@class Directory', function() {
         available: 1000,
         allocated: 2000
       },
-      service: [
+      contact: [
         '{identity 1}',
         {
           hostname: 'test.onion',
@@ -67,13 +67,13 @@ describe('@class Directory', function() {
         data = JSON.parse(data)[0];
         expect(data.capacity.allocated).to.equal(2000);
         expect(data.capacity.available).to.equal(1000);
-        expect(data.service[0]).to.equal('{identity 1}');
-        expect(data.service[1].hostname).to.equal('test.onion');
-        expect(data.service[1].port).to.equal(443);
-        expect(data.service[1].protocol).to.equal('https:');
-        expect(data.service[1].xpub).to.equal('{xpubkey}');
-        expect(data.service[1].index).to.equal(0);
-        expect(data.service[1].agent).to.equal('orc-test/linux');
+        expect(data.contact[0]).to.equal('{identity 1}');
+        expect(data.contact[1].hostname).to.equal('test.onion');
+        expect(data.contact[1].port).to.equal(443);
+        expect(data.contact[1].protocol).to.equal('https:');
+        expect(data.contact[1].xpub).to.equal('{xpubkey}');
+        expect(data.contact[1].index).to.equal(0);
+        expect(data.contact[1].agent).to.equal('orc-test/linux');
         done();
       });
     });
