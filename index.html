@@ -117,7 +117,11 @@ the discussion in <code>#orc</code> on our <a href="https://matrix.counterpointh
 <h3>Quick Start</h3><p>Pull the <a href="https://hub.docker.com/r/orcproject/orc/">image from Docker Hub</a>.</p>
 <pre class="prettyprint source"><code>docker pull orcproject/orc</code></pre><p>Create a data directory on the host.</p>
 <pre class="prettyprint source"><code>mkdir ~/.config/orc</code></pre><p>Run the ORC container and mount the data directory.</p>
-<pre class="prettyprint source"><code>docker run -v ~/.config/orc:/root/.config/orc -t orcproject/orc:latest</code></pre><p>Modify the created configuration at <code>~/.config/orc/config</code> as desired (see 
+<pre class="prettyprint source"><code>docker run -v ~/.config/orc:/root/.config/orc -t orcproject/orc:latest</code></pre><blockquote>
+<p>If running Docker for Windows, use the UNC formatted path: 
+<code>\\machine\driveletter\.config\orc:/root/.config/orc</code>.</p>
+</blockquote>
+<p>Modify the created configuration at <code>~/.config/orc/config</code> as desired (see 
 the <a href="tutorial-config.html">Configuration Guide</a>) and restart the container for the changes to take 
 effect. You might wish to expose the ports defined for <code>ControlPort</code>, 
 <code>BridgePort</code>, <code>DirectoryPort</code>, and <code>DashboardPort</code> to the host (and update 

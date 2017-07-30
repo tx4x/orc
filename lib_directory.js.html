@@ -96,6 +96,7 @@ const http = require('http');
 const https = require('https');
 const fs = require('fs');
 const cors = require('cors');
+const ms = require('ms');
 
 
 /**
@@ -137,17 +138,27 @@ class Directory {
    * @private
    */
   _handleRequest(req, res) {
+    let now = Date.now();
     let written = 0;
+    let results = [];
 
     cors()(req, res, () => {
       res.setHeader('Content-Type', 'application/json');
       res.write('[');
 
       this.capacity.each((obj) => {
-        delete obj._key;
-        res.write((written === 0 ? '' : ',') + JSON.stringify(obj));
-        written++;
+        results.push(obj);
       }, () => {
+        results = results.filter(r => {
+          return r.timestamp > (now - ms('24H')) &amp;&amp;
+            typeof r.contact === 'object';
+        });
+        results.sort((a, b) => b.timestamp - a.timestamp);
+        results.forEach((obj) => {
+          delete obj._key;
+          res.write((written === 0 ? '' : ',') + JSON.stringify(obj));
+          written++;
+        });
         res.write(']');
         res.end();
       }, true);
