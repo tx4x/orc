@@ -40,9 +40,9 @@ announcements from the network. See the protocol specification for more
 details. It is mostly reccommended to leave these at their default values.
 
 ```
-RenterListenTopics[] = 01020202
-RenterListenTopics[] = 02020202
-RenterListenTopics[] = 03020202
+DirectoryListenTopics[] = 01020202
+DirectoryListenTopics[] = 02020202
+DirectoryListenTopics[] = 03020202
 ```
 
 ### Configure Directory API
