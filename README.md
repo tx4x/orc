@@ -80,8 +80,7 @@ then boots up the ORC container. Happy hacking!
 ### License
 
 ORC - Distributed Anonymous Cloud  
-Copyright (C) 2017  Gordon Hall  
-Copyright (C) 2016  Storj Labs, Inc
+Copyright (C) 2017  Counterpoint Hackerspace, Ltd.  
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published
