@@ -93,6 +93,9 @@ module.exports.Bridge = require('./lib/bridge');
 /** {@link Directory} */
 module.exports.Directory = require('./lib/directory');
 
+/** {@link Database} */
+module.exports.Database = require('./lib/database');
+
 /** {@link module:orc/constants} */
 module.exports.constants = require('./lib/constants');
 
