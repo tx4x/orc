@@ -253,27 +253,6 @@ function join() {
   });
 }
 
-// Configure dashboard and check enabled
-if (parseInt(config.DashboardEnabled)) {
-  const dashboard = new orc.Dashboard({
-    logger,
-    enableSSL: parseInt(config.DashboardUseSSL),
-    serviceKeyPath: config.DashboardServiceKeyPath,
-    certificatePath: config.DashboardCertificatePath,
-    authorityChains: config.DashboardAuthorityChains
-  });
-
-  dashboard.listen(
-    parseInt(config.DashboardPort),
-    config.DashboardHostname,
-    () => {
-      logger.info(
-        `gui listening on ${config.DashboardHostname}:${config.DashboardPort}`
-      );
-    }
-  );
-}
-
 if (parseInt(config.BridgeEnabled)) {
   let opts = {
     store: config.BridgeMetaStoragePath,

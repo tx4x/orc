@@ -21,8 +21,9 @@ const { join } = require('path');
 /* istanbul ignore next */
 module.exports = function(config = {}) {
   /* eslint max-statements: [2, 18] */
-  const cport = config.ControlPort || require('./bin/_config').ControlPort;
-  const caddr = config.ControlPort || require('./bin/_config').ControlHostname;
+  const defaults = require('./bin/_config');
+  const cport = config.ControlPort || defaults.ControlPort;
+  const caddr = config.ControlHostname || defaults.ControlHostname;
   const controller = new module.exports.control.Client();
 
   let envs = {};
@@ -97,9 +98,6 @@ module.exports.constants = require('./lib/constants');
 
 /** {@link module:orc/profiles} */
 module.exports.profiles = require('./lib/profiles');
-
-/** {@link Dashboard} */
-module.exports.Dashboard = require('./lib/dashboard');
 
 /** {@link module:orc/utils} */
 module.exports.utils = require('./lib/utils');
