@@ -36,7 +36,7 @@ program.version(`
 `);
 
 program.description(`
-  Copyright (c) 2017 Gordon Hall
+  Copyright (c) 2017 Counterpoint Hackerspace, Ltd
   Licensed under the GNU Affero General Public License Version 3
 `);
 
@@ -248,7 +248,8 @@ function join() {
         `(https://${entry[1].hostname}:${entry[1].port})`
       );
       logger.info(`discovered ${node.router.size} peers from seed`);
-      profiles();
+      orc.profiles.farmer(node, config).init();
+      orc.profiles.renter(node, config).init();
     }
   });
 }
@@ -298,21 +299,6 @@ if (parseInt(config.DirectoryEnabled)) {
     `${config.DirectoryHostname}:${config.DirectoryPort}`
   );
   directory.listen(parseInt(config.DirectoryPort), config.DirectoryHostname);
-}
-
-function profiles() {
-  if (config.ProfilesEnabled.length === 0) {
-    logger.warn('no profiles are enabled, you are only a relay');
-  }
-
-  config.ProfilesEnabled.forEach((profile) => {
-    if (!orc.profiles[profile]) {
-      logger.error(`failed to apply invalid profile "${profile}"`);
-    } else {
-      logger.info(`initializing ${profile} profile routines`);
-      orc.profiles[profile](node, config);
-    }
-  });
 }
 
 // Bind to listening port and join the network

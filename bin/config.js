@@ -56,18 +56,8 @@ module.exports = {
   // Onion Service
   OnionServicePrivateKeyPath: join(datadir, 'onion_key'),
 
-  // Node Profiles
-  ProfilesEnabled: ['renter', 'farmer'],
-
   // Renter Profile
   RenterListenTopics: [
-    '01020202',
-    '02020202',
-    '03020202'
-  ],
-
-  // Directory Profile
-  DirectoryListenTopics: [
     '01020202',
     '02020202',
     '03020202'
