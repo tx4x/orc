@@ -68,10 +68,22 @@ if (!fs.existsSync(config.TransportServiceKeyPath)) {
   fs.writeFileSync(config.TransportCertificatePath, cert);
 }
 
-// Generate self-signed ssl certificate if it does not exist
+// Generate onion service key if it does not exist
 if (!fs.existsSync(config.OnionServicePrivateKeyPath)) {
   let key = orctool('generate-onion');
   fs.writeFileSync(config.OnionServicePrivateKeyPath, key);
+}
+
+// Generate onion service key if it does not exist
+if (!fs.existsSync(config.BridgeOnionServicePrivateKeyPath)) {
+  let key = orctool('generate-onion');
+  fs.writeFileSync(config.BridgeOnionServicePrivateKeyPath, key);
+}
+
+// Generate onion service key if it does not exist
+if (!fs.existsSync(config.DirectoryOnionServicePrivateKeyPath)) {
+  let key = orctool('generate-onion');
+  fs.writeFileSync(config.DirectoryOnionServicePrivateKeyPath, key);
 }
 
 // Initialize private extended key
@@ -81,6 +93,7 @@ const parentkey = hdkey.fromExtendedKey(xprivkey)
 const childkey = parentkey.deriveChild(parseInt(config.ChildDerivationIndex));
 
 // Initialize the contract storage database
+// TODO Replace with database adapter
 const contracts = levelup(
   path.join(config.ContractStorageBaseDir, 'contracts.db'),
   { valueEncoding: 'json' }
@@ -97,6 +110,7 @@ const shards = new orc.Shards(path.join(config.ShardStorageBaseDir, 'shards'), {
 });
 
 // Initialize the directory storage database
+// TODO Replace with database adapter
 const storage = levelup(
   path.join(config.DirectoryStorageBaseDir, 'directory.db'),
   { valueEncoding: 'json' }
@@ -136,6 +150,7 @@ const node = new orc.Node({
   keyDerivationIndex: parseInt(config.ChildDerivationIndex)
 });
 
+// TODO Replace with database adapter
 node.capacity = tiny(config.CapacityCachePath);
 
 // Handle any fatal errors
@@ -240,6 +255,7 @@ function join() {
     });
   }, (err, result) => {
     if (!result) {
+      // TODO Load contacts from database adapter
       logger.error('failed to join network, will retry in 1 minute');
       retry = setTimeout(() => join(), ms('1m'));
     } else {
@@ -256,15 +272,16 @@ function join() {
 
 if (parseInt(config.BridgeEnabled)) {
   let opts = {
-    store: config.BridgeMetaStoragePath,
+    store: config.BridgeMetaStoragePath, // TODO Remove
     stage: config.BridgeTempStagingBaseDir,
     auditInterval: ms(config.BridgeShardAuditInterval),
-    capacityCache: node.capacity,
+    capacityCache: node.capacity, // TODO Replace with database adapter
     enableSSL: parseInt(config.BridgeUseSSL),
     serviceKeyPath: config.BridgeServiceKeyPath,
     certificatePath: config.BridgeCertificatePath,
     authorityChains: config.BridgeAuthorityChains,
     control
+    // TODO Add onion service key
   };
 
   if (parseInt(config.BridgeAuthenticationEnabled)) {
@@ -285,11 +302,12 @@ if (parseInt(config.BridgeEnabled)) {
 
 if (parseInt(config.DirectoryEnabled)) {
   let opts = {
-    capacityCache: node.capacity,
+    capacityCache: node.capacity, // TODO Replace with database adapter
     enableSSL: !!parseInt(config.DirectoryUseSSL),
     serviceKeyPath: config.DirectoryServiceKeyPath,
     certificatePath: config.DirectoryCertificatePath,
     authorityChains: config.DirectoryAuthorityChains
+    // TODO Add onion service key
   };
 
   const directory = new orc.Directory(node, opts);

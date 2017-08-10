@@ -15,7 +15,7 @@ module.exports = {
   ChildDerivationIndex: '0',
 
   // Contract Storage
-  ContractStorageBaseDir: datadir,
+  ContractStorageBaseDir: datadir, // TODO Remove
 
   // Shard Database
   ShardStorageBaseDir: datadir,
@@ -61,31 +61,33 @@ module.exports = {
     '01020202',
     '02020202',
     '03020202'
-  ],
+  ], // TODO Remove
 
-  CapacityCachePath: join(datadir, 'capacity.cache'),
+  CapacityCachePath: join(datadir, 'capacity.cache'), // TODO Remove
 
   // Local Bridge
   BridgeEnabled: '1',
-  BridgeStorageBaseDir: datadir,
+  BridgeStorageBaseDir: datadir, // TODO Remove
   BridgeHostname: '127.0.0.1',
   BridgePort: '4445',
   BridgeUseSSL: '1',
+  BridgeOnionServicePrivateKeyPath: join(datadir, 'bridge_key'),
   BridgeServiceKeyPath: join(datadir, 'service_key.pem'),
   BridgeCertificatePath: join(datadir, 'certificate.pem'),
   BridgeAuthorityChains: [],
   BridgeAuthenticationEnabled: '1',
   BridgeAuthenticationUser: 'orc',
   BridgeAuthenticationPassword: randomBytes(16).toString('hex'),
-  BridgeMetaStoragePath: join(datadir, 'objects.meta'),
+  BridgeMetaStoragePath: join(datadir, 'objects.meta'), // TODO Remove
   BridgeTempStagingBaseDir: join(tmpdir(), 'orc.tmp'),
 
   // Directory Server
   DirectoryEnabled: '1',
-  DirectoryStorageBaseDir: datadir,
+  DirectoryStorageBaseDir: datadir, // TODO Remove
   DirectoryPort: '4446',
   DirectoryHostname: '127.0.0.1',
   DirectoryUseSSL: '1',
+  DirectoryOnionServicePrivateKeyPath: join(datadir, 'directory_key'),
   DirectoryServiceKeyPath: join(datadir, 'service_key.pem'),
   DirectoryCertificatePath: join(datadir, 'certificate.pem'),
   DirectoryAuthorityChains: [],
@@ -95,7 +97,7 @@ module.exports = {
     '01020202',
     '02020202',
     '03020202'
-  ],
+  ], // TODO Remove
   FarmerShardReaperInterval: '24HR',
   FarmerAnnounceInterval: '15M'
 
