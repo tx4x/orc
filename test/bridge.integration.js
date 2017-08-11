@@ -5,11 +5,8 @@ const { tmpdir } = require('os');
 const crypto = require('crypto');
 const { expect } = require('chai');
 const sinon = require('sinon');
-const levelup = require('levelup');
-const memdown = require('memdown');
 const mkdirp = require('mkdirp');
 const http = require('http');
-const Tiny = require('tiny');
 const Bridge = require('../lib/bridge');
 const Node = require('../lib/node');
 const Shards = require('../lib/shards');
@@ -26,9 +23,6 @@ describe('@class Bridge (integration)', function() {
 
   let sandbox = sinon.sandbox.create();
   let clock = sandbox.useFakeTimers('setTimeout', 'setInterval');
-  let capacityCache = new Tiny(
-    path.join(tmpdir(), crypto.randomBytes(6).toString('hex'))
-  );
   let shardsdir = path.join(tmpdir(), crypto.randomBytes(6).toString('hex'));
   let file = crypto.randomBytes(3000);
   let id = null;
@@ -40,12 +34,10 @@ describe('@class Bridge (integration)', function() {
       name: 'bridge/integration/logger',
       level: 'fatal'
     }),
-    contracts: levelup('bridge/integration/contracts', { db: memdown }),
     shards: new Shards(shardsdir),
-    storage: levelup('bridge/integration/storage', { db: memdown })
+    database: {}
   });
   let bridge = new Bridge(node, {
-    capacityCache,
     auth: {
       user: 'orctest',
       pass: 'orctest'

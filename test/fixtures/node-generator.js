@@ -6,8 +6,6 @@ const async = require('async');
 const pem = require('pem');
 const path = require('path');
 const bunyan = require('bunyan');
-const levelup = require('levelup');
-const memdown = require('memdown');
 const orc = require('../..');
 const mkdirp = require('mkdirp');
 
@@ -29,11 +27,6 @@ module.exports = function(numNodes, callback) {
     const logger = bunyan.createLogger({
       levels: ['fatal'],
       name: 'node-kademlia'
-    });
-    const storage = levelup('node-kademlia', { db: memdown });
-    const contracts = levelup('node-orc', {
-      db: memdown,
-      valueEncoding: 'json'
     });
     const contact = {
       hostname: 'localhost',
