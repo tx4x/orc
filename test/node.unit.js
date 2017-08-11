@@ -3,8 +3,6 @@
 const { EventEmitter } = require('events');
 const { expect } = require('chai');
 const sinon = require('sinon');
-const levelup = require('levelup');
-const memdown = require('memdown');
 const { KademliaNode } = require('kad');
 const { utils: keyutils } = require('kad-spartacus');
 const utils = require('../lib/utils');

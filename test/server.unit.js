@@ -4,8 +4,6 @@ const { expect } = require('chai');
 const sinon = require('sinon');
 const createMocks = require('./fixtures/http-mocks');
 const stream = require('stream');
-const levelup = require('levelup');
-const memdown = require('memdown');
 const { randomBytes } = require('crypto');
 const constants = require('../lib/constants');
 const utils = require('../lib/utils');
@@ -113,17 +111,10 @@ describe('@class Server', function() {
     const shard = Buffer.from('test shard');
     const hash = utils.rmd160sha256(shard).toString('hex');
     const sandbox = sinon.sandbox.create();
-    const contracts = levelup('', {
-      db: memdown,
-      valueEncoding: 'json'
-    });
     const identity = randomBytes(20);
 
     before((done) => {
-      contracts.put(`${hash}:xpub`, {
-        data_hash: hash,
-        data_size: shard.length
-      }, done);
+      done();
     });
 
     after(() => {
