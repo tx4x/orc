@@ -13,38 +13,6 @@ If you wish to run your own, this guide will show you how to properly configure
 your node. This will only cover configuration specific to running a directory, 
 so for more information be sure to check out the {@tutorial config}.
 
-### Set Location for Directory Data
-
-Set the base directory (parent) for where the directory.db folder will be 
-placed. The directory.db holds key-value pairs for the distributed hash 
-table, which serve various purposes such as reputation data on other peers.
-
-```
-DirectoryStorageBaseDir = /home/bookchin/.config/orc
-DirectoryCapacityCachePath = /home/bookchin/.config/orc/capacity.cache
-```
-
-### Enable the Directory Profile
-
-Directory profiles collect network statistics and expose a clearnet API for 
-fetching that data.
-
-```
-ProfilesEnabled[] = directory
-```
-
-### Listen for Publication Topics
-
-Topic codes used when running a renter profile for listening for capacity 
-announcements from the network. See the protocol specification for more 
-details. It is mostly reccommended to leave these at their default values.
-
-```
-DirectoryListenTopics[] = 01020202
-DirectoryListenTopics[] = 02020202
-DirectoryListenTopics[] = 03020202
-```
-
 ### Configure Directory API
 
 When the directory profile is enabled, use the supplied hostname, port, and 

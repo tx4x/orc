@@ -91,6 +91,8 @@ const xprivkey = fs.readFileSync(config.PrivateExtendedKeyPath).toString();
 const parentkey = hdkey.fromExtendedKey(xprivkey)
                     .derive(orc.constants.HD_KEY_DERIVATION_PATH);
 const childkey = parentkey.deriveChild(parseInt(config.ChildDerivationIndex));
+const identity = spartacus.utils.toPublicKeyHash(childkey.publicKey)
+                   .toString('hex');
 
 // Initialize the contract storage database
 // TODO Replace with database adapter
@@ -105,21 +107,16 @@ if (!fs.existsSync(path.join(config.ShardStorageBaseDir, 'shards'))) {
 }
 
 // Initialize the shard storage database
-const shards = new orc.Shards(path.join(config.ShardStorageBaseDir, 'shards'), {
-  maxSpaceAllocated: bytes.parse(config.ShardStorageMaxAllocation)
-});
-
-// Initialize the directory storage database
-// TODO Replace with database adapter
-const storage = levelup(
-  path.join(config.DirectoryStorageBaseDir, 'directory.db'),
-  { valueEncoding: 'json' }
+const shards = new orc.Shards(
+  path.join(config.ShardStorageBaseDir, 'shards'),
+  { maxSpaceAllocated: bytes.parse(config.ShardStorageMaxAllocation) }
 );
 
+// Initialize the storage database
+const database = new orc.Database(`mongodb://localhost:27017/orc-${identity}`);
+
 // Initialize logging
-const logger = bunyan.createLogger({
-  name: spartacus.utils.toPublicKeyHash(childkey.publicKey).toString('hex')
-});
+const logger = bunyan.createLogger({ name: identity });
 
 // Initialize transport adapter with SSL
 const transport = new orc.Transport({
@@ -139,19 +136,14 @@ const contact = {
 
 // Initialize protocol implementation
 const node = new orc.Node({
-  contracts,
+  database,
   shards,
-  storage,
   logger,
   transport,
   contact,
-  claims: config.AllowDirectStorageClaims,
   privateExtendedKey: xprivkey,
   keyDerivationIndex: parseInt(config.ChildDerivationIndex)
 });
-
-// TODO Replace with database adapter
-node.capacity = tiny(config.CapacityCachePath);
 
 // Handle any fatal errors
 node.on('error', (err) => {
@@ -234,6 +226,33 @@ if (!!parseInt(config.VerboseLoggingEnabled)) {
 // Print super dank orc ascii
 console.info(fs.readFileSync(path.join(__dirname, '../motd')).toString());
 
+function announceCapacity(callback = () => null) {
+  node.shards.size((err, data) => {
+    /* istanbul ignore if */
+    if (err) {
+      return this.node.logger.warn('failed to measure capacity');
+    }
+
+    node.publishCapacityAnnouncement(data, (err) => {
+      /* istanbul ignore if */
+      if (err) {
+        node.logger.error(err.message);
+        node.logger.warn('failed to publish capacity announcement');
+      } else {
+        node.logger.info('published capacity announcement ' +
+          `${data.available}/${data.allocated}`
+        );
+      }
+      callback();
+    });
+  });
+}
+
+function reapExpiredShards(callback = () => null) {
+  // TODO: Reaping should abandon shards that have not been audited within
+  // TODO: the last 10-20 scoring intervals
+}
+
 let retry = null;
 
 function join() {
@@ -255,7 +274,6 @@ function join() {
     });
   }, (err, result) => {
     if (!result) {
-      // TODO Load contacts from database adapter
       logger.error('failed to join network, will retry in 1 minute');
       retry = setTimeout(() => join(), ms('1m'));
     } else {
@@ -264,24 +282,31 @@ function join() {
         `(https://${entry[1].hostname}:${entry[1].port})`
       );
       logger.info(`discovered ${node.router.size} peers from seed`);
-      orc.profiles.farmer(node, config).init();
-      orc.profiles.renter(node, config).init();
+      node.logger.info('subscribing to network capacity announcements');
+      node.subscribeCapacityAnnouncement((err, rs) => {
+        rs.on('data', ([capacity, contact]) => {
+          let timestamp = Date.now();
+          this.node.capacity.set(contact[0], { capacity, contact, timestamp });
+        });
+      });
+      announceCapacity();
+      setInterval(() => announceCapacity(),
+                  ms(config.CapacityAnnounceInterval));
+      setInterval(() => reapExpiredShards(), ms(config.ShardReaperInterval));
     }
   });
 }
 
 if (parseInt(config.BridgeEnabled)) {
   let opts = {
-    store: config.BridgeMetaStoragePath, // TODO Remove
     stage: config.BridgeTempStagingBaseDir,
     auditInterval: ms(config.BridgeShardAuditInterval),
-    capacityCache: node.capacity, // TODO Replace with database adapter
+    database,
     enableSSL: parseInt(config.BridgeUseSSL),
     serviceKeyPath: config.BridgeServiceKeyPath,
     certificatePath: config.BridgeCertificatePath,
     authorityChains: config.BridgeAuthorityChains,
     control
-    // TODO Add onion service key
   };
 
   if (parseInt(config.BridgeAuthenticationEnabled)) {
@@ -302,12 +327,11 @@ if (parseInt(config.BridgeEnabled)) {
 
 if (parseInt(config.DirectoryEnabled)) {
   let opts = {
-    capacityCache: node.capacity, // TODO Replace with database adapter
+    database,
     enableSSL: !!parseInt(config.DirectoryUseSSL),
     serviceKeyPath: config.DirectoryServiceKeyPath,
     certificatePath: config.DirectoryCertificatePath,
     authorityChains: config.DirectoryAuthorityChains
-    // TODO Add onion service key
   };
 
   const directory = new orc.Directory(node, opts);

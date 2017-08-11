@@ -9,10 +9,8 @@ const { utils: keyutils } = require('kad-spartacus');
 const { Readable, Transform } = require('stream');
 const { EventEmitter } = require('events');
 const utils = require('../lib/utils');
-const OfferStream = require('../lib/offers');
 const AuditStream = require('../lib/audit');
 const ProofStream = require('../lib/proof');
-const Contract = require('../lib/contract');
 const Rules = require('../lib/rules');
 
 
@@ -39,87 +37,6 @@ describe('@class Rules', function() {
     contract._renterPrivateKey = renterHdKey.privateKey;
     return contract;
   }
-
-  describe('@method offer', function() {
-
-    it('should callback error if descriptor invalid', function(done) {
-      const offers = new Map();
-      const rules = new Rules({ offers });
-      const request = {
-        params: [
-          {
-            invalid: 'contract'
-          }
-        ],
-        contact: ['identity', {}]
-      };
-      const response = {};
-      rules.offer(request, response, (err) => {
-        expect(err.message).to.equal('Invalid shard descriptor');
-        done();
-      });
-    });
-
-    it('should callback error if no offer stream exists', function(done) {
-      const contract = createValidContract();
-      const offers = new Map();
-      const rules = new Rules({ offers });
-      const request = {
-        params: [contract.toObject()],
-        contact: ['identity', {}]
-      };
-      const response = {};
-      rules.offer(request, response, (err) => {
-        expect(err.message).to.equal('Offers for descriptor are closed');
-        done();
-      });
-    });
-
-    it('should callback error if offer rejected', function(done) {
-      const contract = createValidContract();
-      const offers = new Map();
-      const oStream = new OfferStream(contract);
-      oStream.once('data', ({ id }) => {
-        oStream.resolvers.get(id)(new Error('NOPE'))
-      });
-      offers.set(contract.get('data_hash'), oStream);
-      const rules = new Rules({ offers });
-      const request = {
-        params: [contract.toObject()],
-        contact: ['identity', {}]
-      };
-      const response = {};
-      rules.offer(request, response, (err) => {
-        expect(err.message).to.equal('NOPE');
-        done();
-      });
-    });
-
-    it('should respond with completed contract if accepted', function(done) {
-      const contract = createValidContract();
-      const offers = new Map();
-      const oStream = new OfferStream(contract);
-      oStream.once('data', ({ contract, id }) => {
-        oStream.resolvers.get(id)(null, contract);
-      });
-      offers.set(contract.get('data_hash'), oStream);
-      const rules = new Rules({ offers });
-      const request = {
-        params: [contract.toObject()],
-        contact: ['identity', {}]
-      };
-      const response = {
-        send: ([result]) => {
-          expect(JSON.stringify(result)).to.equal(
-            JSON.stringify(contract.toObject())
-          );
-          done();
-        }
-      };
-      rules.offer(request, response, done);
-    });
-
-  });
 
   describe('@method audit', function() {
 
@@ -638,46 +555,6 @@ describe('@class Rules', function() {
         }
       };
       rules.retrieve(request, response, done);
-    });
-
-  });
-
-  describe('@method probe', function() {
-
-    it('should callback error if ping fails', function(done) {
-      const rules = new Rules({
-        ping: sinon.stub().callsArgWith(1, new Error('Timed out'))
-      });
-      const request = {
-        contact: [
-          'identity',
-          { xpub: 'xpubkey' }
-        ]
-      };
-      const response = {};
-      rules.probe(request, response, (err) => {
-        expect(err.message).to.equal('Failed to reach probe originator');
-        done();
-      });
-    });
-
-    it('should callback empty if ping succeeds', function(done) {
-      const rules = new Rules({
-        ping: sinon.stub().callsArgWith(1, null, [])
-      });
-      const request = {
-        contact: [
-          'identity',
-          { xpub: 'xpubkey' }
-        ]
-      };
-      const response = {
-        send: (params) => {
-          expect(params).to.have.lengthOf(0);
-          done();
-        }
-      };
-      rules.probe(request, response, done)
     });
 
   });

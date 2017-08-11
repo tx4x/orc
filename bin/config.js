@@ -20,9 +20,8 @@ module.exports = {
   // Shard Database
   ShardStorageBaseDir: datadir,
   ShardStorageMaxAllocation: '5GB',
-
-  // Trusted Renter Nodes
-  AllowDirectStorageClaims: ['*'],
+  ShardReaperInterval: '24HR',
+  ShardCapacityAnnounceInterval: '15M'
 
   // Server SSL
   TransportServiceKeyPath: join(datadir, 'service_key.pem'),
@@ -56,18 +55,8 @@ module.exports = {
   // Onion Service
   OnionServicePrivateKeyPath: join(datadir, 'onion_key'),
 
-  // Renter Profile
-  RenterListenTopics: [
-    '01020202',
-    '02020202',
-    '03020202'
-  ], // TODO Remove
-
-  CapacityCachePath: join(datadir, 'capacity.cache'), // TODO Remove
-
   // Local Bridge
   BridgeEnabled: '1',
-  BridgeStorageBaseDir: datadir, // TODO Remove
   BridgeHostname: '127.0.0.1',
   BridgePort: '4445',
   BridgeUseSSL: '1',
@@ -83,23 +72,13 @@ module.exports = {
 
   // Directory Server
   DirectoryEnabled: '1',
-  DirectoryStorageBaseDir: datadir, // TODO Remove
   DirectoryPort: '4446',
   DirectoryHostname: '127.0.0.1',
   DirectoryUseSSL: '1',
   DirectoryOnionServicePrivateKeyPath: join(datadir, 'directory_key'),
   DirectoryServiceKeyPath: join(datadir, 'service_key.pem'),
   DirectoryCertificatePath: join(datadir, 'certificate.pem'),
-  DirectoryAuthorityChains: [],
-
-  // Farmer Profile
-  FarmerAdvertiseTopics: [
-    '01020202',
-    '02020202',
-    '03020202'
-  ], // TODO Remove
-  FarmerShardReaperInterval: '24HR',
-  FarmerAnnounceInterval: '15M'
+  DirectoryAuthorityChains: []
 
 };
 

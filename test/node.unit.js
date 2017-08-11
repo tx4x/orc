@@ -8,7 +8,6 @@ const memdown = require('memdown');
 const { KademliaNode } = require('kad');
 const { utils: keyutils } = require('kad-spartacus');
 const utils = require('../lib/utils');
-const Contract = require('../lib/contract');
 const Node = require('../lib/node');
 const proxyquire = require('proxyquire');
 
