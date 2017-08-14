@@ -12,31 +12,41 @@ const utils = require('../lib/utils');
 const AuditStream = require('../lib/audit');
 const ProofStream = require('../lib/proof');
 const Rules = require('../lib/rules');
+const getDatabase = require('./fixtures/database');
 
 
 describe('@class Rules', function() {
 
+  let database = null;
+
   function createValidContract() {
     const renterHdKey = keyutils.toHDKeyFromSeed().deriveChild(1);
     const farmerHdKey = keyutils.toHDKeyFromSeed().deriveChild(1);
-    const contract = new Contract({
-      renter_id: keyutils.toPublicKeyHash(renterHdKey.publicKey)
-                   .toString('hex'),
-      farmer_id: keyutils.toPublicKeyHash(farmerHdKey.publicKey)
-                   .toString('hex'),
-      renter_hd_key: renterHdKey.publicExtendedKey,
-      farmer_hd_key: farmerHdKey.publicExtendedKey,
-      renter_hd_index: 1,
-      farmer_hd_index: 1,
-      payment_destination: '14WNyp8paus83JoDvv2SowKb3j1cZBhJoV',
-      data_hash: crypto.createHash('rmd160').update('test').digest('hex')
+    const contract = new database.ShardContract({
+      ownerIdentity: keyutils.toPublicKeyHash(renterHdKey.publicKey)
+                       .toString('hex'),
+      providerIdentity: keyutils.toPublicKeyHash(farmerHdKey.publicKey)
+                          .toString('hex'),
+      ownerParentKey: renterHdKey.publicExtendedKey,
+      providerParentKey: farmerHdKey.publicExtendedKey,
+      ownerIndex: 1,
+      providerIndex: 1,
+      shardHash: crypto.createHash('rmd160').update('test').digest('hex'),
+      shardSize: 4
     });
-    contract.sign('renter', renterHdKey.privateKey);
-    contract.sign('farmer', farmerHdKey.privateKey);
+    contract.sign('owner', renterHdKey.privateKey);
+    contract.sign('provider', farmerHdKey.privateKey);
     contract._farmerPrivateKey = farmerHdKey.privateKey;
     contract._renterPrivateKey = renterHdKey.privateKey;
     return contract;
   }
+
+  before((done) => {
+    getDatabase((err, db) => {
+      database = db;
+      done();
+    });
+  });
 
   describe('@method audit', function() {
 
@@ -49,7 +59,7 @@ describe('@class Rules', function() {
     });
 
     it('should callback error if invalid audit batch', function(done) {
-      const rules = new Rules({});
+      const rules = new Rules({ database });
       const request = {
         params: {},
         contact: [
@@ -66,8 +76,10 @@ describe('@class Rules', function() {
 
     it('should return null if cannot load contract', function(done) {
       const rules = new Rules({
-        contracts: {
-          get: sinon.stub().callsArgWith(1, new Error('Not found'))
+        database: {
+          ShardContract: {
+            findOne: sinon.stub().callsArgWith(1, new Error('Not found'))
+          }
         }
       });
       const request = {
@@ -91,8 +103,13 @@ describe('@class Rules', function() {
 
     it('should return null if cannot load shard', function(done) {
       const rules = new Rules({
-        contracts: {
-          get: sinon.stub().callsArgWith(1, null, { data_hash: 'datahash'})
+        database: {
+          ShardContract: {
+            findOne: sinon.stub().callsArgWith(1, null, {
+              shardHash: 'datahash',
+              auditLeaves: []
+            })
+          }
         },
         shards: {
           createReadStream: sinon.stub().callsArgWith(
@@ -132,11 +149,13 @@ describe('@class Rules', function() {
         }
       });
       const rules = new Rules({
-        contracts: {
-          get: sinon.stub().callsArgWith(1, null, {
-            data_hash: 'datahash',
-            audit_leaves: auditStream.getPublicRecord()
-          })
+        database: {
+          ShardContract: {
+            findOne: sinon.stub().callsArgWith(1, null, {
+              shardHash: 'datahash',
+              auditLeaves: auditStream.getPublicRecord()
+            })
+          }
         },
         shards: {
           createReadStream: sinon.stub().callsArgWith(1, null, readStream)
@@ -170,11 +189,13 @@ describe('@class Rules', function() {
         }
       });
       const rules = new Rules({
-        contracts: {
-          get: sinon.stub().callsArgWith(1, null, {
-            data_hash: 'datahash',
-            audit_leaves: auditStream.getPublicRecord()
-          })
+        database: {
+          ShardContract: {
+            findOne: sinon.stub().callsArgWith(1, null, {
+              shardHash: 'datahash',
+              auditLeaves: auditStream.getPublicRecord()
+            })
+          }
         },
         shards: {
           createReadStream: sinon.stub().callsArgWith(1, null, readStream)
@@ -209,11 +230,7 @@ describe('@class Rules', function() {
   describe('@method consign', function() {
 
     it('should callback error if cannot load contract', function(done) {
-      const rules = new Rules({
-        contracts: {
-          get: sinon.stub().callsArgWith(1, new Error('Not found'))
-        }
-      });
+      const rules = new Rules({ database });
       const request = {
         params: ['datahash'],
         contact: [
@@ -223,40 +240,18 @@ describe('@class Rules', function() {
       };
       const response = {};
       rules.consign(request, response, (err) => {
-        expect(err.message).to.equal('Not found');
+        expect(err.message).to.equal('Contract not found');
         done();
       })
-    });
-
-    it('should callback error if contract is expired', function(done) {
-      const rules = new Rules({
-        contracts: {
-          get: sinon.stub().callsArgWith(1, null, {
-            store_end: 0
-          })
-        }
-      });
-      const request = {
-        params: ['datahash'],
-        contact: [
-          'identity',
-          { xpub: 'xpubkey' }
-        ]
-      };
-      const response = {};
-      rules.consign(request, response, (err) => {
-        expect(err.message).to.equal('Contract has expired');
-        done();
-      });
     });
 
     it('should create a token and respond with it', function(done) {
       const accept = sinon.stub();
       const rules = new Rules({
-        contracts: {
-          get: sinon.stub().callsArgWith(1, null, {
-            store_end: Infinity
-          })
+        database: {
+          ShardContract: {
+            findOne: sinon.stub().callsArgWith(1, null, createValidContract())
+          }
         },
         server: {
           accept: accept
@@ -284,11 +279,7 @@ describe('@class Rules', function() {
   describe('@method mirror', function() {
 
     it('should callback error if contract cannot load', function(done) {
-      const rules = new Rules({
-        contracts: {
-          get: sinon.stub().callsArgWith(1, new Error('Not found'))
-        }
-      });
+      const rules = new Rules({ database });
       const request = {
         params: [
           utils.rmd160sha256('shard'),
@@ -302,15 +293,17 @@ describe('@class Rules', function() {
       };
       const response = {};
       rules.mirror(request, response, (err) => {
-        expect(err.message).to.equal('Not found');
+        expect(err.message).to.equal('Contract not found');
         done();
       });
     });
 
     it('should callback error if shard stream cannot open', function(done) {
       const rules = new Rules({
-        contracts: {
-          get: sinon.stub().callsArgWith(1, null)
+        database: {
+          ShardContract: {
+            findOne: sinon.stub().callsArgWith(1, null, createValidContract())
+          }
         },
         shards: {
           createReadStream: sinon.stub().callsArgWith(1, new Error('Failed'))
@@ -354,8 +347,10 @@ describe('@class Rules', function() {
         }
       });
       const rules = new StubbedRules({
-        contracts: {
-          get: sinon.stub().callsArgWith(1, null)
+        database: {
+          ShardContract: {
+            findOne: sinon.stub().callsArgWith(1, null, createValidContract())
+          }
         },
         shards: {
           createReadStream: sinon.stub().callsArgWith(1, null, rs)
@@ -396,8 +391,10 @@ describe('@class Rules', function() {
         }
       });
       const rules = new StubbedRules({
-        contracts: {
-          get: sinon.stub().callsArgWith(1, null)
+        database: {
+          ShardContract: {
+            findOne: sinon.stub().callsArgWith(1, null, createValidContract())
+          }
         },
         shards: {
           createReadStream: sinon.stub().callsArgWith(1, null, rs)
@@ -447,8 +444,10 @@ describe('@class Rules', function() {
         }
       });
       const rules = new StubbedRules({
-        contracts: {
-          get: sinon.stub().callsArgWith(1, null)
+        database: {
+          ShardContract: {
+            findOne: sinon.stub().callsArgWith(1, null, createValidContract())
+          }
         },
         shards: {
           createReadStream: sinon.stub().callsArgWith(1, null, rs)
@@ -485,11 +484,7 @@ describe('@class Rules', function() {
   describe('@method retrieve', function() {
 
     it('should callback error if contract cannot load', function(done) {
-      const rules = new Rules({
-        contracts: {
-          get: sinon.stub().callsArgWith(1, new Error('Not found'))
-        }
-      });
+      const rules = new Rules({ database });
       const request = {
         params: ['datahash'],
         contact: [
@@ -499,15 +494,17 @@ describe('@class Rules', function() {
       };
       const response = {};
       rules.retrieve(request, response, (err) => {
-        expect(err.message).to.equal('Not found');
+        expect(err.message).to.equal('Contract not found');
         done();
       });
     });
 
     it('should callback error if shard data not found', function(done) {
       const rules = new Rules({
-        contracts: {
-          get: sinon.stub().callsArgWith(1, null, {})
+        database: {
+          ShardContract: {
+            findOne: sinon.stub().callsArgWith(1, null, createValidContract())
+          }
         },
         shards: {
           exists: sinon.stub().callsArgWith(1, null, false)
@@ -530,8 +527,10 @@ describe('@class Rules', function() {
     it('should create token and respond with it', function(done) {
       const accept = sinon.stub();
       const rules = new Rules({
-        contracts: {
-          get: sinon.stub().callsArgWith(1, null, {})
+        database: {
+          ShardContract: {
+            findOne: sinon.stub().callsArgWith(1, null, createValidContract())
+          }
         },
         shards: {
           exists: sinon.stub().callsArgWith(1, null, true)
@@ -679,30 +678,10 @@ describe('@class Rules', function() {
 
   describe('@method claim', function() {
 
-    it('should callback error if claims are disabled', function(done) {
-      const contract = createValidContract();
-      const rules = new Rules({
-        claims: []
-      });
-      const request = {
-        params: [contract.toObject()],
-        contact: [
-          'identity',
-          { xpub: 'xpubkey' }
-        ]
-      };
-      const response = {};
-      rules.claim(request, response, (err) => {
-        expect(err.message).to.equal('Currently rejecting claims');
-        done();
-      });
-    });
-
     it('should callback error if contract is invalid', function(done) {
       const contract = createValidContract();
-      contract.set('data_hash', null);
+      contract.shardHash = null;
       const rules = new Rules({
-        claims: ['*'],
         identity: randomBytes(20),
         contact: {
           xpub: 'xpub',
@@ -710,7 +689,8 @@ describe('@class Rules', function() {
         },
         spartacus: {
           privateKey: randomBytes(32)
-        }
+        },
+        database
       });
       const request = {
         params: [contract.toObject()],
@@ -727,20 +707,19 @@ describe('@class Rules', function() {
     });
 
     it('should callback error if cannot save', function(done) {
+      const save = sinon.stub(database.ShardContract.prototype, 'save')
+                     .callsArgWith(0, new Error('Failed to save'));
       const contract = createValidContract();
       const rules = new Rules({
-        claims: ['*'],
         identity: randomBytes(20),
         contact: {
-          xpub: contract.get('farmer_hd_key'),
-          index: contract.get('farmer_hd_index')
+          xpub: contract.providerParentKey,
+          index: contract.providerIndex
         },
         spartacus: {
           privateKey: contract._farmerPrivateKey
         },
-        contracts: {
-          put: sinon.stub().callsArgWith(2, new Error('Failed to save'))
-        }
+        database
       });
       const request = {
         params: [contract.toObject()],
@@ -751,6 +730,7 @@ describe('@class Rules', function() {
       };
       const response = {};
       rules.claim(request, response, (err) => {
+        save.restore();
         expect(err.message).to.equal('Failed to save');
         done();
       });
@@ -760,18 +740,15 @@ describe('@class Rules', function() {
       const contract = createValidContract();
       const accept = sinon.stub();
       const rules = new Rules({
-        claims: [contract.get('renter_hd_key')],
         identity: randomBytes(20),
         contact: {
-          xpub: contract.get('farmer_hd_key'),
-          index: contract.get('farmer_hd_index')
+          xpub: contract.providerParentKey,
+          index: contract.providerIndex
         },
         spartacus: {
           privateKey: contract._farmerPrivateKey
         },
-        contracts: {
-          put: sinon.stub().callsArg(2)
-        },
+        database,
         server: {
           accept: accept
         }
@@ -785,10 +762,10 @@ describe('@class Rules', function() {
       };
       const response = {
         send: (params) => {
-          const c = Contract.from(params[0]);
-          expect(c.isValid()).to.equal(true);
-          expect(c.isComplete()).to.equal(true);
-          expect(accept.calledWithMatch(params[1], contract.get('data_hash'),
+          const c = new database.ShardContract(params[0]);
+          expect(c.validateSync()).to.equal(undefined);
+          expect(c.isComplete).to.equal(true);
+          expect(accept.calledWithMatch(params[1], contract.shardHash,
                                         request.contact));
           done();
         }
