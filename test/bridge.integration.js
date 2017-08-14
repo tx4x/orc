@@ -129,6 +129,24 @@ describe('@class Bridge (integration)', function() {
     });
   });
 
+  it('should respond with html web app', function(done) {
+    let body = '';
+    let req = http.request({
+      auth: 'orctest:orctest',
+      hostname: 'localhost',
+      port,
+      path: '/'
+    });
+    req.on('response', (res) => {
+      res.on('data', (data) => body += data.toString());
+      res.on('end', () => {
+        expect(body.includes('<html>')).to.equal(true);
+        done();
+      });
+    });
+    req.end();
+  });
+
   it('should respond with no objects stored', function(done) {
     let body = '';
     let req = http.request({
