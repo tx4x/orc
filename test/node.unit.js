@@ -387,7 +387,7 @@ describe('@class Node', function() {
         null,
         [contract.toObject()]
       );
-      node.requestContractRenewal(peer, contract.toObject(), (err, result) => {
+      node.requestContractRenewal(peer, contract.toObject(), () => {
         expect(send.calledWithMatch('RENEW', [
           contract.toObject()
         ])).to.equal(true);

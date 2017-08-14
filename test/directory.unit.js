@@ -1,8 +1,5 @@
 'use strict';
 
-const { tmpdir } = require('os');
-const path = require('path');
-const { randomBytes } = require('crypto');
 const { expect } = require('chai');
 const Directory = require('../lib/directory');
 const http = require('http');
