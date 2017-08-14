@@ -19,7 +19,7 @@ describe('@class Rules', function() {
 
   let database = null;
 
-  function createValidContract() {
+  function createValidContract(hash) {
     const renterHdKey = keyutils.toHDKeyFromSeed().deriveChild(1);
     const farmerHdKey = keyutils.toHDKeyFromSeed().deriveChild(1);
     const contract = new database.ShardContract({
@@ -31,7 +31,8 @@ describe('@class Rules', function() {
       providerParentKey: farmerHdKey.publicExtendedKey,
       ownerIndex: 1,
       providerIndex: 1,
-      shardHash: crypto.createHash('rmd160').update('test').digest('hex'),
+      shardHash: hash ||
+        crypto.createHash('rmd160').update('test').digest('hex'),
       shardSize: 4
     });
     contract.sign('owner', renterHdKey.privateKey);
@@ -561,7 +562,7 @@ describe('@class Rules', function() {
   describe('@method renew', function() {
 
     it('should callback error if contract invalid', function(done) {
-      const rules = new Rules();
+      const rules = new Rules({ database });
       const request = {
         params: [{}],
         contact: [
@@ -577,11 +578,7 @@ describe('@class Rules', function() {
     });
 
     it('should callback error if cannot load contract', function(done) {
-      const rules = new Rules({
-        contracts: {
-          get: sinon.stub().callsArgWith(1, new Error('Not found'))
-        }
-      });
+      const rules = new Rules({ database });
       const request = {
         params: [createValidContract().toObject()],
         contact: [
@@ -591,7 +588,7 @@ describe('@class Rules', function() {
       };
       const response = {};
       rules.renew(request, response, (err) => {
-        expect(err.message).to.equal('Not found');
+        expect(err.message).to.equal('Contract not found');
         done();
       });
     });
@@ -599,11 +596,7 @@ describe('@class Rules', function() {
     it('should callback error if restricted property', function(done) {
       const c1 = createValidContract();
       const c2 = createValidContract();
-      const rules = new Rules({
-        contracts: {
-          get: sinon.stub().callsArgWith(1, null, c2.toObject())
-        }
-      });
+      const rules = new Rules({ database });
       const request = {
         params: [c1.toObject()],
         contact: [
@@ -612,21 +605,24 @@ describe('@class Rules', function() {
         ]
       };
       const response = {};
-      rules.renew(request, response, (err) => {
-        expect(err.message).to.equal('Rejecting renewal of farmer_hd_key');
-        done();
+      c2.save(err => {
+        if (err) {
+          return done(err);
+        }
+        rules.renew(request, response, (err) => {
+          expect(err.message).to.equal(
+            'Rejecting renewal of providerSignature'
+          );
+          done();
+        });
       });
     });
 
     it('should callback error if cannot update local record', function(done) {
-      const c1 = createValidContract();
-      const c2 = Contract.from(c1.toObject());
-      c2.set('store_end', 0);
+      const c1 = createValidContract(utils.rmd160('newtest').toString('hex'));
+      const c2 = new database.ShardContract(c1.toObject());
       const rules = new Rules({
-        contracts: {
-          get: sinon.stub().callsArgWith(1, null, c2.toObject()),
-          put: sinon.stub().callsArgWith(2, new Error('Failed to write'))
-        },
+        database,
         spartacus: {
           privateKey: randomBytes(32)
         }
@@ -639,21 +635,27 @@ describe('@class Rules', function() {
         ]
       };
       const response = {};
-      rules.renew(request, response, (err) => {
-        expect(err.message).to.equal('Failed to write');
-        done();
+      c2.save(err => {
+        if (err) {
+          return done(err);
+        }
+        const save = sinon.stub(database.ShardContract.prototype, 'save')
+                       .callsArgWith(0, new Error('Failed to write'));
+        rules.renew(request, response, (err) => {
+          save.restore();
+          expect(err.message).to.equal('Failed to write');
+          done();
+        });
       });
     });
 
     it('should sign and echo back the renewal', function(done) {
-      const c1 = createValidContract();
-      const c2 = Contract.from(c1.toObject());
-      c1.set('store_end', 0);
+      const c1 = createValidContract(utils.rmd160('valid').toString('hex'));
+      const c2 = new database.ShardContract(c1.toObject());
+      c2.auditLeaves = [randomBytes(32).toString('hex')];
+      c2.sign('owner', randomBytes(32));
       const rules = new Rules({
-        contracts: {
-          get: sinon.stub().callsArgWith(1, null, c2.toObject()),
-          put: sinon.stub().callsArgWith(2, null)
-        },
+        database,
         spartacus: {
           privateKey: randomBytes(32)
         }
@@ -667,11 +669,16 @@ describe('@class Rules', function() {
       };
       const response = {
         send: (params) => {
-          expect(params[0].store_end).to.equal(0);
+          expect(params[0].auditLeaves).to.have.lengthOf(0);
           done();
         }
       };
-      rules.renew(request, response, done);
+      c2.save(err => {
+        if (err) {
+          return done(err);
+        }
+        rules.renew(request, response, done);
+      });
     });
 
   });
