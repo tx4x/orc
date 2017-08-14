@@ -91,7 +91,6 @@
     "istanbul": "^0.4.5",
     "jsdoc": "^3.4.0",
     "mocha": "^2.2.4",
-    "mockgoose": "^7.3.3",
     "node-mocks-http": "^1.6.1",
     "proxyquire": "^1.7.3",
     "remove": "^0.1.5",
