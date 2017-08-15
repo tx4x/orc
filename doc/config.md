@@ -19,12 +19,7 @@ information. All of this data will be created and stored in
   + - config
   + - service_key.pem
   + - certificate.pem
-  + - capacity.cache
-  + - /contracts.db
-    + - ...
   + - /shards
-    + - ...
-  + - /directory.db
     + - ...
 ```
 
@@ -52,10 +47,6 @@ PrivateExtendedKeyPath = /home/bookchin/.config/orc/x_private_key
 ; you must set the value to -1
 ChildDerivationIndex = 0
 
-; Set the base directory (parent) for where the contracts.db folder will be 
-; placed. The contracts.db holds storage contracts between you and other nodes.
-ContractStorageBaseDir = /home/bookchin/.config/orc
-
 ; Set the base directory (parent) for where the shards folder will be 
 ; placed. The shards stores other nodes data shards, so be sure you set 
 ; this to where you intend to store farmed shards.
@@ -65,12 +56,6 @@ ShardStorageBaseDir = /home/bookchin/.config/orc
 ; increased later, but decreasing it will not delete existing data.
 ShardStorageMaxAllocation = 0GB
 
-; Enables renter nodes to directly claim storage capacity based on any capacity 
-; announcements you have made. If you are farming, set this value once for every 
-; trusted renter public extended key from which you will accept claims or once 
-; with a value of *
-AllowDirectStorageClaims[] = *
-
 ; Set the base directory (parent) for where the directory.db folder will be 
 ; placed. The directory.db holds key-value pairs for the distributed hash 
 ; table, which serve various purposes such as reputation data on other peers.
@@ -78,7 +63,6 @@ AllowDirectStorageClaims[] = *
 ; port, and optional SSL configuration to serve a public (clearnet) statistics 
 ; API.
 DirectoryEnabled = 1
-DirectoryStorageBaseDir = /home/bookchin/.config/orc
 DirectoryPort = 4446
 DirectoryHostname = 127.0.0.1
 DirectoryUseSSL = 0
@@ -147,7 +131,6 @@ ServiceAvailabilityCheckInterval = 10M
 ; Optionally, protect the local bridge access using HTTP Basic Authentication
 ; credentials defined here.
 BridgeEnabled = 1
-BridgeStorageBaseDir = /home/bookchin/.config/orc
 BridgeHostname = 127.0.0.1
 BridgePort = 4445
 BridgeUseSSL = 0
@@ -157,70 +140,12 @@ BridgeAuthorityChains[] = /home/bookchin/.config/orc/fullchain.pem
 BridgeAuthenticationEnabled = 0
 BridgeAuthenticationUser = orc
 BridgeAuthenticationPassword = 1b5d3daa16b3343560bcf0377547b1c0
-BridgeMetaStoragePath = /home/bookchin/.config/orc/objects.meta
 BridgeTempStagingBaseDir = /home/bookchin/.config/orc/__bridge.staging
-BridgeShardAuditInterval = 5DAYS
 
-; Topic codes used when running a renter profile for listening for capacity 
-; announcements from the network. See the protocol specification for more 
-; details. It is mostly reccommended to leave these at their default values.
-RenterListenTopics[] = 01020202
-RenterListenTopics[] = 02020202
-RenterListenTopics[] = 03020202
+; How often we should scan contract database to reap expired shards it is 
+; storing.
+ShardReaperInterval = 24HR
 
-; Topic codes used when running a directory profile for listening for capacity 
-; announcements from the network. See the protocol specification for more 
-; details. It is mostly reccommended to leave these at their default values.
-DirectoryListenTopics[] = 01020202
-DirectoryListenTopics[] = 02020202
-DirectoryListenTopics[] = 03020202
-
-; Path to a file for caching network capacity announcements
-CapacityCachePath = /home/bookchin/.config/orc/capacity.cache
-
-; Complete information about how orc should connect to the Zcash RPC server. 
-; Orc needs this to generate addresses for farmers, send payments from renters, 
-; check balances, etc.
-WalletHostname = localhost
-WalletPort = 8232
-WalletUser = orc
-WalletPassword = orc
-WalletShieldedTransactions = 0
-
-; Pre-scripted profiles to enable after bootstrapping. 
-; Renter profiles listen for capacity announcements and build a cache while 
-; exposing a bridge server for uploading and downloading data. 
-; Farmer profiles publish capacity announcements and listen for contracts to 
-; store data. 
-; Directory profiles collect network statistics and expose a clearnet API for 
-; fetching that data.
-;ProfilesEnabled[] = renter
-;ProfilesEnabled[] = farmer
-;ProfilesEnabled[] = directory
-
-; Topic codes to use when operating under the farmer profile for subscibing to
-; contract publications and announcing capacity. See the protocol specification 
-; for more details. It is mostly reccommended to leave these at their default 
-; values.
-FarmerAdvertiseTopics[] = 01020202
-FarmerAdvertiseTopics[] = 02020202
-FarmerAdvertiseTopics[] = 03020202
-
-; How often a farmer profile should scan contract database to reap expired 
-; shards it is storing.
-FarmerShardReaperInterval = 24HR
-
-; How often a farmer profile should publish a capacity announcement to it's
-; neighboring nodes.
-FarmerAnnounceInterval = 15M
-
-; Enables a web-based graphical interface accessible at the hostname and port 
-; defined below.
-DashboardEnabled = 1
-DashboardPort = 8080
-DashboardHostname = 127.0.0.1
-DashboardUseSSL = 0
-DashboardServiceKeyPath = /home/bookchin/.config/orc/service_key.pem
-DashboardCertificatePath = /home/bookchin/.config/orc/certificate.pem
-DashboardAuthorityChains[] = /home/bookchin/.config/orc/fullchain.pem
+; How often we should publish a capacity announcement to neighboring nodes.
+CapacityAnnounceInterval = 15M
 ```

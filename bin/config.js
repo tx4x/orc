@@ -4,7 +4,7 @@ const { randomBytes } = require('crypto');
 const ini = require('ini');
 const { existsSync, writeFileSync } = require('fs');
 const mkdirp = require('mkdirp');
-const { homedir } = require('os');
+const { tmpdir, homedir } = require('os');
 const { join } = require('path');
 const datadir = join(homedir(), '.config/orc');
 
@@ -14,15 +14,11 @@ module.exports = {
   PrivateExtendedKeyPath: join(datadir, 'x_private_key'),
   ChildDerivationIndex: '0',
 
-  // Contract Storage
-  ContractStorageBaseDir: datadir,
-
   // Shard Database
   ShardStorageBaseDir: datadir,
-  ShardStorageMaxAllocation: '0GB',
-
-  // Trusted Renter Nodes
-  AllowDirectStorageClaims: ['*'],
+  ShardStorageMaxAllocation: '5GB',
+  ShardReaperInterval: '24HR',
+  ShardCapacityAnnounceInterval: '15M',
 
   // Server SSL
   TransportServiceKeyPath: join(datadir, 'service_key.pem'),
@@ -56,75 +52,29 @@ module.exports = {
   // Onion Service
   OnionServicePrivateKeyPath: join(datadir, 'onion_key'),
 
-  // Node Profiles
-  ProfilesEnabled: [], // renter, farmer, directory
-
-  // Renter Profile
-  RenterListenTopics: [
-    '01020202',
-    '02020202',
-    '03020202'
-  ],
-
-  // Directory Profile
-  DirectoryListenTopics: [
-    '01020202',
-    '02020202',
-    '03020202'
-  ],
-
-  CapacityCachePath: join(datadir, 'capacity.cache'),
-
   // Local Bridge
   BridgeEnabled: '1',
-  BridgeStorageBaseDir: datadir,
   BridgeHostname: '127.0.0.1',
   BridgePort: '4445',
-  BridgeUseSSL: '0',
+  BridgeUseSSL: '1',
+  BridgeOnionServicePrivateKeyPath: join(datadir, 'bridge_key'),
   BridgeServiceKeyPath: join(datadir, 'service_key.pem'),
   BridgeCertificatePath: join(datadir, 'certificate.pem'),
   BridgeAuthorityChains: [],
-  BridgeAuthenticationEnabled: '0',
+  BridgeAuthenticationEnabled: '1',
   BridgeAuthenticationUser: 'orc',
   BridgeAuthenticationPassword: randomBytes(16).toString('hex'),
-  BridgeMetaStoragePath: join(datadir, 'objects.meta'),
-  BridgeTempStagingBaseDir: join(datadir, '__bridge.staging'),
-  BridgeShardAuditInterval: '5DAYS',
-
-  // Local Node Dashboard and GUI
-  DashboardEnabled: '1',
-  DashboardPort: '8080',
-  DashboardHostname: '127.0.0.1',
-  DashboardUseSSL: '0',
-  DashboardServiceKeyPath: join(datadir, 'service_key.pem'),
-  DashboardCertificatePath: join(datadir, 'certificate.pem'),
-  DashboardAuthorityChains: [],
+  BridgeTempStagingBaseDir: join(tmpdir(), 'orc.tmp'),
 
   // Directory Server
   DirectoryEnabled: '1',
-  DirectoryStorageBaseDir: datadir,
   DirectoryPort: '4446',
   DirectoryHostname: '127.0.0.1',
-  DirectoryUseSSL: '0',
+  DirectoryUseSSL: '1',
+  DirectoryOnionServicePrivateKeyPath: join(datadir, 'directory_key'),
   DirectoryServiceKeyPath: join(datadir, 'service_key.pem'),
   DirectoryCertificatePath: join(datadir, 'certificate.pem'),
-  DirectoryAuthorityChains: [],
-
-  // Wallet Connection
-  WalletHostname: 'localhost',
-  WalletPort: '8232',
-  WalletUser: 'orc',
-  WalletPassword: 'orc',
-  WalletShieldedTransactions: '0',
-
-  // Farmer Profile
-  FarmerAdvertiseTopics: [
-    '01020202',
-    '02020202',
-    '03020202'
-  ],
-  FarmerShardReaperInterval: '24HR',
-  FarmerAnnounceInterval: '15M'
+  DirectoryAuthorityChains: []
 
 };
 

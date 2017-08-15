@@ -28,21 +28,13 @@ Run the ORC container and mount the data directory.
 docker run -v ~/.config/orc:/root/.config/orc -t orcproject/orc:latest
 ```
 
-> If running Docker for Windows, use the UNC formatted path: 
-> `\\machine\driveletter\.config\orc:/root/.config/orc`.
-
 Modify the created configuration at `~/.config/orc/config` as desired (see 
 the {@tutorial config}) and restart the container for the changes to take 
-effect. You might wish to expose the ports defined for `ControlPort`, 
-`BridgePort`, `DirectoryPort`, and `DashboardPort` to the host (and update 
-their corresponding `*Hostname` to `0.0.0.0`) and map them to the host.
+effect. Be sure to expose `BridgePort` and map it to the host.
 
 ```
 docker run \
-  --publish 127.0.0.1:4444:4444 \
   --publish 127.0.0.1:4445:4445 \
-  --publish 127.0.0.1:4446:4446 \
-  --publish 127.0.0.1:8080:8080 \
   --volume ~/.config/orc:/root/.config/orc \
   --tty orcproject/orc:latest
 ```
@@ -53,7 +45,9 @@ docker run \
 > configuration file using the `--config <path/to/config>` option.
 
 Once the container has started, you can navigate in your browser to 
-`http://127.0.0.1:8080` to access your node's dashboard!
+`http://127.0.0.1:4445` to access your node's dashboard! **If you did not 
+disable `BridgeAuthenticationEnabled`, you will be asked for supply the 
+credentials in your configuration file.**
 
 ### Development 
 
@@ -61,21 +55,20 @@ To hack on the ORC project, clone this repository and use
 [Docker Compose](https://docs.docker.com/compose/):
 
 ```
+git clone https://github.com/orcproject/orc && cd orc
 docker-compose up
 ```
 
-This will volume mount the `lib` and `test` directories for development, and 
-then boots up the ORC container. Happy hacking!
+This will volume mount the the appropriate directories for development, and 
+then boots up the ORC container. **Note that stable releases are tagged and 
+the `master` branch may contain unstable or bleeding-edge code.**
 
-> **Note!** If you are exposing services from the docker container to the host
-> you _must_ set the services `*Hostname` property to `0.0.0.0` in your ORC 
-> configuration!
+Happy hacking!
 
 ### Resources
 
 * [Documentation](https://orcproject.github.io/orc/)
-* [Specification](https://raw.githubusercontent.com/orcproject/whitepaper/master/protocol.pdf)
-* [Whitepaper](https://raw.githubusercontent.com/orcproject/whitepaper/master/whitepaper.pdf)
+* [Specification](https://raw.githubusercontent.com/orcproject/protocol/master/protocol.pdf)
 
 ### License
 

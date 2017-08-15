@@ -4,15 +4,23 @@ const { expect } = require('chai');
 const sinon = require('sinon');
 const createMocks = require('./fixtures/http-mocks');
 const stream = require('stream');
-const levelup = require('levelup');
-const memdown = require('memdown');
 const { randomBytes } = require('crypto');
 const constants = require('../lib/constants');
 const utils = require('../lib/utils');
 const Server = require('../lib/server');
+const getDatabase = require('./fixtures/database');
 
 
 describe('@class Server', function() {
+
+  let database = null;
+
+  before((done) => {
+    getDatabase((err, db) => {
+      database = db;
+      done(err);
+    });
+  });
 
   describe('@constructor', function() {
 
@@ -113,17 +121,10 @@ describe('@class Server', function() {
     const shard = Buffer.from('test shard');
     const hash = utils.rmd160sha256(shard).toString('hex');
     const sandbox = sinon.sandbox.create();
-    const contracts = levelup('', {
-      db: memdown,
-      valueEncoding: 'json'
-    });
     const identity = randomBytes(20);
 
     before((done) => {
-      contracts.put(`${hash}:xpub`, {
-        data_hash: hash,
-        data_size: shard.length
-      }, done);
+      done();
     });
 
     after(() => {
@@ -131,7 +132,7 @@ describe('@class Server', function() {
     });
 
     it('should respond with 401 if not authorized', function(done) {
-      const server = new Server({ contracts, identity });
+      const server = new Server({ database, identity });
       const [req, res] = createMocks({
         method: 'POST',
         path: '/shards/hash',
@@ -150,7 +151,7 @@ describe('@class Server', function() {
     });
 
     it('should respond with 404 if contract not found', function(done) {
-      const server = new Server({ contracts, identity });
+      const server = new Server({ database, identity });
       const [req, res] = createMocks({
         method: 'POST',
         path: '/shards/hash',
@@ -171,7 +172,7 @@ describe('@class Server', function() {
 
     it('should respond with 500 if shard cannot write', function(done) {
       const server = new Server({
-        contracts,
+        database,
         identity,
         shards: {
           createWriteStream: sinon.stub().callsArgWith(1, new Error('Failed'))
@@ -191,8 +192,23 @@ describe('@class Server', function() {
         expect(res.statusCode).to.equal(500);
         done();
       });
-      server.accept('token', hash, ['identity', { xpub: 'xpub' }]);
-      server.upload(req, res);
+      let contract = new database.ShardContract({
+        shardHash: hash,
+        shardSize: shard.length,
+        providerIdentity: '0000000000000000000000000000000000000000',
+        ownerIdentity: '0000000000000000000000000000000000000000',
+        providerParentKey: 'xpub',
+        providerIndex: 0,
+        ownerParentKey: 'xpub',
+        ownerIndex: 0
+      });
+      contract.save((err) => {
+        if (err) {
+          return done(err);
+        }
+        server.accept('token', hash, ['identity', { xpub: 'xpub' }]);
+        server.upload(req, res);
+      });
     });
 
     it('should respond with 400 if size exceeds expected', function(done) {
@@ -203,7 +219,7 @@ describe('@class Server', function() {
         },
         unlink: sandbox.stub().callsArg(1)
       };
-      const server = new Server({ contracts, identity, shards });
+      const server = new Server({ database, identity, shards });
       const [req, res] = createMocks({
         method: 'POST',
         path: `/shards/${hash}`,
@@ -236,7 +252,7 @@ describe('@class Server', function() {
         },
         unlink: sandbox.stub().callsArg(1)
       };
-      const server = new Server({ contracts, identity, shards });
+      const server = new Server({ database, identity, shards });
       const [req, res] = createMocks({
         method: 'POST',
         path: `/shards/${hash}`,
@@ -268,7 +284,7 @@ describe('@class Server', function() {
           callback(null, ws);
         }
       };
-      const server = new Server({ contracts, identity, shards });
+      const server = new Server({ database, identity, shards });
       const [req, res] = createMocks({
         method: 'POST',
         path: `/shards/${hash}`,
@@ -303,7 +319,7 @@ describe('@class Server', function() {
     after(() => sandbox.restore());
 
     it('should respond with 401 if not authorized', function(done) {
-      const server = new Server({ identity });
+      const server = new Server({ identity, database });
       const [req, res] = createMocks({
         method: 'GET',
         path: `/shards/${hash}`,
@@ -327,7 +343,7 @@ describe('@class Server', function() {
           callback(new Error('Not found'));
         }
       };
-      const server = new Server({ identity, shards });
+      const server = new Server({ identity, shards, database });
       const [req, res] = createMocks({
         method: 'GET',
         path: `/shards/${hash}`,
@@ -353,7 +369,7 @@ describe('@class Server', function() {
           callback(null, rs);
         }
       };
-      const server = new Server({ identity, shards });
+      const server = new Server({ identity, shards, database });
       const [req, res] = createMocks({
         method: 'GET',
         path: `/shards/${hash}`,
@@ -384,7 +400,7 @@ describe('@class Server', function() {
           callback(null, rs);
         }
       };
-      const server = new Server({ identity, shards });
+      const server = new Server({ identity, shards, database });
       const [req, res] = createMocks({
         method: 'GET',
         path: `/shards/${hash}`,

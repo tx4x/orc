@@ -3,26 +3,9 @@ you how to configure your node to expose a simple REST API that applications
 can use to upload, download, delete, and list objects you have stored in the 
 network.
 
-### Configure Renter Profile
-
-There are a few configuration properties you'll need to set and enable to 
-instruct your ORC node to start listening for capacity announcements from 
-the network to build a cache of available farmers. Additionally we want our 
-node to expose a local API for managing our objects.
-
-#### `ProfilesEnabled[]`
-
-Set this property to `renter` to enable the renter profile routines. This tells 
-our node that we want to begin listening for capacity announcements.
-
 #### `BridgeEnabled`
 
 Set this property to `1` to enable the local API.
-
-#### `BridgeStorageBaseDir`
-
-Set this property (or leave alone to use the default) to set the directory 
-the local bridge service will use to store various metadata.
 
 #### `BridgeHostname`
 
@@ -36,28 +19,11 @@ default.
 Set this property to instruct the local bridge service to bind to the given 
 port. Defaults to `4445`.
 
-#### `BridgeMetaStoragePath`
-
-Set this property to tell the local bridge service where to store object 
-pointers. Defaults to `~/.config/orc/objects.meta`. Back this file up or you 
-will lose access to your data!
-
 #### `BridgeTempStagingBaseDir`
 
 Set this property to instruct the local bridge service where to hold temporary 
 data while objects are being uploaded to the network. Safe to leave as the 
 default, which is `~/.config/orc/__bridge.staging`.
-
-#### `BridgeShardAuditInterval`
-
-Set the frequency that the local bridge service will issue audits on stored 
-objects and release payments to farmers. Default is `5DAYS`.
-
-#### `RenterCapacityCachePath`
-
-Set the file where capacity announcements are cached. The default is 
-`~/.config/orc/capacity.cache`. If you have trouble uploading it is safe to 
-delete this file and rebuild the cache.
 
 ### List Objects Stored
 

@@ -12,7 +12,7 @@ describe('@class Bridge', function() {
   describe('@private @method _verifyClient', function() {
 
     it('should callback true if no creds defined', function(done) {
-      let bridge = new Bridge();
+      let bridge = new Bridge({});
       bridge._verifyClient({
         req: { url: '/' }
       }, (result) => {
@@ -92,7 +92,7 @@ describe('@class Bridge', function() {
         path: '/',
         headers: {}
       }, {});
-      let bridge = new Bridge();
+      let bridge = new Bridge({});
       bridge.authenticate(req, res, done);
     });
 
@@ -130,12 +130,12 @@ describe('@class Bridge', function() {
   describe('@method error', function() {
 
     it('should pass on if no error', function(done) {
-      let bridge = new Bridge();
+      let bridge = new Bridge({});
       bridge.error(null, {}, {}, done);
     });
 
     it('should respond with error message', function(done) {
-      let bridge = new Bridge();
+      let bridge = new Bridge({});
       let writeHead = sinon.stub();
       let end = sinon.stub();
       let write = sinon.stub();
@@ -146,70 +146,6 @@ describe('@class Bridge', function() {
       expect(write.calledWithMatch('Not authorized')).to.equal(true);
       expect(end.called).to.equal(true);
       done();
-    });
-
-  });
-
-  describe('@method route', function() {
-
-    it('should respond to OPTIONS request', function(done) {
-      let bridge = new Bridge();
-      let { req, res } = httpMocks.createMocks({
-        method: 'OPTIONS',
-        path: '/'
-      }, { eventEmitter: EventEmitter });
-      res.setTimeout = sinon.stub();
-      res.on('end', () => {
-        expect(res.statusCode).to.equal(200);
-        expect(res.setTimeout.calledWithMatch(0)).to.equal(true);
-        done();
-      });
-      bridge.route(req, res, (err) => bridge.error(err, req, res));
-    });
-
-    it('should 400 to POST /* request', function(done) {
-      let bridge = new Bridge();
-      let { req, res } = httpMocks.createMocks({
-        method: 'POST',
-        path: '/somepath'
-      }, { eventEmitter: EventEmitter });
-      res.setTimeout = sinon.stub();
-      res.on('end', () => {
-        expect(res.statusCode).to.equal(400);
-        expect(res.setTimeout.calledWithMatch(0)).to.equal(true);
-        done();
-      });
-      bridge.route(req, res, (err) => bridge.error(err, req, res));
-    });
-
-    it('should 400 to DELETE / request', function(done) {
-      let bridge = new Bridge();
-      let { req, res } = httpMocks.createMocks({
-        method: 'DELETE',
-        path: '/'
-      }, { eventEmitter: EventEmitter });
-      res.setTimeout = sinon.stub();
-      res.on('end', () => {
-        expect(res.statusCode).to.equal(400);
-        expect(res.setTimeout.calledWithMatch(0)).to.equal(true);
-        done();
-      });
-      bridge.route(req, res, (err) => bridge.error(err, req, res));
-    });
-
-    it('should 400 to PUT request', function(done) {
-      let bridge = new Bridge();
-      let { req, res } = httpMocks.createMocks({
-        method: 'PUT',
-        path: '/'
-      }, { eventEmitter: EventEmitter });
-      res.setTimeout = sinon.stub();
-      res.on('end', () => {
-        expect(res.statusCode).to.equal(400);
-        expect(res.setTimeout.calledWithMatch(0)).to.equal(true);
-        done();
-      });
-      bridge.route(req, res, (err) => bridge.error(err, req, res));
     });
 
   });

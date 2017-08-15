@@ -5,11 +5,8 @@ const { tmpdir } = require('os');
 const crypto = require('crypto');
 const { expect } = require('chai');
 const sinon = require('sinon');
-const levelup = require('levelup');
-const memdown = require('memdown');
 const mkdirp = require('mkdirp');
 const http = require('http');
-const Tiny = require('tiny');
 const Bridge = require('../lib/bridge');
 const Node = require('../lib/node');
 const Shards = require('../lib/shards');
@@ -20,47 +17,29 @@ const { EventEmitter } = require('events');
 const bunyan = require('bunyan');
 const ws = require('ws');
 const boscar = require('boscar');
+const getDatabase = require('./fixtures/database');
 
 
 describe('@class Bridge (integration)', function() {
 
   let sandbox = sinon.sandbox.create();
   let clock = sandbox.useFakeTimers('setTimeout', 'setInterval');
-  let capacityCache = new Tiny(
-    path.join(tmpdir(), crypto.randomBytes(6).toString('hex'))
-  );
   let shardsdir = path.join(tmpdir(), crypto.randomBytes(6).toString('hex'));
   let file = crypto.randomBytes(3000);
   let id = null;
 
   mkdirp.sync(shardsdir);
 
-  let node = new Node({
-    logger: bunyan.createLogger({
-      name: 'bridge/integration/logger',
-      level: 'fatal'
-    }),
-    contracts: levelup('bridge/integration/contracts', { db: memdown }),
-    shards: new Shards(shardsdir),
-    storage: levelup('bridge/integration/storage', { db: memdown })
-  });
-  let bridge = new Bridge(node, {
-    capacityCache,
-    auth: {
-      user: 'orctest',
-      pass: 'orctest'
-    },
-    control: new boscar.Server(node)
-  });
+  let node = null;
+  let bridge = null;
   let port = 0;
-  let shards = [];
-  let index = 0;
+  let shards = {};
 
   before((done) => {
-    sandbox.stub(utils, 'createShardUploader').callsFake(() => {
+    sandbox.stub(utils, 'createShardUploader').callsFake((t, h) => {
       let uploader = new stream.Transform({
         write: function(d, e, cb) {
-          shards.push(d);
+          shards[h] = d;
           cb();
         },
         flush: function(cb) {
@@ -76,10 +55,9 @@ describe('@class Bridge (integration)', function() {
       });
       return uploader;
     });
-    sandbox.stub(utils, 'createShardDownloader').callsFake(() => {
+    sandbox.stub(utils, 'createShardDownloader').callsFake((t, h) => {
       let done = false;
-      let buf = index === 3 ? shards[index = 0] : shards[index];
-      index++
+      let buf = shards[h];
       let downloader = new stream.Readable({
         read: function() {
           if (done) {
@@ -92,24 +70,48 @@ describe('@class Bridge (integration)', function() {
       });
       return downloader;
     });
-    capacityCache.set('ca458055841255795bfc2e2b6e6480dd2ea80506', {
-      capacity: {
-        allocated: 5000,
-        available: 4500
-      },
-      timestamp: Date.now(),
-      contact: [
-        'ca458055841255795bfc2e2b6e6480dd2ea80506',
-        {
+    getDatabase((err, database) => {
+      if (err) {
+        return done(err);
+      }
+      node = new Node({
+        logger: bunyan.createLogger({
+          name: 'bridge/integration/logger',
+          level: 'fatal'
+        }),
+        shards: new Shards(shardsdir),
+        database
+      });
+      bridge = new Bridge(node, {
+        auth: {
+          user: 'orctest',
+          pass: 'orctest'
+        },
+        control: new boscar.Server(node)
+      });
+      let profile = new database.PeerProfile({
+        identity: 'ca458055841255795bfc2e2b6e6480dd2ea80506',
+        capacity: {
+          allocated: 5000,
+          available: 4500,
+          timestamp: Date.now()
+        },
+        contact: {
           protocol: 'https:',
           port: 443,
-          hostname: 'integration-test.onion'
+          hostname: 'integration-test.onion',
+          xpub: 'xpub',
+          index: 0
         }
-      ]
-    }, () => {
-      bridge.listen(0, () => {
-        port = bridge.server.address().port;
-        done();
+      });
+      profile.save(err => {
+        if (err) {
+          return done(err);
+        }
+        bridge.listen(0, () => {
+          port = bridge.server.address().port;
+          done();
+        });
       });
     });
   });
@@ -127,13 +129,32 @@ describe('@class Bridge (integration)', function() {
     });
   });
 
-  it('should respond with no objects stored', function(done) {
+  it('should respond with html web app', function(done) {
     let body = '';
     let req = http.request({
       auth: 'orctest:orctest',
       hostname: 'localhost',
       port,
       path: '/'
+    });
+    req.on('response', (res) => {
+      res.on('data', (data) => body += data.toString());
+      res.on('end', () => {
+        expect(body.includes('<html>')).to.equal(true);
+        done();
+      });
+    });
+    req.end();
+  });
+
+  it('should respond with no objects stored', function(done) {
+    let body = '';
+    let req = http.request({
+      auth: 'orctest:orctest',
+      hostname: 'localhost',
+      port,
+      path: '/',
+      headers: { Accept: 'application/json' }
     });
     req.on('response', (res) => {
       res.on('data', (data) => body += data.toString());
@@ -150,7 +171,14 @@ describe('@class Bridge (integration)', function() {
     let claimFarmerCapacity = sandbox.stub(
       node,
       'claimFarmerCapacity'
-    ).callsArgWith(2, null, [{ contract: 'test' }, 'token']);
+    ).callsFake(function(a, b, cb) {
+      cb(null, [
+        {
+          shardHash: crypto.randomBytes(6).toString('hex')
+        },
+        'token'
+      ]);
+    });
     node.onion = { createSecureAgent: sandbox.stub() };
     let form = new FormData();
     form.append('file', file, {
@@ -187,9 +215,9 @@ describe('@class Bridge (integration)', function() {
 
   it('should fail to upload if error loading capacity', function(done) {
     let findQuery = sandbox.stub(
-      bridge.capacityCache,
+      node.database.PeerProfile,
       'find'
-    ).returns(sinon.stub().callsArgWith(0, new Error('Failed')));
+    ).callsArgWith(1, new Error('Failed'));
     node.onion = { createSecureAgent: sandbox.stub() };
     let form = new FormData();
     form.append('file', file, {
@@ -253,7 +281,8 @@ describe('@class Bridge (integration)', function() {
       auth: 'orctest:orctest',
       hostname: 'localhost',
       port,
-      path: '/'
+      path: '/',
+      headers: { Accept: 'application/json' }
     });
     req.on('response', (res) => {
       res.on('data', (data) => body += data.toString());
@@ -283,7 +312,6 @@ describe('@class Bridge (integration)', function() {
     authorizeRetrieval
       .onCall(1)
       .callsFake((a, b, cb) => {
-        index++;
         cb(new Error('Timeout'));
       });
     let body = Buffer.from([]);
@@ -341,10 +369,6 @@ describe('@class Bridge (integration)', function() {
   });
 
   it('should delete the object stored', function(done) {
-    let requestContractRenewal = sandbox.stub(
-      node,
-      'requestContractRenewal'
-    ).callsArgWith(2);
     let req = http.request({
       auth: 'orctest:orctest',
       hostname: 'localhost',
@@ -354,7 +378,6 @@ describe('@class Bridge (integration)', function() {
     });
     req.on('response', (res) => {
       expect(res.statusCode).to.equal(201);
-      expect(requestContractRenewal.callCount).to.equal(3);
       done();
     });
     req.end();
@@ -366,7 +389,8 @@ describe('@class Bridge (integration)', function() {
       auth: 'orctest:orctest',
       hostname: 'localhost',
       port,
-      path: '/'
+      path: '/',
+      headers: { Accept: 'application/json' }
     });
     req.on('response', (res) => {
       res.on('data', (data) => body += data.toString());

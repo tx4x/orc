@@ -15,7 +15,6 @@ const spartacus = require('kad-spartacus');
 const onion = require('kad-onion');
 const ms = require('ms');
 const bunyan = require('bunyan');
-const levelup = require('levelup');
 const mkdirp = require('mkdirp');
 const path = require('path');
 const fs = require('fs');
@@ -27,7 +26,6 @@ const { Transform } = require('stream');
 const config = require('rc')('orc', options);
 const boscar = require('boscar');
 const kad = require('kad');
-const tiny = require('tiny');
 
 
 program.version(`
@@ -36,7 +34,7 @@ program.version(`
 `);
 
 program.description(`
-  Copyright (c) 2017 Gordon Hall
+  Copyright (c) 2017 Counterpoint Hackerspace, Ltd
   Licensed under the GNU Affero General Public License Version 3
 `);
 
@@ -68,10 +66,22 @@ if (!fs.existsSync(config.TransportServiceKeyPath)) {
   fs.writeFileSync(config.TransportCertificatePath, cert);
 }
 
-// Generate self-signed ssl certificate if it does not exist
+// Generate onion service key if it does not exist
 if (!fs.existsSync(config.OnionServicePrivateKeyPath)) {
   let key = orctool('generate-onion');
   fs.writeFileSync(config.OnionServicePrivateKeyPath, key);
+}
+
+// Generate onion service key if it does not exist
+if (!fs.existsSync(config.BridgeOnionServicePrivateKeyPath)) {
+  let key = orctool('generate-onion');
+  fs.writeFileSync(config.BridgeOnionServicePrivateKeyPath, key);
+}
+
+// Generate onion service key if it does not exist
+if (!fs.existsSync(config.DirectoryOnionServicePrivateKeyPath)) {
+  let key = orctool('generate-onion');
+  fs.writeFileSync(config.DirectoryOnionServicePrivateKeyPath, key);
 }
 
 // Initialize private extended key
@@ -79,12 +89,8 @@ const xprivkey = fs.readFileSync(config.PrivateExtendedKeyPath).toString();
 const parentkey = hdkey.fromExtendedKey(xprivkey)
                     .derive(orc.constants.HD_KEY_DERIVATION_PATH);
 const childkey = parentkey.deriveChild(parseInt(config.ChildDerivationIndex));
-
-// Initialize the contract storage database
-const contracts = levelup(
-  path.join(config.ContractStorageBaseDir, 'contracts.db'),
-  { valueEncoding: 'json' }
-);
+const identity = spartacus.utils.toPublicKeyHash(childkey.publicKey)
+                   .toString('hex');
 
 // Create the shards directory if it does not exist
 if (!fs.existsSync(path.join(config.ShardStorageBaseDir, 'shards'))) {
@@ -92,20 +98,16 @@ if (!fs.existsSync(path.join(config.ShardStorageBaseDir, 'shards'))) {
 }
 
 // Initialize the shard storage database
-const shards = new orc.Shards(path.join(config.ShardStorageBaseDir, 'shards'), {
-  maxSpaceAllocated: bytes.parse(config.ShardStorageMaxAllocation)
-});
-
-// Initialize the directory storage database
-const storage = levelup(
-  path.join(config.DirectoryStorageBaseDir, 'directory.db'),
-  { valueEncoding: 'json' }
+const shards = new orc.Shards(
+  path.join(config.ShardStorageBaseDir, 'shards'),
+  { maxSpaceAllocated: bytes.parse(config.ShardStorageMaxAllocation) }
 );
 
+// Initialize the storage database
+const database = new orc.Database(`mongodb://localhost:27017/orc-${identity}`);
+
 // Initialize logging
-const logger = bunyan.createLogger({
-  name: spartacus.utils.toPublicKeyHash(childkey.publicKey).toString('hex')
-});
+const logger = bunyan.createLogger({ name: identity });
 
 // Initialize transport adapter with SSL
 const transport = new orc.Transport({
@@ -125,18 +127,14 @@ const contact = {
 
 // Initialize protocol implementation
 const node = new orc.Node({
-  contracts,
+  database,
   shards,
-  storage,
   logger,
   transport,
   contact,
-  claims: config.AllowDirectStorageClaims,
   privateExtendedKey: xprivkey,
   keyDerivationIndex: parseInt(config.ChildDerivationIndex)
 });
-
-node.capacity = tiny(config.CapacityCachePath);
 
 // Handle any fatal errors
 node.on('error', (err) => {
@@ -219,6 +217,33 @@ if (!!parseInt(config.VerboseLoggingEnabled)) {
 // Print super dank orc ascii
 console.info(fs.readFileSync(path.join(__dirname, '../motd')).toString());
 
+function announceCapacity(callback = () => null) {
+  node.shards.size((err, data) => {
+    /* istanbul ignore if */
+    if (err) {
+      return this.node.logger.warn('failed to measure capacity');
+    }
+
+    node.publishCapacityAnnouncement(data, (err) => {
+      /* istanbul ignore if */
+      if (err) {
+        node.logger.error(err.message);
+        node.logger.warn('failed to publish capacity announcement');
+      } else {
+        node.logger.info('published capacity announcement ' +
+          `${data.available}/${data.allocated}`
+        );
+      }
+      callback();
+    });
+  });
+}
+
+function reapExpiredShards(callback = () => null) {
+  // TODO: Reaping should abandon shards that have not been audited within
+  // TODO: the last 10-20 scoring intervals
+}
+
 let retry = null;
 
 function join() {
@@ -235,7 +260,9 @@ function join() {
         done(null, false);
       } else {
         entry = contact;
-        node.join(contact, (err) => done(null, !err));
+        node.join(contact, (err) => {
+          done(null, (err ? false : true) && node.router.size > 1);
+        });
       }
     });
   }, (err, result) => {
@@ -248,38 +275,25 @@ function join() {
         `(https://${entry[1].hostname}:${entry[1].port})`
       );
       logger.info(`discovered ${node.router.size} peers from seed`);
-      profiles();
+      node.logger.info('subscribing to network capacity announcements');
+      node.subscribeCapacityAnnouncement((err, rs) => {
+        rs.on('data', ([capacity, contact]) => {
+          let timestamp = Date.now();
+          this.node.capacity.set(contact[0], { capacity, contact, timestamp });
+        });
+      });
+      announceCapacity();
+      setInterval(() => announceCapacity(),
+                  ms(config.ShardCapacityAnnounceInterval));
+      setInterval(() => reapExpiredShards(), ms(config.ShardReaperInterval));
     }
   });
-}
-
-// Configure dashboard and check enabled
-if (parseInt(config.DashboardEnabled)) {
-  const dashboard = new orc.Dashboard({
-    logger,
-    enableSSL: parseInt(config.DashboardUseSSL),
-    serviceKeyPath: config.DashboardServiceKeyPath,
-    certificatePath: config.DashboardCertificatePath,
-    authorityChains: config.DashboardAuthorityChains
-  });
-
-  dashboard.listen(
-    parseInt(config.DashboardPort),
-    config.DashboardHostname,
-    () => {
-      logger.info(
-        `gui listening on ${config.DashboardHostname}:${config.DashboardPort}`
-      );
-    }
-  );
 }
 
 if (parseInt(config.BridgeEnabled)) {
   let opts = {
-    store: config.BridgeMetaStoragePath,
     stage: config.BridgeTempStagingBaseDir,
-    auditInterval: ms(config.BridgeShardAuditInterval),
-    capacityCache: node.capacity,
+    database,
     enableSSL: parseInt(config.BridgeUseSSL),
     serviceKeyPath: config.BridgeServiceKeyPath,
     certificatePath: config.BridgeCertificatePath,
@@ -305,7 +319,7 @@ if (parseInt(config.BridgeEnabled)) {
 
 if (parseInt(config.DirectoryEnabled)) {
   let opts = {
-    capacityCache: node.capacity,
+    database,
     enableSSL: !!parseInt(config.DirectoryUseSSL),
     serviceKeyPath: config.DirectoryServiceKeyPath,
     certificatePath: config.DirectoryCertificatePath,
@@ -319,21 +333,6 @@ if (parseInt(config.DirectoryEnabled)) {
     `${config.DirectoryHostname}:${config.DirectoryPort}`
   );
   directory.listen(parseInt(config.DirectoryPort), config.DirectoryHostname);
-}
-
-function profiles() {
-  if (config.ProfilesEnabled.length === 0) {
-    logger.warn('no profiles are enabled, you are only a relay');
-  }
-
-  config.ProfilesEnabled.forEach((profile) => {
-    if (!orc.profiles[profile]) {
-      logger.error(`failed to apply invalid profile "${profile}"`);
-    } else {
-      logger.info(`initializing ${profile} profile routines`);
-      orc.profiles[profile](node, config);
-    }
-  });
 }
 
 // Bind to listening port and join the network

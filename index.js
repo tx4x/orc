@@ -21,8 +21,9 @@ const { join } = require('path');
 /* istanbul ignore next */
 module.exports = function(config = {}) {
   /* eslint max-statements: [2, 18] */
-  const cport = config.ControlPort || require('./bin/_config').ControlPort;
-  const caddr = config.ControlPort || require('./bin/_config').ControlHostname;
+  const defaults = require('./bin/_config');
+  const cport = config.ControlPort || defaults.ControlPort;
+  const caddr = config.ControlHostname || defaults.ControlHostname;
   const controller = new module.exports.control.Client();
 
   let envs = {};
@@ -77,14 +78,8 @@ module.exports.Audit = require('./lib/audit');
 /** {@link Proof} */
 module.exports.Proof = require('./lib/proof');
 
-/** {@link Offers} */
-module.exports.Offers = require('./lib/offers');
-
 /** {@link Shards} */
 module.exports.Shards = require('./lib/shards');
-
-/** {@link Contract} */
-module.exports.Contract = require('./lib/contract');
 
 /** {@link Bridge} */
 module.exports.Bridge = require('./lib/bridge');
@@ -92,14 +87,11 @@ module.exports.Bridge = require('./lib/bridge');
 /** {@link Directory} */
 module.exports.Directory = require('./lib/directory');
 
+/** {@link Database} */
+module.exports.Database = require('./lib/database');
+
 /** {@link module:orc/constants} */
 module.exports.constants = require('./lib/constants');
-
-/** {@link module:orc/profiles} */
-module.exports.profiles = require('./lib/profiles');
-
-/** {@link Dashboard} */
-module.exports.Dashboard = require('./lib/dashboard');
 
 /** {@link module:orc/utils} */
 module.exports.utils = require('./lib/utils');
