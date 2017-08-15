@@ -1,6 +1,6 @@
 Make sure you have the following prerequisites installed:
 
-* [Zcash](https://z.cash)
+* [MongoDB](https://mongodb.org)
 * [Tor](https://torproject.org)
 * [Git](https://git-scm.org)
 * [Node.js LTS + NPM (6.10.x)](https://nodejs.org)
