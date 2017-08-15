@@ -62,6 +62,7 @@
     "jsen": "bugventure/jsen#9e57a9d653ff4ea47d364fc37da0f1659bfb8e89",
     "json-stable-stringify": "^1.0.1",
     "kad": "^2.4.0",
+    "kad-content": "^1.0.0",
     "kad-hibernate": "^1.0.0",
     "kad-onion": "^1.6.2",
     "kad-quasar": "^2.1.0",

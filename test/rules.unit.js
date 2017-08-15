@@ -108,7 +108,8 @@ describe('@class Rules', function() {
           ShardContract: {
             findOne: sinon.stub().callsArgWith(1, null, {
               shardHash: 'datahash',
-              auditLeaves: []
+              auditLeaves: [],
+              checkAccessPolicy: sinon.stub().returns(['AUDIT'])
             })
           }
         },
@@ -154,7 +155,8 @@ describe('@class Rules', function() {
           ShardContract: {
             findOne: sinon.stub().callsArgWith(1, null, {
               shardHash: 'datahash',
-              auditLeaves: auditStream.getPublicRecord()
+              auditLeaves: auditStream.getPublicRecord(),
+              checkAccessPolicy: sinon.stub().returns(['AUDIT'])
             })
           }
         },
@@ -194,7 +196,8 @@ describe('@class Rules', function() {
           ShardContract: {
             findOne: sinon.stub().callsArgWith(1, null, {
               shardHash: 'datahash',
-              auditLeaves: auditStream.getPublicRecord()
+              auditLeaves: auditStream.getPublicRecord(),
+              checkAccessPolicy: sinon.stub().returns(['AUDIT'])
             })
           }
         },
@@ -248,10 +251,11 @@ describe('@class Rules', function() {
 
     it('should create a token and respond with it', function(done) {
       const accept = sinon.stub();
+      const contract = createValidContract();
       const rules = new Rules({
         database: {
           ShardContract: {
-            findOne: sinon.stub().callsArgWith(1, null, createValidContract())
+            findOne: sinon.stub().callsArgWith(1, null, contract)
           }
         },
         server: {
@@ -261,8 +265,8 @@ describe('@class Rules', function() {
       const request = {
         params: ['datahash'],
         contact: [
-          'identity',
-          { xpub: 'xpubkey' }
+          contract.ownerIdentity,
+          { xpub: contract.ownerParentKey }
         ]
       };
       const response = {
@@ -697,7 +701,10 @@ describe('@class Rules', function() {
         spartacus: {
           privateKey: randomBytes(32)
         },
-        database
+        database,
+        shards: {
+          size: sinon.stub().callsArgWith(0, null, { available: 1000 })
+        }
       });
       const request = {
         params: [contract.toObject()],
@@ -726,7 +733,10 @@ describe('@class Rules', function() {
         spartacus: {
           privateKey: contract._farmerPrivateKey
         },
-        database
+        database,
+        shards: {
+          size: sinon.stub().callsArgWith(0, null, { available: 1000 })
+        }
       });
       const request = {
         params: [contract.toObject()],
@@ -758,6 +768,9 @@ describe('@class Rules', function() {
         database,
         server: {
           accept: accept
+        },
+        shards: {
+          size: sinon.stub().callsArgWith(0, null, { available: 1000 })
         }
       });
       const request = {
