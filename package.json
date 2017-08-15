@@ -1,6 +1,6 @@
 {
   "name": "@orcproject/orc",
-  "version": "8.0.0",
+  "version": "8.0.0-alpha1",
   "description": "distributed anonymous storage network",
   "main": "index.js",
   "bin": {
