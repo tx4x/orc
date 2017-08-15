@@ -14,14 +14,11 @@ module.exports = {
   PrivateExtendedKeyPath: join(datadir, 'x_private_key'),
   ChildDerivationIndex: '0',
 
-  // Contract Storage
-  ContractStorageBaseDir: datadir, // TODO Remove
-
   // Shard Database
   ShardStorageBaseDir: datadir,
   ShardStorageMaxAllocation: '5GB',
   ShardReaperInterval: '24HR',
-  ShardCapacityAnnounceInterval: '15M'
+  ShardCapacityAnnounceInterval: '15M',
 
   // Server SSL
   TransportServiceKeyPath: join(datadir, 'service_key.pem'),
@@ -67,7 +64,6 @@ module.exports = {
   BridgeAuthenticationEnabled: '1',
   BridgeAuthenticationUser: 'orc',
   BridgeAuthenticationPassword: randomBytes(16).toString('hex'),
-  BridgeMetaStoragePath: join(datadir, 'objects.meta'), // TODO Remove
   BridgeTempStagingBaseDir: join(tmpdir(), 'orc.tmp'),
 
   // Directory Server

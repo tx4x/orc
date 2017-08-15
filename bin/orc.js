@@ -15,7 +15,6 @@ const spartacus = require('kad-spartacus');
 const onion = require('kad-onion');
 const ms = require('ms');
 const bunyan = require('bunyan');
-const levelup = require('levelup');
 const mkdirp = require('mkdirp');
 const path = require('path');
 const fs = require('fs');
@@ -27,7 +26,6 @@ const { Transform } = require('stream');
 const config = require('rc')('orc', options);
 const boscar = require('boscar');
 const kad = require('kad');
-const tiny = require('tiny');
 
 
 program.version(`
@@ -93,13 +91,6 @@ const parentkey = hdkey.fromExtendedKey(xprivkey)
 const childkey = parentkey.deriveChild(parseInt(config.ChildDerivationIndex));
 const identity = spartacus.utils.toPublicKeyHash(childkey.publicKey)
                    .toString('hex');
-
-// Initialize the contract storage database
-// TODO Replace with database adapter
-const contracts = levelup(
-  path.join(config.ContractStorageBaseDir, 'contracts.db'),
-  { valueEncoding: 'json' }
-);
 
 // Create the shards directory if it does not exist
 if (!fs.existsSync(path.join(config.ShardStorageBaseDir, 'shards'))) {
@@ -269,7 +260,9 @@ function join() {
         done(null, false);
       } else {
         entry = contact;
-        node.join(contact, (err) => done(null, !err));
+        node.join(contact, (err) => {
+          done(null, (err ? false : true) || node.router.size > 1);
+        });
       }
     });
   }, (err, result) => {
@@ -291,7 +284,7 @@ function join() {
       });
       announceCapacity();
       setInterval(() => announceCapacity(),
-                  ms(config.CapacityAnnounceInterval));
+                  ms(config.ShardCapacityAnnounceInterval));
       setInterval(() => reapExpiredShards(), ms(config.ShardReaperInterval));
     }
   });
@@ -300,7 +293,6 @@ function join() {
 if (parseInt(config.BridgeEnabled)) {
   let opts = {
     stage: config.BridgeTempStagingBaseDir,
-    auditInterval: ms(config.BridgeShardAuditInterval),
     database,
     enableSSL: parseInt(config.BridgeUseSSL),
     serviceKeyPath: config.BridgeServiceKeyPath,
