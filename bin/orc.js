@@ -261,7 +261,7 @@ function join() {
       } else {
         entry = contact;
         node.join(contact, (err) => {
-          done(null, (err ? false : true) || node.router.size > 1);
+          done(null, (err ? false : true) && node.router.size > 1);
         });
       }
     });

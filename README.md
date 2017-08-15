@@ -60,7 +60,10 @@ docker-compose up
 ```
 
 This will volume mount the the appropriate directories for development, and 
-then boots up the ORC container. Happy hacking!
+then boots up the ORC container. **Note that stable releases are tagged and 
+the `master` branch may contain unstable or bleeding-edge code.**
+
+Happy hacking!
 
 ### Resources
 
