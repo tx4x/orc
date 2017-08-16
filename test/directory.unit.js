@@ -15,7 +15,7 @@ describe('@class Directory', function() {
       directory = new Directory({ database }, {});
       directory.listen(0);
 
-      let profile = new database.PeerProfile({
+      let profile1 = new database.PeerProfile({
         identity: '00000000000000000000',
         contact: {
           hostname: 'test.onion',
@@ -32,7 +32,24 @@ describe('@class Directory', function() {
         }
       });
 
-      profile.save(err => done(err));
+      let profile2 = new database.PeerProfile({
+        identity: '10000000000000000000',
+        contact: {
+          hostname: 'test.onion',
+          port: 443,
+          protocol: 'https:',
+          xpub: '{xpubkey}',
+          index: 0,
+          agent: 'orc-test/linux'
+        },
+        capacity: {
+          allocated: 2000,
+          available: 1000,
+          timestamp: Date.now() + 1000
+        }
+      });
+
+      profile1.save(() => profile2.save(() => done()));
     });
   });
 
@@ -45,7 +62,7 @@ describe('@class Directory', function() {
         data = JSON.parse(data)[0];
         expect(data.capacity.allocated).to.equal(2000);
         expect(data.capacity.available).to.equal(1000);
-        expect(data.identity).to.equal('00000000000000000000');
+        expect(data.identity).to.equal('10000000000000000000');
         expect(data.contact.hostname).to.equal('test.onion');
         expect(data.contact.port).to.equal(443);
         expect(data.contact.protocol).to.equal('https:');

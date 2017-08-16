@@ -181,6 +181,7 @@ describe('@class Bridge (integration)', function() {
     });
     node.onion = { createSecureAgent: sandbox.stub() };
     let form = new FormData();
+    form.append('policy', '::RETRIEVE');
     form.append('file', file, {
       filename: 'random-bytes',
       filepath: '/dev/random',

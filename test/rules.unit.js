@@ -180,6 +180,45 @@ describe('@class Rules', function() {
       rules.audit(request, response);
     });
 
+    it('should callback error if no access', function(done) {
+      const shardParts = [dataShard];
+      const readStream = new Readable({
+        read: function() {
+          if (shardParts.length) {
+            this.push(shardParts.shift());
+          } else {
+            this.push(null);
+          }
+        }
+      });
+      const rules = new Rules({
+        database: {
+          ShardContract: {
+            findOne: sinon.stub().callsArgWith(1, null, {
+              shardHash: 'datahash',
+              auditLeaves: auditStream.getPublicRecord(),
+              checkAccessPolicy: sinon.stub().returns([])
+            })
+          }
+        },
+        shards: {
+          createReadStream: sinon.stub().callsArgWith(1, null, readStream)
+        }
+      });
+      const request = {
+        params: [{ hash: 'datahash', challenge: '00000000' }],
+        contact: [
+          'identity',
+          { xpub: 'xpubkey' }
+        ]
+      };
+      const response = {};
+      rules.audit(request, response, (err) => {
+        expect(err.message).to.equal('Not authorized');
+        done();
+      });
+    });
+
     it('should return { hash, proof } if successful', function(done) {
       const shardParts = [dataShard];
       const readStream = new Readable({
@@ -247,6 +286,34 @@ describe('@class Rules', function() {
         expect(err.message).to.equal('Contract not found');
         done();
       })
+    });
+
+    it('should create a token and respond with it', function(done) {
+      const accept = sinon.stub();
+      const contract = createValidContract();
+      contract.checkAccessPolicy = sinon.stub().returns([]);
+      const rules = new Rules({
+        database: {
+          ShardContract: {
+            findOne: sinon.stub().callsArgWith(1, null, contract)
+          }
+        },
+        server: {
+          accept: accept
+        }
+      });
+      const request = {
+        params: ['datahash'],
+        contact: [
+          contract.ownerIdentity,
+          { xpub: contract.ownerParentKey }
+        ]
+      };
+      const response = {};
+      rules.consign(request, response, (err) => {
+        expect(err.message).to.equal('Not authorized');
+        done();
+      });
     });
 
     it('should create a token and respond with it', function(done) {
@@ -716,6 +783,36 @@ describe('@class Rules', function() {
       const response = {};
       rules.claim(request, response, (err) => {
         expect(err.message).to.equal('Invalid shard descriptor');
+        done();
+      });
+    });
+
+    it('should callback error if no space', function(done) {
+      const contract = createValidContract();
+      const rules = new Rules({
+        identity: randomBytes(20),
+        contact: {
+          xpub: contract.providerParentKey,
+          index: contract.providerIndex
+        },
+        spartacus: {
+          privateKey: contract._farmerPrivateKey
+        },
+        database,
+        shards: {
+          size: sinon.stub().callsArgWith(0, null, { available: 0 })
+        }
+      });
+      const request = {
+        params: [contract.toObject()],
+        contact: [
+          'identity',
+          { xpub: 'xpubkey' }
+        ]
+      };
+      const response = {};
+      rules.claim(request, response, (err) => {
+        expect(err.message).to.equal('Not enough capacity available');
         done();
       });
     });
