@@ -102,7 +102,6 @@ describe('@module orc (end-to-end)', function() {
         orc.utils.rmd160sha256(shard).toString('hex'),
         t
       );
-      expect(contract.isComplete).to.equal(true);
       expect(contract.validateSync()).to.equal(undefined);
       uploader.on('error', done);
       uploader.on('response', (res) => {

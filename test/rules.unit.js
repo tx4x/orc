@@ -838,8 +838,8 @@ describe('@class Rules', function() {
       const request = {
         params: [contract.toObject()],
         contact: [
-          'identity',
-          { xpub: 'xpubkey' }
+          contract.ownerIdentity,
+          { xpub: contract.ownerParentKey }
         ]
       };
       const response = {};
@@ -881,13 +881,50 @@ describe('@class Rules', function() {
         send: (params) => {
           const c = new database.ShardContract(params[0]);
           expect(c.validateSync()).to.equal(undefined);
-          expect(c.isComplete).to.equal(true);
           expect(accept.calledWithMatch(params[1], contract.shardHash,
                                         request.contact));
           done();
         }
       };
       rules.claim(request, response, done);
+    });
+
+    it('should fail if invalid contract', function(done) {
+      const contract = createValidContract();
+      const accept = sinon.stub();
+      const rules = new Rules({
+        identity: randomBytes(20),
+        contact: {
+          xpub: contract.providerParentKey,
+          index: -1
+        },
+        spartacus: {
+          privateKey: contract._farmerPrivateKey
+        },
+        database,
+        server: {
+          accept: accept
+        },
+        shards: {
+          size: sinon.stub().callsFake(function(callback) {
+            callback(null, { available: 1000 });
+          })
+        }
+      });
+      const request = {
+        params: [contract.toObject()],
+        contact: [
+          'identity',
+          { xpub: 'xpubkey' }
+        ]
+      };
+      const response = {
+        send: () => done('Contract incorrectly passed validation')
+      };
+      rules.claim(request, response, (err) => {
+        expect(err.message).to.equal('Invalid shard descriptor');
+        done();
+      });
     });
 
   });
