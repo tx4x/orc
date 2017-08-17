@@ -153,6 +153,15 @@ Example:
 $ curl http://127.0.0.1:4445/d049bff2-21b5-4f2f-bac3-efb3832a5afb/magnet | xclip -selection clipboard
 ```
 
+To fetch an object pointer shared by someone else, you can send the magnet link
+and get back an object pointer with an ID you can use in the download example:
+
+Example:
+
+```
+curl -X PUT -T "magnet:?xt=..." http://127.0.0.1:4445
+```
+
 ### Destroy Objects
 
 You can destroy an object, nullifying associated contracts, and issuing any 
