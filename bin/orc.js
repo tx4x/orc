@@ -141,13 +141,14 @@ node.on('error', (err) => {
   logger.error(err.message.toLowerCase());
 });
 
-const rsa = fs.readFileSync(config.OnionServicePrivateKeyPath)
-              .toString().split('\n').filter((l) => l && l[0] !== '-')
-              .join('');
+const rsaPrivateKey = fs.readFileSync(config.OnionServicePrivateKeyPath)
+                        .toString().split('\n')
+                        .filter((l) => l && l[0] !== '-')
+                        .join('');
 
 // Establish onion hidden service
 node.plugin(onion({
-  rsaPrivateKey: rsa,
+  rsaPrivateKey,
   torrcEntries: {
     CircuitBuildTimeout: 10,
     KeepalivePeriod: 60,
@@ -290,7 +291,7 @@ function join() {
   });
 }
 
-if (parseInt(config.BridgeEnabled)) {
+function startBridge() {
   let opts = {
     stage: config.BridgeTempStagingBaseDir,
     database,
@@ -309,15 +310,41 @@ if (parseInt(config.BridgeEnabled)) {
   }
 
   const bridge = new orc.Bridge(node, opts);
+  const rsaPrivateKey = fs.readFileSync(
+    config.BridgeOnionServicePrivateKeyPath
+  ).toString().split('\n').filter((l) => l && l[0] !== '-').join('');
 
   node.logger.info(
     'establishing local bridge at ' +
     `${config.BridgeHostname}:${config.BridgePort}`
   );
   bridge.listen(parseInt(config.BridgePort), config.BridgeHostname);
+
+  if (parseInt(config.BridgeOnionServiceEnabled)) {
+    node.onion.tor.createHiddenService(
+      `${config.BridgeHostname}:${config.BridgePort}`,
+      {
+        virtualPort: 443,
+        keyType: 'RSA1024',
+        keyBlob: rsaPrivateKey
+      },
+      (err, result) => {
+        if (err) {
+          node.logger.error(
+            `failed to establish bridge hidden service: ${err.message}`
+          );
+        } else {
+          node.logger.info(
+            'bridge hidden service established ' +
+            `https://${result.serviceId}.onion:443`
+          );
+        }
+      }
+    );
+  }
 }
 
-if (parseInt(config.DirectoryEnabled)) {
+function startDirectory() {
   let opts = {
     database,
     enableSSL: !!parseInt(config.DirectoryUseSSL),
@@ -327,18 +354,53 @@ if (parseInt(config.DirectoryEnabled)) {
   };
 
   const directory = new orc.Directory(node, opts);
+  const rsaPrivateKey = fs.readFileSync(
+    config.DirectoryOnionServicePrivateKeyPath
+  ).toString().split('\n').filter((l) => l && l[0] !== '-').join('');
 
   node.logger.info(
     'establishing public directory server at ' +
     `${config.DirectoryHostname}:${config.DirectoryPort}`
   );
   directory.listen(parseInt(config.DirectoryPort), config.DirectoryHostname);
+
+  if (parseInt(config.DirectoryOnionServiceEnabled)) {
+    node.onion.tor.createHiddenService(
+      `${config.DirectoryHostname}:${config.DirectoryPort}`,
+      {
+        virtualPort: 443,
+        keyType: 'RSA1024',
+        keyBlob: rsaPrivateKey
+      },
+      (err, result) => {
+        if (err) {
+          node.logger.error(
+            `failed to establish directory hidden service: ${err.message}`
+          );
+        } else {
+          node.logger.info(
+            'directory hidden service established ' +
+            `https://${result.serviceId}.onion:443`
+          );
+        }
+      }
+    );
+  }
 }
 
 // Bind to listening port and join the network
 logger.info('bootstrapping tor and establishing hidden service');
 node.listen(parseInt(config.ListenPort), () => {
   logger.info(`node listening on port ${config.ListenPort}`);
+
+  if (parseInt(config.BridgeEnabled)) {
+    startBridge();
+  }
+
+  if (parseInt(config.DirectoryEnabled)) {
+    startDirectory();
+  }
+
   join();
 });
 
