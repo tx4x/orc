@@ -82,7 +82,8 @@ $ curl http://127.0.0.1:4445 | jq
 
 You can upload a file to the network my sending a multipart/form-upload request 
 to `POST /`. This works the same as if using a `<input type="file"/>` on a web
-page.
+page. You can also add `policy` fields to specify access policies as defined in 
+[IMP-0010](https://github.com/orcproject/imps/blob/master/imp-0010.md).
 
 Example:
 
@@ -139,6 +140,17 @@ Example:
 
 ```
 $ curl http://127.0.0.1:4445/d049bff2-21b5-4f2f-bac3-efb3832a5afb >> README.md
+```
+
+### Sharing Objects
+
+If you supplied an appropriate access `policy` field on upload, you can share a 
+magnet link with others to fetch the object pointer.
+
+Example:
+
+```
+$ curl http://127.0.0.1:4445/d049bff2-21b5-4f2f-bac3-efb3832a5afb/magnet | xclip -selection clipboard
 ```
 
 ### Destroy Objects
