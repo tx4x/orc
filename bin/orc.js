@@ -280,7 +280,14 @@ function join() {
       node.subscribeCapacityAnnouncement((err, rs) => {
         rs.on('data', ([capacity, contact]) => {
           let timestamp = Date.now();
-          this.node.capacity.set(contact[0], { capacity, contact, timestamp });
+
+          database.PeerProfile.findOneAndUpdate({ identity: contact[0]}, {
+            capacity: {
+              allocated: capacity.allocated,
+              available: capacity.available,
+              timestamp: Date.now()
+            }
+          }, { upsert: true });
         });
       });
       announceCapacity();
