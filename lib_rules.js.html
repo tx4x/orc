@@ -34,21 +34,21 @@
 			<li class="dropdown">
 				<a href="modules.list.html" class="dropdown-toggle" data-toggle="dropdown">Modules<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="module-orc.html">orc</a></li><li><a href="module-orc_constants.html">orc/constants</a></li><li><a href="module-orc_profiles.html">orc/profiles</a></li><li><a href="module-orc_utils.html">orc/utils</a></li><li><a href="module-orc_version.html">orc/version</a></li>
+					<li><a href="module-orc.html">orc</a></li><li><a href="module-orc_constants.html">orc/constants</a></li><li><a href="module-orc_utils.html">orc/utils</a></li><li><a href="module-orc_version.html">orc/version</a></li>
 				</ul>
 			</li>
 			
 			<li class="dropdown">
 				<a href="classes.list.html" class="dropdown-toggle" data-toggle="dropdown">Classes<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="Audit.html">Audit</a></li><li><a href="Bridge.html">Bridge</a></li><li><a href="Contract.html">Contract</a></li><li><a href="Dashboard.html">Dashboard</a></li><li><a href="Directory.html">Directory</a></li><li><a href="module-orc_profiles-DirectoryProfile.html">orc/profiles~DirectoryProfile</a></li><li><a href="module-orc_profiles-FarmerProfile.html">orc/profiles~FarmerProfile</a></li><li><a href="module-orc_profiles-Profile.html">orc/profiles~Profile</a></li><li><a href="module-orc_profiles-RenterProfile.html">orc/profiles~RenterProfile</a></li><li><a href="Node.html">Node</a></li><li><a href="Offers.html">Offers</a></li><li><a href="Proof.html">Proof</a></li><li><a href="Rules.html">Rules</a></li><li><a href="Server.html">Server</a></li><li><a href="Shards.html">Shards</a></li><li><a href="Transport.html">Transport</a></li>
+					<li><a href="Audit.html">Audit</a></li><li><a href="Bridge.html">Bridge</a></li><li><a href="Database.html">Database</a></li><li><a href="Directory.html">Directory</a></li><li><a href="KadStorageAdapter.html">KadStorageAdapter</a></li><li><a href="Node.html">Node</a></li><li><a href="Proof.html">Proof</a></li><li><a href="Rules.html">Rules</a></li><li><a href="Server.html">Server</a></li><li><a href="Shards.html">Shards</a></li><li><a href="Transport.html">Transport</a></li>
 				</ul>
 			</li>
 			
 			<li class="dropdown">
 				<a href="events.list.html" class="dropdown-toggle" data-toggle="dropdown">Events<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="Offers.html#event:data">Offers#event:data</a></li><li><a href="Offers.html#event:end">Offers#event:end</a></li><li><a href="Offers.html#event:error">Offers#event:error</a></li><li><a href="Server.html#event:error">Server#event:error</a></li><li><a href="Server.html#event:shardDownloaded">Server#event:shardDownloaded</a></li><li><a href="Server.html#event:shardUploaded">Server#event:shardUploaded</a></li><li><a href="Transport.html#event:download">Transport#event:download</a></li><li><a href="Transport.html#event:upload">Transport#event:upload</a></li>
+					<li><a href="Server.html#event:error">Server#event:error</a></li><li><a href="Server.html#event:shardDownloaded">Server#event:shardDownloaded</a></li><li><a href="Server.html#event:shardUploaded">Server#event:shardUploaded</a></li><li><a href="Transport.html#event:download">Transport#event:download</a></li><li><a href="Transport.html#event:upload">Transport#event:upload</a></li>
 				</ul>
 			</li>
 			
@@ -56,6 +56,13 @@
 				<a href="tutorials.list.html" class="dropdown-toggle" data-toggle="dropdown">Tutorials<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
 					<li><a href="tutorial-config.html">Configuration Guide</a></li><li><a href="tutorial-directory_.html">Running a Directory</a></li><li><a href="tutorial-farming.html">Setting Up Farming</a></li><li><a href="tutorial-install.html">Manual Installation</a></li><li><a href="tutorial-transfers.html">Uploading and Downloading</a></li><li><a href="tutorial-usage.html">Basic Usage Guide</a></li>
+				</ul>
+			</li>
+			
+			<li class="dropdown">
+				<a href="global.html" class="dropdown-toggle" data-toggle="dropdown">Global<b class="caret"></b></a>
+				<ul class="dropdown-menu ">
+					<li><a href="global.html#AuditReport">AuditReport</a></li><li><a href="global.html#NetworkBlob">NetworkBlob</a></li><li><a href="global.html#ObjectPointer">ObjectPointer</a></li><li><a href="global.html#PeerProfile">PeerProfile</a></li><li><a href="global.html#ShardContract">ShardContract</a></li>
 				</ul>
 			</li>
 			
@@ -95,7 +102,6 @@
 const { randomBytes } = require('crypto');
 const async = require('async');
 const utils = require('./utils');
-const Contract = require('./contract');
 const ProofStream = require('./proof');
 
 
@@ -114,38 +120,6 @@ class Rules {
   }
 
   /**
-   * Upon receipt of an OFFER message, nodes must validate the descriptor,
-   * then ensure that the referenced shard is awaiting allocation(s). If both
-   * checks succeed, then the descriptor is added to the appropriate offer
-   * processing stream. Once the descriptor is processed, we respond back to
-   * the originator with the final copy of the contract.
-   * @param {object} request
-   * @param {object} response
-   */
-  offer(request, response, next) {
-    const [descriptor] = request.params;
-    const contract = Contract.from(descriptor);
-    const shardKey = contract.get('data_hash');
-    const offerStream = this.node.offers.get(shardKey);
-
-    if (!(contract.isValid() &amp;&amp; contract.isComplete())) {
-      return next(new Error('Invalid shard descriptor'));
-    }
-
-    if (!offerStream) {
-      return next(new Error('Offers for descriptor are closed'));
-    }
-
-    offerStream.queue(request.contact, contract, (err, result) => {
-      if (err) {
-        return next(err);
-      }
-
-      response.send([result]);
-    });
-  }
-
-  /**
    * Upon receipt of a AUDIT message, the node must look up the contract that
    * is associated with each hash-challenge pair in the payload, prepend the
    * challenge to the shard data, and caclulate the resulting hash, formatted
@@ -155,20 +129,24 @@ class Rules {
    */
   audit(request, response, next) {
     const audits = request.params;
-    const [, { xpub }] = request.contact;
 
     if (!Array.isArray(audits)) {
       return next(new Error('Invalid audit batch supplied'));
     }
 
     async.mapSeries(audits, ({ hash, challenge }, done) => {
-      this.node.contracts.get(`${hash}:${xpub}`, (err, desc) => {
-        if (err) {
+      this.node.database.ShardContract.findOne({
+        shardHash: hash
+      }, (err, contract) => {
+        if (err || !contract) {
           return done(null, { hash, proof: null });
         }
 
-        const contract = Contract.from(desc);
-        const auditLeaves = contract.get('audit_leaves');
+        if (!contract.checkAccessPolicy(request.contact).includes('AUDIT')) {
+          return next(new Error('Not authorized'));
+        }
+
+        const auditLeaves = contract.auditLeaves;
         const proofStream = new ProofStream(auditLeaves, challenge);
 
         proofStream.on('error', () => {
@@ -186,6 +164,7 @@ class Rules {
             return done(null, { hash, proof: null });
           }
 
+          // TODO Add audit result record and report to directory
           shardStream.pipe(proofStream);
         });
       });
@@ -205,18 +184,18 @@ class Rules {
     const [hash] = request.params;
     const { contact } = request;
 
-    this.node.contracts.get(`${hash}:${contact[1].xpub}`, (err, desc) => {
-      if (err) {
-        return next(err);
+    this.node.database.ShardContract.findOne({
+      shardHash: hash
+    }, (err, contract) => {
+      if (err || !contract) {
+        return next(err || new Error('Contract not found'));
       }
 
-      const now = Date.now();
-      const contract = Contract.from(desc);
+      if (!contract.checkAccessPolicy(request.contact).includes('CONSIGN')) {
+        return next(new Error('Not authorized'));
+      }
+
       const token = randomBytes(32).toString('hex');
-
-      if (now > contract.get('store_end')) {
-        return next(new Error('Contract has expired'));
-      }
 
       this.node.server.accept(token, hash, contact);
       response.send([token]);
@@ -233,11 +212,12 @@ class Rules {
    */
   mirror(request, response, next) {
     const [hash, token, target] = request.params;
-    const { contact } = request;
 
-    this.node.contracts.get(`${hash}:${contact[1].xpub}`, (err) => {
-      if (err) {
-        return next(err);
+    this.node.database.ShardContract.findOne({
+      shardHash: hash
+    }, (err, contract) => {
+      if (err || !contract) {
+        return next(err || new Error('Contract not found'));
       }
 
       this.node.shards.createReadStream(hash, (err, shardStream) => {
@@ -277,9 +257,11 @@ class Rules {
     const [hash] = request.params;
     const { contact } = request;
 
-    this.node.contracts.get(`${hash}:${contact[1].xpub}`, (err) => {
-      if (err) {
-        return next(err);
+    this.node.database.ShardContract.findOne({
+      shardHash: hash
+    }, (err, contract) => {
+      if (err || !contract) {
+        return next(err || new Error('Contract not found'));
       }
 
       const token = randomBytes(32).toString('hex');
@@ -296,23 +278,6 @@ class Rules {
   }
 
   /**
-   * Upon receipt of a PROBE message, the node must attempt to send a PING
-   * message to the originator using the declared contact information. If
-   * successful, it must respond positively, otherwise error.
-   * @param {object} request
-   * @param {object} response
-   */
-  probe(request, response, next) {
-    this.node.ping(request.contact, (err) => {
-      if (err) {
-        return next(new Error('Failed to reach probe originator'));
-      }
-
-      response.send([]);
-    });
-  }
-
-  /**
    * Upon receipt of a RENEW message, the recipient farmer must extend or
    * terminate it's contract based on the new terms supplied by the renter.
    * If the renewal descriptor is valid and complete, the farmer must store
@@ -323,30 +288,32 @@ class Rules {
    */
   renew(request, response, next) {
     const [descriptor] = request.params;
-    const renewal = Contract.from(descriptor);
-    const hash = renewal.get('data_hash');
-    const [, { xpub }] = request.contact;
-    const key = `${hash}:${xpub}`;
+    const renewal = new this.node.database.ShardContract(descriptor);
+    const hash = renewal.shardHash;
 
-    if (!(renewal.isValid() &amp;&amp; renewal.isComplete())) {
+    if (!(!renewal.validateSync() &amp;&amp; renewal.verify('owner'))) {
       return next(new Error('Descriptor is invalid or incomplete'));
     }
 
-    this.node.contracts.get(key, (err, desc) => {
-      if (err) {
-        return next(err);
+    this.node.database.ShardContract.findOne({
+      shardHash: hash
+    }, (err, contract) => {
+      if (err || !contract) {
+        return next(err || new Error('Contract not found'));
       }
 
       const allowed = [
-        'renter_id',
-        'renter_hd_key',
-        'renter_signature',
-        'store_begin',
-        'store_end',
-        'audit_leaves'
+        'ownerIdentity',
+        'ownerParentKey',
+        'ownerSignature',
+        'ownerIndex',
+        'auditLeaves',
+        'accessPolicies'
       ];
-      const original = Contract.from(desc);
-      const difference = Contract.diff(original, renewal);
+      const difference = this.node.database.ShardContract.diff(
+        contract,
+        renewal
+      );
 
       for (let prop of difference) {
         if (!allowed.includes(prop)) {
@@ -354,8 +321,8 @@ class Rules {
         }
       }
 
-      renewal.sign('farmer', this.node.spartacus.privateKey);
-      this.node.contracts.put(key, renewal.toObject(), (err) => {
+      renewal.sign('provider', this.node.spartacus.privateKey);
+      renewal.save((err) => {
         if (err) {
           return next(err);
         }
@@ -370,42 +337,46 @@ class Rules {
    * then ensure that there is enough available space for the shard. If both
    * checks succeed, then the descriptor is signed and returned along with a
    * consignment token so the initiating renter can immediately upload the
-   * data. This call is the functional inverse of `OFFER`, as it is used for a
-   * renter to signal to a farmer that it wishes to rent capacity. These
-   * messages are generally sent based on information collected when subscribed
-   * to farmer capacity publications.
+   * data. These messages are generally sent based on information collected
+   * when subscribed to farmer capacity publications.
    * @param {object} request
    * @param {object} response
    */
   claim(request, response, next) {
     const [descriptor] = request.params;
-    const contract = Contract.from(descriptor);
-    const xpub = contract.get('renter_hd_key');
-    const hash = contract.get('data_hash');
+    const contract = new this.node.database.ShardContract(descriptor);
+    const hash = contract.shardHash;
 
-    if (!this.node.claims.includes(xpub) &amp;&amp; !this.node.claims.includes('*')) {
-      return next(new Error('Currently rejecting claims'));
-    }
-
-    contract.set('payment_destination', '?'); // TODO: z_getnewaddress here
-    contract.set('farmer_id', this.node.identity.toString('hex'));
-    contract.set('farmer_hd_key', this.node.contact.xpub);
-    contract.set('farmer_hd_index', this.node.contact.index);
-    contract.sign('farmer', this.node.spartacus.privateKey);
-
-    if (!(contract.isValid() &amp;&amp; contract.isComplete())) {
+    if (!contract.verify('owner')) {
       return next(new Error('Invalid shard descriptor'));
     }
+   // TODO Check reputation score
 
-    this.node.contracts.put(`${hash}:${xpub}`, contract.toObject(), (err) => {
-      if (err) {
-        return next(err);
+    this.node.shards.size((err, result) => {
+      if (err || (result.available &lt; contract.shardSize)) {
+        return next(new Error('Not enough capacity available'));
       }
 
-      const token = randomBytes(32).toString('hex');
+      contract.fundingDestination = null;
+      contract.providerIdentity = this.node.identity.toString('hex');
+      contract.providerParentKey = this.node.contact.xpub;
+      contract.providerIndex = this.node.contact.index;
+      contract.sign('provider', this.node.spartacus.privateKey);
 
-      this.node.server.accept(token, hash, request.contact);
-      response.send([contract.toObject(), token]);
+      if (contract.validateSync()) {
+        return next(new Error('Invalid shard descriptor'));
+      }
+
+      contract.save((err) => {
+        if (err) {
+          return next(err);
+        }
+
+        const token = randomBytes(32).toString('hex');
+
+        this.node.server.accept(token, hash, request.contact);
+        response.send([contract.toObject(), token]);
+      });
     });
   }
 
@@ -453,7 +424,7 @@ module.exports = Rules;
 	</span>
 
 <span class="jsdoc-message">
-	Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.3</a>
+	Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.4</a>
 	
 	using the <a href="https://github.com/docstrap/docstrap">DocStrap template</a>.
 </span>

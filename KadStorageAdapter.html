@@ -4,7 +4,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width">
-	<title>ORC Class: Offers</title>
+	<title>ORC Class: KadStorageAdapter</title>
 
 	<!--[if lt IE 9]>
 	<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
@@ -34,21 +34,21 @@
 			<li class="dropdown">
 				<a href="modules.list.html" class="dropdown-toggle" data-toggle="dropdown">Modules<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="module-orc.html">orc</a></li><li><a href="module-orc_constants.html">orc/constants</a></li><li><a href="module-orc_profiles.html">orc/profiles</a></li><li><a href="module-orc_utils.html">orc/utils</a></li><li><a href="module-orc_version.html">orc/version</a></li>
+					<li><a href="module-orc.html">orc</a></li><li><a href="module-orc_constants.html">orc/constants</a></li><li><a href="module-orc_utils.html">orc/utils</a></li><li><a href="module-orc_version.html">orc/version</a></li>
 				</ul>
 			</li>
 			
 			<li class="dropdown">
 				<a href="classes.list.html" class="dropdown-toggle" data-toggle="dropdown">Classes<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="Audit.html">Audit</a></li><li><a href="Bridge.html">Bridge</a></li><li><a href="Contract.html">Contract</a></li><li><a href="Dashboard.html">Dashboard</a></li><li><a href="Directory.html">Directory</a></li><li><a href="module-orc_profiles-DirectoryProfile.html">orc/profiles~DirectoryProfile</a></li><li><a href="module-orc_profiles-FarmerProfile.html">orc/profiles~FarmerProfile</a></li><li><a href="module-orc_profiles-Profile.html">orc/profiles~Profile</a></li><li><a href="module-orc_profiles-RenterProfile.html">orc/profiles~RenterProfile</a></li><li><a href="Node.html">Node</a></li><li><a href="Offers.html">Offers</a></li><li><a href="Proof.html">Proof</a></li><li><a href="Rules.html">Rules</a></li><li><a href="Server.html">Server</a></li><li><a href="Shards.html">Shards</a></li><li><a href="Transport.html">Transport</a></li>
+					<li><a href="Audit.html">Audit</a></li><li><a href="Bridge.html">Bridge</a></li><li><a href="Database.html">Database</a></li><li><a href="Directory.html">Directory</a></li><li><a href="KadStorageAdapter.html">KadStorageAdapter</a></li><li><a href="Node.html">Node</a></li><li><a href="Proof.html">Proof</a></li><li><a href="Rules.html">Rules</a></li><li><a href="Server.html">Server</a></li><li><a href="Shards.html">Shards</a></li><li><a href="Transport.html">Transport</a></li>
 				</ul>
 			</li>
 			
 			<li class="dropdown">
 				<a href="events.list.html" class="dropdown-toggle" data-toggle="dropdown">Events<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="Offers.html#event:data">Offers#event:data</a></li><li><a href="Offers.html#event:end">Offers#event:end</a></li><li><a href="Offers.html#event:error">Offers#event:error</a></li><li><a href="Server.html#event:error">Server#event:error</a></li><li><a href="Server.html#event:shardDownloaded">Server#event:shardDownloaded</a></li><li><a href="Server.html#event:shardUploaded">Server#event:shardUploaded</a></li><li><a href="Transport.html#event:download">Transport#event:download</a></li><li><a href="Transport.html#event:upload">Transport#event:upload</a></li>
+					<li><a href="Server.html#event:error">Server#event:error</a></li><li><a href="Server.html#event:shardDownloaded">Server#event:shardDownloaded</a></li><li><a href="Server.html#event:shardUploaded">Server#event:shardUploaded</a></li><li><a href="Transport.html#event:download">Transport#event:download</a></li><li><a href="Transport.html#event:upload">Transport#event:upload</a></li>
 				</ul>
 			</li>
 			
@@ -56,6 +56,13 @@
 				<a href="tutorials.list.html" class="dropdown-toggle" data-toggle="dropdown">Tutorials<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
 					<li><a href="tutorial-config.html">Configuration Guide</a></li><li><a href="tutorial-directory_.html">Running a Directory</a></li><li><a href="tutorial-farming.html">Setting Up Farming</a></li><li><a href="tutorial-install.html">Manual Installation</a></li><li><a href="tutorial-transfers.html">Uploading and Downloading</a></li><li><a href="tutorial-usage.html">Basic Usage Guide</a></li>
+				</ul>
+			</li>
+			
+			<li class="dropdown">
+				<a href="global.html" class="dropdown-toggle" data-toggle="dropdown">Global<b class="caret"></b></a>
+				<ul class="dropdown-menu ">
+					<li><a href="global.html#AuditReport">AuditReport</a></li><li><a href="global.html#NetworkBlob">NetworkBlob</a></li><li><a href="global.html#ObjectPointer">ObjectPointer</a></li><li><a href="global.html#PeerProfile">PeerProfile</a></li><li><a href="global.html#ShardContract">ShardContract</a></li>
 				</ul>
 			</li>
 			
@@ -85,16 +92,16 @@
 		<div id="main">
 			
 
-	<h1 class="page-title">Class: Offers</h1>
+	<h1 class="page-title">Class: KadStorageAdapter</h1>
 <section>
 
 <header>
     
         <h2>
-        Offers
+        KadStorageAdapter
         </h2>
         
-            <div class="class-description">Manages a stream of offers for a given storage contract publication</div>
+            <div class="class-description">Wraps the supplied model for a kad/levelup compatible interface</div>
         
     
 </header>
@@ -106,7 +113,7 @@
         
 <hr>
 <dt>
-    <h4 class="name" id="Offers"><span class="type-signature"></span>new Offers(contract [, options])</h4>
+    <h4 class="name" id="KadStorageAdapter"><span class="type-signature"></span>new KadStorageAdapter(databaseModel)</h4>
     
     
 </dt>
@@ -133,8 +140,6 @@
         <th>Type</th>
 
         
-        <th>Argument</th>
-        
 
         
 
@@ -147,13 +152,13 @@
 
         <tr>
             
-                <td class="name"><code>contract</code></td>
+                <td class="name"><code>databaseModel</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type"><a href="Contract.html">Contract</a></span>
+<span class="param-type">object</span>
 
 
 
@@ -161,148 +166,10 @@
             </td>
 
             
-                <td class="attributes">
-                
-
-                
-
-                
-                </td>
-            
 
             
 
-            <td class="description last">Storage contract published to network</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>options</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Object</span>
-
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last">
-                <h6 class="method-params-label method-subparams-label">Properties</h6>
-                
-
-<table class="params table table-striped">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-        <th>Argument</th>
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>maxOffers</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Number</span>
-
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last">Maximum number of offers to process</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>farmerBlacklist</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Array.&lt;String></span>
-
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last">Reject offers from nodeID</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-            </td>
+            <td class="description last"></td>
         </tr>
 
     
@@ -346,7 +213,7 @@
 	<dd class="tag-source">
 		<ul class="dummy">
 			<li>
-				<a href="lib_offers.js.html">lib/offers.js</a>
+				<a href="lib_database.js.html">lib/database.js</a>
 			</li>
 		</ul>
 	</dd>
@@ -397,7 +264,7 @@
             
 <hr>
 <dt>
-    <h4 class="name" id="destroy"><span class="type-signature"></span>destroy()</h4>
+    <h4 class="name" id="createReadStream"><span class="type-signature"></span>createReadStream()</h4>
     
     
 </dt>
@@ -405,7 +272,7 @@
 
     
     <div class="description">
-        Tears down listeners and ends the stream
+        Returns a readable stream of all items
     </div>
     
 
@@ -451,7 +318,7 @@
 	<dd class="tag-source">
 		<ul class="dummy">
 			<li>
-				<a href="lib_offers.js.html">lib/offers.js</a>
+				<a href="lib_database.js.html">lib/database.js</a>
 			</li>
 		</ul>
 	</dd>
@@ -476,6 +343,26 @@
     
 
     
+    <h5>Returns:</h5>
+    
+            
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">ReadableStream</span>
+
+
+
+    </dd>
+</dl>
+
+
+        
 
     
 </dd>
@@ -484,7 +371,7 @@
             
 <hr>
 <dt>
-    <h4 class="name" id="queue"><span class="type-signature"></span>queue(contact, contract, callback)</h4>
+    <h4 class="name" id="del"><span class="type-signature"></span>del(key, callback)</h4>
     
     
 </dt>
@@ -492,7 +379,7 @@
 
     
     <div class="description">
-        Adds the offer to the internal queue if there is room
+        Delete item by key
     </div>
     
 
@@ -527,13 +414,13 @@
 
         <tr>
             
-                <td class="name"><code>contact</code></td>
+                <td class="name"><code>key</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">array</span>
+<span class="param-type">string</span>
 
 
 
@@ -544,31 +431,7 @@
 
             
 
-            <td class="description last">The sending farmer for the offer</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>contract</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">object</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">The received offer contract</td>
+            <td class="description last"></td>
         </tr>
 
     
@@ -636,7 +499,465 @@
 	<dd class="tag-source">
 		<ul class="dummy">
 			<li>
-				<a href="lib_offers.js.html">lib/offers.js</a>
+				<a href="lib_database.js.html">lib/database.js</a>
+			</li>
+		</ul>
+	</dd>
+	
+
+	
+
+	
+
+	
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dd>
+
+        
+            
+<hr>
+<dt>
+    <h4 class="name" id="get"><span class="type-signature"></span>get(key [, options], callback)</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        Get item by key
+    </div>
+    
+
+    
+
+    
+
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Argument</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>key</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>options</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>callback</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+    
+
+    
+<dl class="details">
+    
+
+	
+
+	
+
+	
+
+    
+
+    
+
+    
+
+    
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
+	<dd class="tag-source">
+		<ul class="dummy">
+			<li>
+				<a href="lib_database.js.html">lib/database.js</a>
+			</li>
+		</ul>
+	</dd>
+	
+
+	
+
+	
+
+	
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dd>
+
+        
+            
+<hr>
+<dt>
+    <h4 class="name" id="put"><span class="type-signature"></span>put(key, value [, options], callback)</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        Put item by key
+    </div>
+    
+
+    
+
+    
+
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Argument</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>key</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>value</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>options</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>callback</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+    
+
+    
+<dl class="details">
+    
+
+	
+
+	
+
+	
+
+    
+
+    
+
+    
+
+    
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
+	<dd class="tag-source">
+		<ul class="dummy">
+			<li>
+				<a href="lib_database.js.html">lib/database.js</a>
 			</li>
 		</ul>
 	</dd>
@@ -670,445 +991,6 @@
 
     
 
-    
-        <h3 class="subsection-title">Events</h3>
-
-        <dl>
-            
-<hr>
-<dt>
-    <h4 class="name" id="event:data">data</h4>
-    
-    
-</dt>
-<dd>
-
-    
-    <div class="description">
-        Triggered when an offer is received
-    </div>
-    
-
-    
-
-    
-
-    
-    
-        <h5>Parameters:</h5>
-        
-
-<table class="params table table-striped">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>data</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Object</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">
-                <h6 class="method-params-label method-subparams-label">Properties</h6>
-                
-
-<table class="params table table-striped">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>contact</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Contact</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">The sending farmer for the offer</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>contract</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="Contract.html">Contract</a></span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">The received offer contract</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-            </td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-    
-
-    
-<dl class="details">
-    
-
-	
-
-	
-
-	
-
-    
-
-    
-
-    
-
-    
-
-	
-
-	
-
-	
-
-	
-
-	
-
-
-
-	
-	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
-	<dd class="tag-source">
-		<ul class="dummy">
-			<li>
-				<a href="lib_offers.js.html">lib/offers.js</a>
-			</li>
-		</ul>
-	</dd>
-	
-
-	
-
-	
-
-	
-</dl>
-
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dd>
-
-        
-            
-<hr>
-<dt>
-    <h4 class="name" id="event:end">end</h4>
-    
-    
-</dt>
-<dd>
-
-    
-    <div class="description">
-        Triggered when the maximum number of offers are received and processed
-    </div>
-    
-
-    
-
-    
-
-    
-    
-
-    
-<dl class="details">
-    
-
-	
-
-	
-
-	
-
-    
-
-    
-
-    
-
-    
-
-	
-
-	
-
-	
-
-	
-
-	
-
-
-
-	
-	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
-	<dd class="tag-source">
-		<ul class="dummy">
-			<li>
-				<a href="lib_offers.js.html">lib/offers.js</a>
-			</li>
-		</ul>
-	</dd>
-	
-
-	
-
-	
-
-	
-</dl>
-
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dd>
-
-        
-            
-<hr>
-<dt>
-    <h4 class="name" id="event:error">error</h4>
-    
-    
-</dt>
-<dd>
-
-    
-    <div class="description">
-        Triggered if an error occurs
-    </div>
-    
-
-    
-
-    
-
-    
-    
-        <h5>Parameters:</h5>
-        
-
-<table class="params table table-striped">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>error</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Error</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">The error object with message</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-    
-
-    
-<dl class="details">
-    
-
-	
-
-	
-
-	
-
-    
-
-    
-
-    
-
-    
-
-	
-
-	
-
-	
-
-	
-
-	
-
-
-
-	
-	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
-	<dd class="tag-source">
-		<ul class="dummy">
-			<li>
-				<a href="lib_offers.js.html">lib/offers.js</a>
-			</li>
-		</ul>
-	</dd>
-	
-
-	
-
-	
-
-	
-</dl>
-
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dd>
-
-        </dl>
     
 </article>
 
@@ -1154,7 +1036,7 @@
 	</span>
 
 <span class="jsdoc-message">
-	Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.3</a>
+	Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.4</a>
 	
 	using the <a href="https://github.com/docstrap/docstrap">DocStrap template</a>.
 </span>

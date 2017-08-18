@@ -34,21 +34,21 @@
 			<li class="dropdown">
 				<a href="modules.list.html" class="dropdown-toggle" data-toggle="dropdown">Modules<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="module-orc.html">orc</a></li><li><a href="module-orc_constants.html">orc/constants</a></li><li><a href="module-orc_profiles.html">orc/profiles</a></li><li><a href="module-orc_utils.html">orc/utils</a></li><li><a href="module-orc_version.html">orc/version</a></li>
+					<li><a href="module-orc.html">orc</a></li><li><a href="module-orc_constants.html">orc/constants</a></li><li><a href="module-orc_utils.html">orc/utils</a></li><li><a href="module-orc_version.html">orc/version</a></li>
 				</ul>
 			</li>
 			
 			<li class="dropdown">
 				<a href="classes.list.html" class="dropdown-toggle" data-toggle="dropdown">Classes<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="Audit.html">Audit</a></li><li><a href="Bridge.html">Bridge</a></li><li><a href="Contract.html">Contract</a></li><li><a href="Dashboard.html">Dashboard</a></li><li><a href="Directory.html">Directory</a></li><li><a href="module-orc_profiles-DirectoryProfile.html">orc/profiles~DirectoryProfile</a></li><li><a href="module-orc_profiles-FarmerProfile.html">orc/profiles~FarmerProfile</a></li><li><a href="module-orc_profiles-Profile.html">orc/profiles~Profile</a></li><li><a href="module-orc_profiles-RenterProfile.html">orc/profiles~RenterProfile</a></li><li><a href="Node.html">Node</a></li><li><a href="Offers.html">Offers</a></li><li><a href="Proof.html">Proof</a></li><li><a href="Rules.html">Rules</a></li><li><a href="Server.html">Server</a></li><li><a href="Shards.html">Shards</a></li><li><a href="Transport.html">Transport</a></li>
+					<li><a href="Audit.html">Audit</a></li><li><a href="Bridge.html">Bridge</a></li><li><a href="Database.html">Database</a></li><li><a href="Directory.html">Directory</a></li><li><a href="KadStorageAdapter.html">KadStorageAdapter</a></li><li><a href="Node.html">Node</a></li><li><a href="Proof.html">Proof</a></li><li><a href="Rules.html">Rules</a></li><li><a href="Server.html">Server</a></li><li><a href="Shards.html">Shards</a></li><li><a href="Transport.html">Transport</a></li>
 				</ul>
 			</li>
 			
 			<li class="dropdown">
 				<a href="events.list.html" class="dropdown-toggle" data-toggle="dropdown">Events<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="Offers.html#event:data">Offers#event:data</a></li><li><a href="Offers.html#event:end">Offers#event:end</a></li><li><a href="Offers.html#event:error">Offers#event:error</a></li><li><a href="Server.html#event:error">Server#event:error</a></li><li><a href="Server.html#event:shardDownloaded">Server#event:shardDownloaded</a></li><li><a href="Server.html#event:shardUploaded">Server#event:shardUploaded</a></li><li><a href="Transport.html#event:download">Transport#event:download</a></li><li><a href="Transport.html#event:upload">Transport#event:upload</a></li>
+					<li><a href="Server.html#event:error">Server#event:error</a></li><li><a href="Server.html#event:shardDownloaded">Server#event:shardDownloaded</a></li><li><a href="Server.html#event:shardUploaded">Server#event:shardUploaded</a></li><li><a href="Transport.html#event:download">Transport#event:download</a></li><li><a href="Transport.html#event:upload">Transport#event:upload</a></li>
 				</ul>
 			</li>
 			
@@ -56,6 +56,13 @@
 				<a href="tutorials.list.html" class="dropdown-toggle" data-toggle="dropdown">Tutorials<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
 					<li><a href="tutorial-config.html">Configuration Guide</a></li><li><a href="tutorial-directory_.html">Running a Directory</a></li><li><a href="tutorial-farming.html">Setting Up Farming</a></li><li><a href="tutorial-install.html">Manual Installation</a></li><li><a href="tutorial-transfers.html">Uploading and Downloading</a></li><li><a href="tutorial-usage.html">Basic Usage Guide</a></li>
+				</ul>
+			</li>
+			
+			<li class="dropdown">
+				<a href="global.html" class="dropdown-toggle" data-toggle="dropdown">Global<b class="caret"></b></a>
+				<ul class="dropdown-menu ">
+					<li><a href="global.html#AuditReport">AuditReport</a></li><li><a href="global.html#NetworkBlob">NetworkBlob</a></li><li><a href="global.html#ObjectPointer">ObjectPointer</a></li><li><a href="global.html#PeerProfile">PeerProfile</a></li><li><a href="global.html#ShardContract">ShardContract</a></li>
 				</ul>
 			</li>
 			
@@ -99,14 +106,14 @@ const merge = require('merge');
 const { KademliaNode } = require('kad');
 const quasar = require('kad-quasar');
 const spartacus = require('kad-spartacus');
+const cas = require('kad-content');
 const constants = require('./constants');
 const https = require('https');
 
-const Contract = require('./contract');
-const OfferStream = require('./offers');
 const Rules = require('./rules');
 const Server = require('./server');
 const Transport = require('./transport');
+const Database = require('./database');
 
 
 /**
@@ -117,13 +124,10 @@ class Node extends KademliaNode {
 
   static get DEFAULTS() {
     return {
-      logger: createLogger({ name: 'storj' }),
+      logger: createLogger({ name: 'orc' }),
       transport: new Transport(),
       privateExtendedKey: null,
-      keyDerivationIndex: 1,
-      contracts: null,
-      shards: null,
-      claims: []
+      keyDerivationIndex: 1
     };
   }
 
@@ -133,31 +137,35 @@ class Node extends KademliaNode {
    * @param {object} options
    * @param {string} options.privateExtendedKey - HD extended private key
    * @param {object} [options.logger] - Bunyan compatible logger
-   * @param {object} [options.transport] - Orc transport adapter
-   * @param {object} options.contracts - Levelup compatible contract store
-   * @param {object} options.shards - Compatible shard database
-   * @param {string[]} [options.claims] - Enable direct capacity claims from
-   * the given public extended keys
+   * @param {Transport} [options.transport]
+   * @param {Database} options.database
+   * @param {Shards} options.shards
    * @param {number} [options.keyDerivationIndex] - HD derivation index
    */
   constructor(options) {
-    const opts = merge(Node.DEFAULTS, options);
+    const opts = merge(Node.DEFAULTS, options, {
+      storage: new Database.KadStorageAdapter(options.database.NetworkBlob)
+    });
 
     super(opts);
 
     this.quasar = this.plugin(quasar);
-    this.spartacus = this.plugin(spartacus(options.privateExtendedKey,
-                                           options.keyDerivationIndex,
-                                           constants.HD_KEY_DERIVATION_PATH));
-    this.offers = new Map();
-    this.contracts = opts.contracts;
+    this.spartacus = this.plugin(spartacus(
+      options.privateExtendedKey,
+      options.keyDerivationIndex,
+      constants.HD_KEY_DERIVATION_PATH
+    ));
+    this.cas = this.plugin(cas({
+      keyAlgorithm: 'rmd160',
+      valueEncoding: 'base64'
+    }));
+    this.database = opts.database;
     this.shards = opts.shards;
     this.server = new Server({
-      contracts: this.contracts,
+      database: this.database,
       shards: this.shards,
       identity: this.identity
     });
-    this.claims = opts.claims;
 
     this.transport.on('identify', (req, res) => {
       this.logger.debug('responding to peer requested identification');
@@ -182,12 +190,10 @@ class Node extends KademliaNode {
   listen() {
     let handlers = new Rules(this);
 
-    this.use('OFFER', handlers.offer.bind(handlers));
     this.use('AUDIT', handlers.audit.bind(handlers));
     this.use('CONSIGN', handlers.consign.bind(handlers));
     this.use('MIRROR', handlers.mirror.bind(handlers));
     this.use('RETRIEVE', handlers.retrieve.bind(handlers));
-    this.use('PROBE', handlers.probe.bind(handlers));
     this.use('RENEW', handlers.renew.bind(handlers));
     this.use('CLAIM', handlers.claim.bind(handlers));
 
@@ -311,141 +317,6 @@ class Node extends KademliaNode {
    */
 
   /**
-   * Publishes a storage contract proposal to the network and exposes a stream
-   * of received OFFER messages
-   * @param {object} contract - See {@tutorial storage-contracts} for format
-   * @param {object} [offerStreamOptions] - See {@link OfferStream}
-   * @param {Node~publishShardDescriptorCallback} callback
-   */
-  publishShardDescriptor(contract, options, callback) {
-    contract = Contract.from(contract);
-
-    /* istanbul ignore else */
-    if (typeof options === 'function') {
-      callback = options;
-      options = {};
-    }
-
-    const routingKey = contract.get('data_hash');
-    const topicString = contract.getTopicString();
-    const offerStream = new OfferStream(contract, options);
-    const descriptor = contract.toObject();
-    const contents = [
-      descriptor,
-      [this.identity.toString('hex'), this.contact]
-    ];
-
-    ['end', 'error', 'destroy'].forEach((event) => {
-      offerStream.on(event, () => this.offers.delete(routingKey));
-    });
-
-    this.offers.set(routingKey, offerStream);
-    this.quasarPublish(topicString, contents, { routingKey }, (err) => {
-      if (err) {
-        return callback(err);
-      }
-
-      callback(null, offerStream);
-    });
-  }
-  /**
-   * @callback Node~publishShardDescriptorCallback
-   * @param {error|null} error
-   * @param {Offers} offerStream - Readable stream of OFFER messages
-   */
-
-  /**
-   * Resolves the offer for the given shard hash and offer identifier
-   * @param {string} hash - Shard hash for the contract
-   * @param {string} offer - Unique offer identifier
-   * @param {error|null} error - If applicable an error object
-   * @param {object|null} contract - The resolved and signed contract
-   * @param {Node~resolveContractOfferCallback} callback
-   */
-  /* eslint max-params: [2, 5] */
-  resolveContractOffer(hash, offer, error, contract, callback) {
-    const stream = this.offers.get(hash);
-    const resolver = stream ? stream.resolvers.get(offer) : null;
-
-    if (!resolver) {
-      return callback(new Error('Offer resolver not found'));
-    }
-
-    resolver(error, contract);
-    callback(null);
-  }
-  /**
-   * @callback Node~resolveContractOfferCallback
-   * @param {error|null} error
-   */
-
-  /**
-   * Subscribes to the supplied shard descriptor topics and executes the user
-   * and exposes a stream of incoming shard descriptor messages
-   * @param {string[]} descriptorCodes - See {@tutorial protocol}
-   * @param {Node~subscribeShardDescriptorCallback} callback
-   */
-  subscribeShardDescriptor(descriptorCodes, callback) {
-    const descriptorStream = new ReadableStream({
-      read: () => null,
-      objectMode: true
-    });
-
-    descriptorCodes = descriptorCodes.map((code) => `0f${code}`);
-
-    this.quasarSubscribe(descriptorCodes, ([descriptor, contact]) => {
-      descriptor = Contract.from(descriptor);
-
-      if (descriptor.isValid()) {
-        descriptorStream.push([descriptor.toObject(), contact]);
-      }
-    });
-
-    callback(null, descriptorStream);
-  }
-  /**
-   * @callback Node~subscribeShardDescriptorCallback
-   * @param {error|null} error
-   * @param {ReadableStream} descriptorStream - Readable stream of incoming
-   * shard descriptors
-   */
-
-  /**
-   * Offers a peer an allocation for the storage of a given shard
-   * descriptor-turned-contract, see {@tutorial storage-contracts} for details
-   * @param {array} peer
-   * @param {string} peer.0 - Identity key string
-   * @param {string|object} peer.1 - Address data for contact
-   * @param {object} contract - The completed shard descriptor contract
-   * @param {Node~offerShardAllocationCallback} callback
-   */
-  offerShardAllocation(peer, descriptor, callback) {
-    this.send('OFFER', [descriptor], peer, (err, result) => {
-      if (err) {
-        return callback(err);
-      }
-
-      const contract = Contract.from(result[0]);
-      const hash = contract.get('data_hash');
-      const [, { xpub }] = peer;
-      const key = `${hash}:${xpub}`;
-
-      if (!(contract.isValid() &amp;&amp; contract.isComplete())) {
-        return callback(new Error(
-          'Peer replied with invalid or incomplete contract'
-        ));
-      }
-
-      this.contracts.put(key, result[0], (err) => callback(err, contract));
-    });
-  }
-  /**
-   * @callback Node~offerShardAllocationCallback
-   * @param {error|null} error
-   * @param {object} contract - See {@tutorial storage-contracts}
-   */
-
-  /**
    * Requests that the target peer update their local version of the given
    * contract. Used to extend storage time or terminate storage. Peer will
    * respond with an error or their updated, signed record of the renewal.
@@ -461,18 +332,17 @@ class Node extends KademliaNode {
         return callback(err);
       }
 
-      const contract = Contract.from(result[0]);
-      const hash = contract.get('data_hash');
-      const [, { xpub }] = peer;
-      const key = `${hash}:${xpub}`;
+      const contract = new this.database.ShardContract(result[0]);
 
-      if (!(contract.isValid() &amp;&amp; contract.isComplete())) {
+      if (!(!contract.validateSync() &amp;&amp; contract.verify('owner'))) {
         return callback(new Error(
           'Peer replied with invalid or incomplete contract'
         ));
       }
 
-      this.contracts.put(key, result, (err) => callback(err, contract));
+      this.database.ShardContract.findOneAndUpdate({
+        shardHash: descriptor.shardHash
+      }, result[0], (err) => callback(err, contract));
     });
   }
   /**
@@ -484,19 +354,16 @@ class Node extends KademliaNode {
   /**
    * Subscribes to capacity announcements for the given topic codes
    * and exposes announcements as a stream.
-   * @param {string[]} descriptorCodes - See {@tutorial protocol}
    * @param {Node~subscribeCapacityAnnouncementCallback} callback
    */
-  subscribeCapacityAnnouncement(descriptorCodes, callback) {
+  subscribeCapacityAnnouncement(callback) {
     const capacityStream = new ReadableStream({
       read: () => null,
       objectMode: true
     });
 
-    descriptorCodes = descriptorCodes.map((code) => `0c${code}`);
-
-    this.quasarSubscribe(descriptorCodes, ([bytesAvailable, contact]) => {
-      capacityStream.push([bytesAvailable, contact]);
+    this.quasarSubscribe('ANNOUNCE', ([data, contact]) => {
+      capacityStream.push([data, contact]);
     });
 
     callback(null, capacityStream);
@@ -510,21 +377,18 @@ class Node extends KademliaNode {
   /**
    * Announces to interested renter nodes that this node has capacity
    * available for renting.
-   * @param {string[]} descriptorCode - See {@tutorial protocol}
    * @param {number} data
    * @param {number} data.available - Total bytes capacity available
    * @param {number} data.allocated - Total bytes capacity allocated
    * @param {Node~publishCapacityAnnouncementCallback} callback
    */
-  publishCapacityAnnouncement(descriptorCode, data, callback) {
+  publishCapacityAnnouncement(data, callback) {
     const contents = [
       data,
       [this.identity.toString('hex'), this.contact]
     ];
 
-    this.claims = data.available > 0 ? this.claims : [];
-
-    this.quasarPublish(`0c${descriptorCode}`, contents, callback);
+    this.quasarPublish('ANNOUNCE', contents, callback);
   }
   /**
    * @callback Node~publishCapacityAnnouncementCallback
@@ -594,7 +458,7 @@ module.exports = Node;
 	</span>
 
 <span class="jsdoc-message">
-	Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.3</a>
+	Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.4</a>
 	
 	using the <a href="https://github.com/docstrap/docstrap">DocStrap template</a>.
 </span>

@@ -34,21 +34,21 @@
 			<li class="dropdown">
 				<a href="modules.list.html" class="dropdown-toggle" data-toggle="dropdown">Modules<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="module-orc.html">orc</a></li><li><a href="module-orc_constants.html">orc/constants</a></li><li><a href="module-orc_profiles.html">orc/profiles</a></li><li><a href="module-orc_utils.html">orc/utils</a></li><li><a href="module-orc_version.html">orc/version</a></li>
+					<li><a href="module-orc.html">orc</a></li><li><a href="module-orc_constants.html">orc/constants</a></li><li><a href="module-orc_utils.html">orc/utils</a></li><li><a href="module-orc_version.html">orc/version</a></li>
 				</ul>
 			</li>
 			
 			<li class="dropdown">
 				<a href="classes.list.html" class="dropdown-toggle" data-toggle="dropdown">Classes<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="Audit.html">Audit</a></li><li><a href="Bridge.html">Bridge</a></li><li><a href="Contract.html">Contract</a></li><li><a href="Dashboard.html">Dashboard</a></li><li><a href="Directory.html">Directory</a></li><li><a href="module-orc_profiles-DirectoryProfile.html">orc/profiles~DirectoryProfile</a></li><li><a href="module-orc_profiles-FarmerProfile.html">orc/profiles~FarmerProfile</a></li><li><a href="module-orc_profiles-Profile.html">orc/profiles~Profile</a></li><li><a href="module-orc_profiles-RenterProfile.html">orc/profiles~RenterProfile</a></li><li><a href="Node.html">Node</a></li><li><a href="Offers.html">Offers</a></li><li><a href="Proof.html">Proof</a></li><li><a href="Rules.html">Rules</a></li><li><a href="Server.html">Server</a></li><li><a href="Shards.html">Shards</a></li><li><a href="Transport.html">Transport</a></li>
+					<li><a href="Audit.html">Audit</a></li><li><a href="Bridge.html">Bridge</a></li><li><a href="Database.html">Database</a></li><li><a href="Directory.html">Directory</a></li><li><a href="KadStorageAdapter.html">KadStorageAdapter</a></li><li><a href="Node.html">Node</a></li><li><a href="Proof.html">Proof</a></li><li><a href="Rules.html">Rules</a></li><li><a href="Server.html">Server</a></li><li><a href="Shards.html">Shards</a></li><li><a href="Transport.html">Transport</a></li>
 				</ul>
 			</li>
 			
 			<li class="dropdown">
 				<a href="events.list.html" class="dropdown-toggle" data-toggle="dropdown">Events<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="Offers.html#event:data">Offers#event:data</a></li><li><a href="Offers.html#event:end">Offers#event:end</a></li><li><a href="Offers.html#event:error">Offers#event:error</a></li><li><a href="Server.html#event:error">Server#event:error</a></li><li><a href="Server.html#event:shardDownloaded">Server#event:shardDownloaded</a></li><li><a href="Server.html#event:shardUploaded">Server#event:shardUploaded</a></li><li><a href="Transport.html#event:download">Transport#event:download</a></li><li><a href="Transport.html#event:upload">Transport#event:upload</a></li>
+					<li><a href="Server.html#event:error">Server#event:error</a></li><li><a href="Server.html#event:shardDownloaded">Server#event:shardDownloaded</a></li><li><a href="Server.html#event:shardUploaded">Server#event:shardUploaded</a></li><li><a href="Transport.html#event:download">Transport#event:download</a></li><li><a href="Transport.html#event:upload">Transport#event:upload</a></li>
 				</ul>
 			</li>
 			
@@ -56,6 +56,13 @@
 				<a href="tutorials.list.html" class="dropdown-toggle" data-toggle="dropdown">Tutorials<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
 					<li><a href="tutorial-config.html">Configuration Guide</a></li><li><a href="tutorial-directory_.html">Running a Directory</a></li><li><a href="tutorial-farming.html">Setting Up Farming</a></li><li><a href="tutorial-install.html">Manual Installation</a></li><li><a href="tutorial-transfers.html">Uploading and Downloading</a></li><li><a href="tutorial-usage.html">Basic Usage Guide</a></li>
+				</ul>
+			</li>
+			
+			<li class="dropdown">
+				<a href="global.html" class="dropdown-toggle" data-toggle="dropdown">Global<b class="caret"></b></a>
+				<ul class="dropdown-menu ">
+					<li><a href="global.html#AuditReport">AuditReport</a></li><li><a href="global.html#NetworkBlob">NetworkBlob</a></li><li><a href="global.html#ObjectPointer">ObjectPointer</a></li><li><a href="global.html#PeerProfile">PeerProfile</a></li><li><a href="global.html#ShardContract">ShardContract</a></li>
 				</ul>
 			</li>
 			
@@ -97,6 +104,9 @@ const https = require('https');
 const fs = require('fs');
 const cors = require('cors');
 const ms = require('ms');
+const async = require('async');
+const merge = require('merge');
+const url = require('url');
 
 
 /**
@@ -108,15 +118,16 @@ class Directory {
    * @constructor
    * @param {Node} node
    * @param {object} options
-   * @param {object} options.capacityCache - Capacity cache object
    * @param {boolean} options.enableSSL - Use SSL
    * @param {string} options.serviceKeyPath - Path to PEM private key
    * @param {string} options.certificatePath - Path to PEM certificate
    * @param {string[]} options.authorityChains - Path to PEM CA certificates
+   * @param {string} options.bootstrapService - Address to bootstrap profiles
    */
   constructor(node, options) {
     this.node = node;
-    this.capacity = options.capacityCache;
+    this.database = this.node.database;
+    this._bootstrapService = options.bootstrapService;
 
     /* istanbul ignore if */
     if (options.enableSSL) {
@@ -135,33 +146,56 @@ class Directory {
   }
 
   /**
+   * Bootstraps the peer profiles
+   * @param {function} callback
+   */
+  bootstrap(callback) {
+    let opts = merge(url.parse(this._bootstrapService), {
+      agent: this.node.onion.createSecureAgent()
+    });
+    let proto = opts.protocol === 'https:' ? https : http;
+
+    proto.get(opts, (res) => {
+      let body = '';
+
+      res.on('data', (d) => body += d.toString()).on('end', () => {
+        try {
+          body = JSON.parse(body);
+        } catch (err) {
+          /* istanbul ignore next */
+          return callback('Failed to parse directory payload');
+        }
+
+        async.eachSeries(body, (profile, next) => {
+          this.database.PeerProfile.findOneAndUpdate(
+            { identity: profile.identity, updated: { $lte: profile.updated } },
+            profile,
+            { upsert: true },
+            next
+          );
+        }, callback);
+      }).on('error', callback);
+    }).on('error', callback);
+  }
+
+  /**
    * @private
    */
   _handleRequest(req, res) {
     let now = Date.now();
-    let written = 0;
-    let results = [];
 
     cors()(req, res, () => {
-      res.setHeader('Content-Type', 'application/json');
-      res.write('[');
-
-      this.capacity.each((obj) => {
-        results.push(obj);
-      }, () => {
-        results = results.filter(r => {
-          return r.timestamp > (now - ms('24H')) &amp;&amp;
-            typeof r.contact === 'object';
-        });
-        results.sort((a, b) => b.timestamp - a.timestamp);
-        results.forEach((obj) => {
-          delete obj._key;
-          res.write((written === 0 ? '' : ',') + JSON.stringify(obj));
-          written++;
-        });
-        res.write(']');
-        res.end();
-      }, true);
+      this.database.PeerProfile.find({
+        $or: [
+          { 'capacity.timestamp': { $gt: now - ms('24HR') } },
+          { updated: { $gt: now - ms('24HR') } }
+        ]
+      }, [], {
+        sort: { 'capacity.timestamp': -1 }
+      }, (err, results) => {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify(results.map((r) => r.toObject())));
+      });
     });
   }
 
@@ -219,7 +253,7 @@ module.exports = Directory;
 	</span>
 
 <span class="jsdoc-message">
-	Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.3</a>
+	Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.4</a>
 	
 	using the <a href="https://github.com/docstrap/docstrap">DocStrap template</a>.
 </span>

@@ -34,21 +34,21 @@
 			<li class="dropdown">
 				<a href="modules.list.html" class="dropdown-toggle" data-toggle="dropdown">Modules<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="module-orc.html">orc</a></li><li><a href="module-orc_constants.html">orc/constants</a></li><li><a href="module-orc_profiles.html">orc/profiles</a></li><li><a href="module-orc_utils.html">orc/utils</a></li><li><a href="module-orc_version.html">orc/version</a></li>
+					<li><a href="module-orc.html">orc</a></li><li><a href="module-orc_constants.html">orc/constants</a></li><li><a href="module-orc_utils.html">orc/utils</a></li><li><a href="module-orc_version.html">orc/version</a></li>
 				</ul>
 			</li>
 			
 			<li class="dropdown">
 				<a href="classes.list.html" class="dropdown-toggle" data-toggle="dropdown">Classes<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="Audit.html">Audit</a></li><li><a href="Bridge.html">Bridge</a></li><li><a href="Contract.html">Contract</a></li><li><a href="Dashboard.html">Dashboard</a></li><li><a href="Directory.html">Directory</a></li><li><a href="module-orc_profiles-DirectoryProfile.html">orc/profiles~DirectoryProfile</a></li><li><a href="module-orc_profiles-FarmerProfile.html">orc/profiles~FarmerProfile</a></li><li><a href="module-orc_profiles-Profile.html">orc/profiles~Profile</a></li><li><a href="module-orc_profiles-RenterProfile.html">orc/profiles~RenterProfile</a></li><li><a href="Node.html">Node</a></li><li><a href="Offers.html">Offers</a></li><li><a href="Proof.html">Proof</a></li><li><a href="Rules.html">Rules</a></li><li><a href="Server.html">Server</a></li><li><a href="Shards.html">Shards</a></li><li><a href="Transport.html">Transport</a></li>
+					<li><a href="Audit.html">Audit</a></li><li><a href="Bridge.html">Bridge</a></li><li><a href="Database.html">Database</a></li><li><a href="Directory.html">Directory</a></li><li><a href="KadStorageAdapter.html">KadStorageAdapter</a></li><li><a href="Node.html">Node</a></li><li><a href="Proof.html">Proof</a></li><li><a href="Rules.html">Rules</a></li><li><a href="Server.html">Server</a></li><li><a href="Shards.html">Shards</a></li><li><a href="Transport.html">Transport</a></li>
 				</ul>
 			</li>
 			
 			<li class="dropdown">
 				<a href="events.list.html" class="dropdown-toggle" data-toggle="dropdown">Events<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="Offers.html#event:data">Offers#event:data</a></li><li><a href="Offers.html#event:end">Offers#event:end</a></li><li><a href="Offers.html#event:error">Offers#event:error</a></li><li><a href="Server.html#event:error">Server#event:error</a></li><li><a href="Server.html#event:shardDownloaded">Server#event:shardDownloaded</a></li><li><a href="Server.html#event:shardUploaded">Server#event:shardUploaded</a></li><li><a href="Transport.html#event:download">Transport#event:download</a></li><li><a href="Transport.html#event:upload">Transport#event:upload</a></li>
+					<li><a href="Server.html#event:error">Server#event:error</a></li><li><a href="Server.html#event:shardDownloaded">Server#event:shardDownloaded</a></li><li><a href="Server.html#event:shardUploaded">Server#event:shardUploaded</a></li><li><a href="Transport.html#event:download">Transport#event:download</a></li><li><a href="Transport.html#event:upload">Transport#event:upload</a></li>
 				</ul>
 			</li>
 			
@@ -56,6 +56,13 @@
 				<a href="tutorials.list.html" class="dropdown-toggle" data-toggle="dropdown">Tutorials<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
 					<li><a href="tutorial-config.html">Configuration Guide</a></li><li><a href="tutorial-directory_.html">Running a Directory</a></li><li><a href="tutorial-farming.html">Setting Up Farming</a></li><li><a href="tutorial-install.html">Manual Installation</a></li><li><a href="tutorial-transfers.html">Uploading and Downloading</a></li><li><a href="tutorial-usage.html">Basic Usage Guide</a></li>
+				</ul>
+			</li>
+			
+			<li class="dropdown">
+				<a href="global.html" class="dropdown-toggle" data-toggle="dropdown">Global<b class="caret"></b></a>
+				<ul class="dropdown-menu ">
+					<li><a href="global.html#AuditReport">AuditReport</a></li><li><a href="global.html#NetworkBlob">NetworkBlob</a></li><li><a href="global.html#ObjectPointer">ObjectPointer</a></li><li><a href="global.html#PeerProfile">PeerProfile</a></li><li><a href="global.html#ShardContract">ShardContract</a></li>
 				</ul>
 			</li>
 			
@@ -94,23 +101,20 @@
 
 const BusBoy = require('busboy');
 const ReedSolomon = require('@ronomon/reed-solomon');
-const Zcash = require('zcash');
 const https = require('https');
 const http = require('http');
 const ws = require('ws');
 const utils = require('./utils');
 const fs = require('fs');
 const merge = require('merge');
-const connect = require('connect');
+const express = require('express');
 const auth = require('basic-auth');
 const crypto = require('crypto');
 const { tmpdir } = require('os');
 const path = require('path');
-const tiny = require('tiny');
 const mkdirp = require('mkdirp');
 const uuid = require('uuid');
 const AuditStream = require('./audit');
-const Contract = require('./contract');
 const { knuthShuffle } = require('knuth-shuffle');
 const stream = require('stream');
 const async = require('async');
@@ -122,6 +126,11 @@ const bytes = require('bytes');
 const querystring = require('querystring');
 const cors = require('cors');
 const url = require('url');
+const serveStatic = require('serve-static');
+const finalhandler = require('finalhandler');
+const { utils: keyutils } = require('kad-spartacus');
+const concat = require('concat-stream');
+const qs = require('querystring');
 
 
 /**
@@ -131,7 +140,7 @@ const url = require('url');
  * queued for storing in the network. Bridge exposes a simple API for getting
  * status of transfers and previously stored objects.
  *
- * GET    /       (List objects as JSON)
+ * GET    /       (List objects as JSON - or serve Web GUI)
  * GET    /{hash} (Download object)
  * DELETE /{hash} (Delete object)
  * POST   /       (Upload object - Multipart)
@@ -147,21 +156,10 @@ class Bridge {
         user: null,
         pass: null
       },
-      wallet: {
-        user: 'orc',
-        password: 'orc',
-        port: 8232,
-        host: 'localhost'
-      },
-      store: path.join(
-        tmpdir(),
-        `objects.${crypto.randomBytes(16).toString('hex')}`
-      ),
       stage: path.join(
         tmpdir(),
         `staging.${crypto.randomBytes(16).toString('hex')}`
       ),
-      capacityCache: null,
       auditInterval: 432000000, // 5 days
       enableSSL: false,
       serviceKeyPath: null,
@@ -178,11 +176,10 @@ class Bridge {
    */
   constructor(node, options) {
     this.options = merge(Bridge.DEFAULTS, options);
-    this.objects = tiny(this.options.store);
+    this.api = express();
     this.node = node;
-    this.server = this._createServer();
-    this.wallet = new Zcash(this.options.wallet);
-    this.capacityCache = this.options.capacityCache;
+    this.database = this.node.database;
+    this.server = this._createServer(this.api);
     this.control = this.options.control;
     this.wss = new ws.Server({
       server: this.server,
@@ -195,13 +192,14 @@ class Bridge {
     }
 
     this.server.setTimeout(0);
+    this._bindRoutes();
     setInterval(() => this.audit(), 21600000); // 6 hours
   }
 
   /**
    * @private
    */
-  _createServer() {
+  _createServer(handler) {
     let server = null;
 
     /* istanbul ignore if */
@@ -212,9 +210,9 @@ class Bridge {
         ca: this.options.authorityChains
           ? this.options.authorityChains.map(fs.readFileSync)
           : []
-      }, this.createRequestHandler());
+      }, handler);
     } else {
-      server = http.createServer(this.createRequestHandler());
+      server = http.createServer(handler);
     }
 
     return server;
@@ -266,17 +264,19 @@ class Bridge {
 
   /**
    * Creates request router and handler stack
+   * @private
    * @returns {function}
    */
-  createRequestHandler() {
-    const handler = connect();
-
-    handler.use(cors())
-    handler.use(this.authenticate.bind(this));
-    handler.use('/', this.route.bind(this));
-    handler.use(this.error.bind(this));
-
-    return handler;
+  _bindRoutes() {
+    this.api.use(cors())
+    this.api.use(this.authenticate.bind(this));
+    this.api.get('/', this.list.bind(this));
+    this.api.get('/:id', this.download.bind(this));
+    this.api.get('/:id/magnet', this.magnet.bind(this));
+    this.api.post('/', this.upload.bind(this));
+    this.api.put('/', this.resolve.bind(this));
+    this.api.delete('/:id', this.destroy.bind(this));
+    this.api.use(this.error.bind(this));
   }
 
   /**
@@ -294,7 +294,8 @@ class Bridge {
     if (user &amp;&amp; pass) {
       const creds = auth(req);
 
-      if (!(creds.name === user &amp;&amp; creds.pass === pass)) {
+      if (!creds || !(creds.name === user &amp;&amp; creds.pass === pass)) {
+        res.setHeader('WWW-Authenticate', 'Basic realm="ORC"');
         return next(error);
       }
     }
@@ -320,71 +321,26 @@ class Bridge {
   }
 
   /**
-   * Handles routing requests to their appropriate handler
-   * @param {object} request
-   * @param {object} response
-   * @param {function} next
-   */
-  route(req, res, next) {
-    const { method, url } = req;
-
-    function badRequest() {
-      let error = new Error(`Cannot ${method} ${url}`);
-      error.code = 400;
-      next(error);
-    }
-
-    res.setTimeout(0);
-
-    if (method === 'POST') {
-      if (url !== '/') {
-        badRequest();
-      } else {
-        this.upload(req, res, next);
-      }
-    } else if (method === 'GET') {
-      if (url === '/') {
-        this.list(req, res, next);
-      } else {
-        this.download(req, res, next);
-      }
-    } else if (method === 'DELETE') {
-      if (url === '/') {
-        badRequest();
-      } else {
-        this.destroy(req, res, next);
-      }
-    } else if (method === 'OPTIONS') {
-      res.end();
-    } else {
-      badRequest();
-    }
-  }
-
-  /**
    * Scans the object database and returns all index entries
    * @param {object} request
    * @param {object} response
    * @param {function} next
    */
   list(req, res) {
-    let written = 0;
+    if (req.accepts('html')) {
+      return serveStatic(
+        path.join(__dirname, '../gui')
+      )(req, res, finalhandler(req, res));
+    }
 
-    res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.write('[');
-
-    this.objects.each((obj) => {
+    this.database.ObjectPointer.find({}, (err, pointers) => {
       /* istanbul ignore if */
-      if (Object.keys(obj).length === 0) {
-        return;
+      if (err) {
+        res.status(500).send(err.message);
+      } else {
+        res.status(200).send(pointers.map((o) => o.toObject()));
       }
-      delete obj._key;
-      res.write((written === 0 ? '' : ',') + JSON.stringify(obj));
-      written++;
-    }, () => {
-      res.write(']');
-      res.end();
-    }, true);
+    });
   }
 
   /**
@@ -396,15 +352,23 @@ class Bridge {
   upload(req, res, next) {
     const busboy = new BusBoy({ headers: req.headers });
     const objects = [];
+    const policies = [];
+    const id = uuid.v4();
+
+    busboy.on('field', (name, value) => {
+      if (name === 'policy') {
+        policies.push(value);
+      }
+    });
 
     /* eslint max-params: [2, 5] */
-    busboy.on('file', (field, file, name, encoding, mime) => {
-      const id = uuid.v4();
+    busboy.once('file', (field, file, name, encoding, mime) => {
       const tmp = path.join(this.options.stage, id);
 
       mkdirp.sync(tmp);
 
       let size = 0;
+
       const hash = crypto.createHash('sha256');
       const hasher = new stream.Transform({
         transform: (data, enc, cb) => {
@@ -413,16 +377,25 @@ class Bridge {
           cb(null, data);
         }
       });
-      const writer = fs.createWriteStream(path.join(tmp, 'ciphertext'));
-      const cipher = utils.createCipher(this.node.spartacus.publicKey,
-                                        this.node.spartacus.privateKey);
 
-      objects.push({ id, name, encoding, mimetype: mime });
+      const {publicKey: ecpub, privateKey: ecprv} = keyutils.toHDKeyFromSeed();
+      const writer = fs.createWriteStream(path.join(tmp, 'ciphertext'));
+      const cipher = utils.createCipher(ecpub, ecprv);
+
+      objects.push({ name, encoding, mimetype: mime });
       file.pipe(hasher).pipe(cipher).pipe(writer).on('finish', () => {
         const digest = hash.digest('hex');
         const ciphertext = path.join(tmp, 'ciphertext');
+        const object = new this.database.ObjectPointer({
+          name, encoding, size, policies,
+          ecpub: ecpub.toString('hex'),
+          ecprv: ecprv.toString('hex'),
+          mimetype: mime,
+          hash: digest,
+          shards: [],
+          status: 'queued'
+        });
 
-        // TODO: Fix max buffer size constraint somehow
         /* istanbul ignore if */
         if (size > BUFFER.kMaxLength) {
           fs.unlink(path.join(tmp, 'ciphertext'), () => {
@@ -432,29 +405,14 @@ class Bridge {
           });
         }
 
-        this.objects.set(id, {
-          id,
-          name,
-          encoding,
-          mimetype: mime,
-          hash: digest,
-          size,
-          status: 'queued',
-          shards: []
-        }, () => {
-          this.distribute(ciphertext, {
-            hash: digest,
-            encoding,
-            mimetype: mime,
-            id
-          }, (err, object) => {
+
+        object.save(() => {
+          this.distribute(ciphertext, object, (err, object) => {
             if (err) {
               return next(err);
             }
 
-            delete object._key;
-            res.writeHead(201, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify(object));
+            res.status(201).send(object.toObject());
           });
         });
       });
@@ -468,13 +426,11 @@ class Bridge {
    * distribute the shards across the network
    * @param {string} filepath - Path to the file to distribute
    * @param {object} metadata
-   * @param {string} metadata.encoding
-   * @param {string} metadata.mimetype
-   * @param {string} metadata.hash
+   * @param {ObjectPointer} object
    * @param {function} callback
    * @returns {EventEmitter}
    */
-  distribute(filepath, metadata, callback) {
+  distribute(filepath, object, callback) {
     const stat = fs.statSync(filepath);
     const rsparams = utils.getErasureParameters(stat.size);
     const rs = new ReedSolomon(rsparams.shards, rsparams.parity);
@@ -497,29 +453,21 @@ class Bridge {
         rs.encode(file, 0, file.length, size, 0, size, (err) => {
           /* istanbul ignore if */
           if (err) {
-            return callback(err);
+            callback(err);
+          } else {
+            callback(null, file, rsparams, object);
           }
-
-          this.objects.get(metadata.id, (err, object) => {
-            /* istanbul ignore if */
-            if (err) {
-              return callback(err);
-            } else {
-              callback(null, file, rsparams, object);
-            }
-          });
         });
       });
     }
 
     const prepareShards = (file, rsparams, object, callback) => {
-      let time = Date.now();
       let shards = [];
       let position = 0;
 
       const prepareContracts = () => {
         async.eachSeries(shards, (shard, next) => {
-          const audit = new AuditStream(3); // TODO: Configurable
+          const audit = new AuditStream(12); // TODO: Configurable
           const readStream = fs.createReadStream(shard.path);
           const hash = crypto.createHash('sha256');
           const hasher = new stream.Transform({
@@ -532,29 +480,21 @@ class Bridge {
           readStream.pipe(hasher).pipe(audit).on('finish', () => {
             shard.audits = audit.getPrivateRecord();
             shard.audits.root = shard.audits.root.toString('hex')
-            shard.proposal = Contract.from({
-              data_hash: utils.rmd160(hash.digest()).toString('hex'),
-              data_size: rsparams.size,
-              audit_count: 3, // TODO: Configurable
-              audit_leaves: audit.getPublicRecord(),
-              payment_storage_price: 0, // TODO: Configurable
-              payment_download_price: 0, // TODO: Configurable
-              store_begin: time,
-              store_end: time + ms('90d'), // TODO: Configurable
-              renter_hd_key: this.node.contact.xpub,
-              renter_hd_index: this.node.contact.index,
-              renter_id: this.node.identity.toString('hex')
+            shard.proposal = new this.database.ShardContract({
+              shardHash: utils.rmd160(hash.digest()).toString('hex'),
+              shardSize: rsparams.size,
+              auditLeaves: audit.getPublicRecord(),
+              ownerParentKey: this.node.contact.xpub,
+              ownerIndex: this.node.contact.index,
+              ownerIdentity: this.node.identity.toString('hex'),
+              accessPolicies: object.policies
             });
-            shard.proposal.sign('renter', this.node.spartacus.privateKey);
+            shard.proposal.sign('owner', this.node.spartacus.privateKey);
             next();
           });
         }, () => {
           object.shards = shards;
-
-          this.objects.set(
-            object.id, object,
-            () => callback(null, shards, object)
-          );
+          object.save(() => callback(null, shards, object));
         });
       }
 
@@ -574,41 +514,31 @@ class Bridge {
     };
 
     const uploadShards = (shards, object, callback) => {
-      object.status = 'working';
-
       async.eachLimit(shards, 3, (shard, next) => {
         async.retry({ times: 5 }, (done) => {
-          const query = this.capacityCache.find({}).bind(this.capacityCache);
-
-          /* eslint max-statements: [2, 20] */
-          query((err, capacities) => {
+          this.database.PeerProfile.find({
+            'capacity.timestamp': { $gt: Date.now() - ms('24HR') },
+            'capacity.available': { $gt: shard.size }
+          }, (err, profiles) => {
+            /* eslint max-statements: [2, 20] */
             if (err) {
               this.node.logger.warn('failed to load capacity cache');
-              capacities = [];
+              profiles = [];
             }
-
-            capacities = capacities.filter(
-              (c) => (Date.now() - ms('24HR')) &lt; c.timestamp
-            );
 
             let proposal = shard.proposal.toObject();
             let target = undefined;
             let contact = undefined;
 
-            knuthShuffle(capacities);
+            knuthShuffle(profiles);
 
-            for (let i = 0; i &lt; capacities.length; i++) {
-              /* istanbul ignore if */
-              if (capacities[i].capacity.available &lt; shard.size) {
-                continue;
-              }
-
+            for (let i = 0; i &lt; profiles.length; i++) {
               contact = this.node.router.getContactByNodeId(
-                capacities[i]._key
+                profiles[i].identity
               );
               target = contact
-                     ? [capacities[i]._key, contact]
-                     : [capacities[i]._key, capacities[i].contact[1]];
+                     ? [profiles[i].identity, contact]
+                     : [profiles[i].identity, profiles[i].contact];
 
               /* istanbul ignore else */
               if (target !== undefined) {
@@ -636,9 +566,13 @@ class Bridge {
               let [completedContract, consignToken] = data;
               let uploadStream = utils.createShardUploader(
                 target,
-                shard.proposal.get('data_hash'),
+                completedContract.shardHash,
                 consignToken,
                 this.node.onion.createSecureAgent()
+              );
+
+              completedContract = new this.database.ShardContract(
+                completedContract
               );
 
               uploadStream.on('error', done);
@@ -658,8 +592,8 @@ class Bridge {
                   delete shard.proposal;
                   delete shard.path;
                   shard.service = target;
-                  shard.contract = completedContract;
-                  done();
+                  shard.hash = completedContract.shardHash;
+                  completedContract.save(() => done());
                 });
               });
               this.node.logger.info(`uploading shard to ${target[0]}`);
@@ -681,7 +615,7 @@ class Bridge {
         if (err) {
           object.status = 'failed';
           this.node.logger.error(err.message);
-          callback(err);
+          object.save(() => callback(err));
         } else {
           object.status = 'finished';
           this.node.logger.info(`successfully uploaded ${object._key}`);
@@ -692,18 +626,32 @@ class Bridge {
               this.node.logger.error(err.message);
             }
 
-            callback(null, object)
+            object.save(() => callback(null, object));
           });
         }
-
-        this.objects.set(object._key, object);
       });
     }
+
+    const distributePointer = (object, callback) => {
+      const { blob, hash } = object.toEncryptedBlob();
+      const encoded = blob.toString('base64');
+
+      this.node.iterativeStore(hash, encoded, (err, stored) => {
+        if (stored &lt; 3) {
+          this.node.logger.warn(
+            `failed to fully distribute pointer (${stored} of 3)`
+          );
+        }
+
+        callback(null, object);
+      });
+    };
 
     async.waterfall([
       (next) => encodeErasure(next),
       (file, rs, obj, next) => prepareShards(file, rs, obj, next),
-      (shards, obj, next) => uploadShards(shards, obj, next)
+      (shards, obj, next) => uploadShards(shards, obj, next),
+      (object, next) => distributePointer(object, next)
     ], callback);
   }
 
@@ -716,7 +664,7 @@ class Bridge {
   download(req, res, next) {
     let targets = 0;
     let buffer = null;
-    let uuid = req.url.substr(1);
+    let id = req.params.id;
 
     function updateRecovery(shard, i) {
       buffer.fill(0, shard.size * i, (shard.size * i) + shard.size);
@@ -726,7 +674,7 @@ class Bridge {
     const downloadShard = (shard, token, i, callback) => {
       let downloadStream = utils.createShardDownloader(
         shard.service,
-        shard.contract.data_hash,
+        shard.hash,
         token,
         this.node.onion.createSecureAgent()
       );
@@ -762,10 +710,10 @@ class Bridge {
       }
     };
 
-    this.objects.get(uuid, (err, object) => {
+    this.database.ObjectPointer.findOne({ _id: id }, (err, object) => {
       /* istanbul ignore if */
-      if (err) {
-        return next(err);
+      if (err || !object) {
+        return next(err || new Error('Not found'));
       }
 
       /* istanbul ignore if */
@@ -794,7 +742,7 @@ class Bridge {
       async.eachOfLimit(object.shards, 3, (shard, i, done) => {
         this.node.authorizeRetrieval(
           shard.service,
-          [shard.contract.data_hash],
+          [shard.hash],
           (err, result) => {
             if (err) {
               this.node.logger.warn(err.message);
@@ -812,8 +760,10 @@ class Bridge {
             return next(err);
           }
 
-          const decipher = utils.createDecipher(this.node.spartacus.publicKey,
-                                                this.node.spartacus.privateKey);
+          const decipher = utils.createDecipher(
+            Buffer.from(object.ecpub, 'hex'),
+            Buffer.from(object.ecprv, 'hex')
+          );
 
           decipher.on('error', (err) => {
             this.node.logger.error(err.message);
@@ -839,42 +789,91 @@ class Bridge {
    * @param {function} next
    */
   destroy(req, res, next) {
-    let uuid = req.url.substr(1);
-    let now = Date.now();
+    let id = req.params.id;
 
-    this.objects.get(uuid, (err, object) => {
+    this.database.ObjectPointer.remove({ _id: id }, (err) => {
       /* istanbul ignore if */
       if (err) {
         return next(err);
       }
 
-      async.eachLimit(object.shards, 3, (shard, done) => {
-        let contract = Contract.from(shard.contract);
+      res.status(201).send();
+    });
+  }
 
-        contract.set('store_end', now);
-        contract.sign('renter', this.node.spartacus.privateKey);
+  /**
+   * Returns the magnet link for the given object
+   * @param {object} request
+   * @param {object} response
+   * @param {function} next
+   */
+  magnet(req, res, next) {
+    const { id } = req.params;
 
-        /* istanbul ignore if */
-        if (!shard.service) {
-          return done();
-        }
+    this.database.ObjectPointer.findOne({ _id: id }, (err, object) => {
+      /* istanbul ignore if */
+      if (err || !object) {
+        return next(err || new Error('Object not found'));
+      }
 
-        // TODO: Issue any final payment for storage
+      const { magnet } = object.toEncryptedBlob();
 
-        this.node.requestContractRenewal(shard.service, contract.toObject(),
-                                         () => done());
-      }, () => {
-        this.objects.remove(uuid, (err) => {
+      res.status(200).json({ href: magnet });
+    });
+  }
+
+  /**
+   * Accepts a body containing a magnet link, resolves the pointer and creates
+   * a local object pointer record, then returns it. Clients can follow with a
+   * GET /:id to download the object
+   * @param {object} request
+   * @param {object} response
+   * @param {function} next
+   */
+  resolve(req, res, next) {
+    req.on('error', next).pipe(concat((body) => {
+      let parsed;
+
+      try {
+        parsed = qs.parse(url.parse(body.toString()).query);
+      } catch (err) {
+        /* istanbul ignore next */
+        return next(new Error('Failed to parse magnet link'));
+      }
+
+      this.node.iterativeFindValue(
+        Buffer.from(parsed.xt.substr(8), 'hex'),
+        (err, result) => {
           /* istanbul ignore if */
-          if (err) {
-            return next(err);
+          if (err || result.length === 0) {
+            return next(err || new Error('Failed to resolve magnet'));
           }
 
-          res.writeHead(201);
-          res.end();
-        });
-      });
-    });
+          let [item] = result;
+          let decipher = crypto.createDecipher(
+            'aes256',
+            Buffer.from(parsed['x.pword'], 'hex')
+          );
+          let cleartext = Buffer.concat([
+            decipher.update(item.value, 'base64'),
+            decipher.final()
+          ]).toString('utf8');
+          let object = new this.database.ObjectPointer(merge(
+            JSON.parse(cleartext),
+            { ecprv: parsed['x.ecprv'] }
+          ));
+
+          object.save((err) => {
+            /* istanbul ignore if */
+            if (err) {
+              return next(err);
+            }
+
+            res.status(200).json(object.toObject());
+          });
+        }
+      )
+    }));
   }
 
   /**
@@ -884,7 +883,6 @@ class Bridge {
    */
   audit(callback = () => null) {
     // TODO: Implement auditor
-    // TODO: Implement payments
     callback(new Error('Auditor not implemented'));
   }
 
@@ -932,7 +930,7 @@ module.exports = Bridge;
 	</span>
 
 <span class="jsdoc-message">
-	Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.3</a>
+	Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.4</a>
 	
 	using the <a href="https://github.com/docstrap/docstrap">DocStrap template</a>.
 </span>

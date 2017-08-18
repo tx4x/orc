@@ -34,21 +34,21 @@
 			<li class="dropdown">
 				<a href="modules.list.html" class="dropdown-toggle" data-toggle="dropdown">Modules<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="module-orc.html">orc</a></li><li><a href="module-orc_constants.html">orc/constants</a></li><li><a href="module-orc_profiles.html">orc/profiles</a></li><li><a href="module-orc_utils.html">orc/utils</a></li><li><a href="module-orc_version.html">orc/version</a></li>
+					<li><a href="module-orc.html">orc</a></li><li><a href="module-orc_constants.html">orc/constants</a></li><li><a href="module-orc_utils.html">orc/utils</a></li><li><a href="module-orc_version.html">orc/version</a></li>
 				</ul>
 			</li>
 			
 			<li class="dropdown">
 				<a href="classes.list.html" class="dropdown-toggle" data-toggle="dropdown">Classes<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="Audit.html">Audit</a></li><li><a href="Bridge.html">Bridge</a></li><li><a href="Contract.html">Contract</a></li><li><a href="Dashboard.html">Dashboard</a></li><li><a href="Directory.html">Directory</a></li><li><a href="module-orc_profiles-DirectoryProfile.html">orc/profiles~DirectoryProfile</a></li><li><a href="module-orc_profiles-FarmerProfile.html">orc/profiles~FarmerProfile</a></li><li><a href="module-orc_profiles-Profile.html">orc/profiles~Profile</a></li><li><a href="module-orc_profiles-RenterProfile.html">orc/profiles~RenterProfile</a></li><li><a href="Node.html">Node</a></li><li><a href="Offers.html">Offers</a></li><li><a href="Proof.html">Proof</a></li><li><a href="Rules.html">Rules</a></li><li><a href="Server.html">Server</a></li><li><a href="Shards.html">Shards</a></li><li><a href="Transport.html">Transport</a></li>
+					<li><a href="Audit.html">Audit</a></li><li><a href="Bridge.html">Bridge</a></li><li><a href="Database.html">Database</a></li><li><a href="Directory.html">Directory</a></li><li><a href="KadStorageAdapter.html">KadStorageAdapter</a></li><li><a href="Node.html">Node</a></li><li><a href="Proof.html">Proof</a></li><li><a href="Rules.html">Rules</a></li><li><a href="Server.html">Server</a></li><li><a href="Shards.html">Shards</a></li><li><a href="Transport.html">Transport</a></li>
 				</ul>
 			</li>
 			
 			<li class="dropdown">
 				<a href="events.list.html" class="dropdown-toggle" data-toggle="dropdown">Events<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="Offers.html#event:data">Offers#event:data</a></li><li><a href="Offers.html#event:end">Offers#event:end</a></li><li><a href="Offers.html#event:error">Offers#event:error</a></li><li><a href="Server.html#event:error">Server#event:error</a></li><li><a href="Server.html#event:shardDownloaded">Server#event:shardDownloaded</a></li><li><a href="Server.html#event:shardUploaded">Server#event:shardUploaded</a></li><li><a href="Transport.html#event:download">Transport#event:download</a></li><li><a href="Transport.html#event:upload">Transport#event:upload</a></li>
+					<li><a href="Server.html#event:error">Server#event:error</a></li><li><a href="Server.html#event:shardDownloaded">Server#event:shardDownloaded</a></li><li><a href="Server.html#event:shardUploaded">Server#event:shardUploaded</a></li><li><a href="Transport.html#event:download">Transport#event:download</a></li><li><a href="Transport.html#event:upload">Transport#event:upload</a></li>
 				</ul>
 			</li>
 			
@@ -56,6 +56,13 @@
 				<a href="tutorials.list.html" class="dropdown-toggle" data-toggle="dropdown">Tutorials<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
 					<li><a href="tutorial-config.html">Configuration Guide</a></li><li><a href="tutorial-directory_.html">Running a Directory</a></li><li><a href="tutorial-farming.html">Setting Up Farming</a></li><li><a href="tutorial-install.html">Manual Installation</a></li><li><a href="tutorial-transfers.html">Uploading and Downloading</a></li><li><a href="tutorial-usage.html">Basic Usage Guide</a></li>
+				</ul>
+			</li>
+			
+			<li class="dropdown">
+				<a href="global.html" class="dropdown-toggle" data-toggle="dropdown">Global<b class="caret"></b></a>
+				<ul class="dropdown-menu ">
+					<li><a href="global.html#AuditReport">AuditReport</a></li><li><a href="global.html#NetworkBlob">NetworkBlob</a></li><li><a href="global.html#ObjectPointer">ObjectPointer</a></li><li><a href="global.html#PeerProfile">PeerProfile</a></li><li><a href="global.html#ShardContract">ShardContract</a></li>
 				</ul>
 			</li>
 			
@@ -100,37 +107,16 @@ exchange for Zcash.</p>
 an overview of all configuration properties - this guide only covers what is 
 needed for farming. This guide also assumes you have properly installed ORC via 
 the provided Docker image or have completed the <a href="tutorial-install.html">Manual Installation</a> guide.</p>
-<h3>Allocate Storage Capacity</h3><p>Set the base directory (parent) for where the contracts.db folder will be 
-placed. The contracts.db holds storage contracts between you and other nodes.</p>
-<pre class="prettyprint source"><code>ContractStorageBaseDir = /home/bookchin/.config/orc</code></pre><p>Set the base directory (parent) for where the shards folder will be placed. The 
+<h3>Allocate Storage Capacity</h3><p>Set the base directory (parent) for where the shards folder will be placed. The 
 shards stores other nodes data shards, so be sure you set this to where you 
 intend to store farmed shards.</p>
 <pre class="prettyprint source"><code>ShardStorageBaseDir = /home/bookchin/.config/orc</code></pre><p>Define the maximum size you wish to allocate for farming shards. This can be 
 increased later, but decreasing it will not delete existing data.</p>
-<pre class="prettyprint source"><code>ShardStorageMaxAllocation = 0GB</code></pre><p>Enables renter nodes to directly claim storage capacity based on any capacity 
-announcements you have made. If you are farming, set this value once for every 
-trusted renter public extended key from which you will accept claims or once 
-with a value of *. </p>
-<pre class="prettyprint source"><code>AllowDirectStorageClaims[] = *</code></pre><h3>Connect Zcash Wallet</h3><p>Complete information about how orc should connect to the Zcash RPC server. 
-Orc needs this to generate addresses for farmers, send payments from renters, 
-check balances, etc.</p>
-<pre class="prettyprint source"><code>WalletHostname = localhost
-WalletPort = 8232
-WalletUser = orc
-WalletPassword = orc
-WalletShieldedTransactions = 0</code></pre><h3>Enable Farming Profile</h3><p>Pre-scripted profiles to enable after bootstrapping.Farmer profiles publish 
-capacity announcements and listen for contracts to store data. </p>
-<pre class="prettyprint source"><code>ProfilesEnabled[] = farmer</code></pre><h3>Fine Tune Farmer Behavior</h3><p>Topic codes to use when operating under the farmer profile for subscibing to
-contract publications and announcing capacity. See the protocol specification 
-for more details. It is mostly reccommended to leave these at their default 
-values.</p>
-<pre class="prettyprint source"><code>FarmerAdvertiseTopics[] = 01020202
-FarmerAdvertiseTopics[] = 02020202
-FarmerAdvertiseTopics[] = 03020202</code></pre><p>How often a farmer profile should scan contract database to reap expired 
+<pre class="prettyprint source"><code>ShardStorageMaxAllocation = 5GB</code></pre><h3>Fine Tune Farmer Behavior</h3><p>How often a farmer profile should scan contract database to reap expired 
 shards it is storing.</p>
-<pre class="prettyprint source"><code>FarmerShardReaperInterval = 24HR</code></pre><p>How often a farmer profile should publish a capacity announcement to it's
+<pre class="prettyprint source"><code>ShardReaperInterval = 24HR</code></pre><p>How often a farmer profile should publish a capacity announcement to it's
 neighboring nodes.</p>
-<pre class="prettyprint source"><code>FarmerAnnounceInterval = 15M</code></pre>
+<pre class="prettyprint source"><code>CapacityAnnounceInterval = 15M</code></pre>
 </article>
 
 </section>
@@ -168,7 +154,7 @@ neighboring nodes.</p>
 	</span>
 
 <span class="jsdoc-message">
-	Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.3</a>
+	Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.4</a>
 	
 	using the <a href="https://github.com/docstrap/docstrap">DocStrap template</a>.
 </span>
