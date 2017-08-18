@@ -1,6 +1,6 @@
 {
   "name": "@orcproject/orc",
-  "version": "8.0.0-alpha1",
+  "version": "8.0.0-beta1",
   "description": "distributed anonymous storage network",
   "main": "index.js",
   "bin": {
@@ -25,7 +25,6 @@
   "keywords": [
     "orc",
     "tor",
-    "zcash",
     "p2p",
     "kademlia",
     "quasar",
