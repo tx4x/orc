@@ -281,13 +281,18 @@ function join() {
         rs.on('data', ([capacity, contact]) => {
           let timestamp = Date.now();
 
-          database.PeerProfile.findOneAndUpdate({ identity: contact[0]}, {
+          database.PeerProfile.findOneAndUpdate({ identity: contact[0] }, {
             capacity: {
               allocated: capacity.allocated,
               available: capacity.available,
               timestamp: Date.now()
+            },
+            contact
+          }, { upsert: true }, (err) => {
+            if (err) {
+              node.logger.error('failed to update capacity profile');
             }
-          }, { upsert: true });
+          });
         });
       });
       announceCapacity();
