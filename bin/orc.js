@@ -350,7 +350,8 @@ function startDirectory() {
     enableSSL: !!parseInt(config.DirectoryUseSSL),
     serviceKeyPath: config.DirectoryServiceKeyPath,
     certificatePath: config.DirectoryCertificatePath,
-    authorityChains: config.DirectoryAuthorityChains
+    authorityChains: config.DirectoryAuthorityChains,
+    bootstrapService: config.DirectoryBootstrapService
   };
 
   const directory = new orc.Directory(node, opts);
@@ -386,7 +387,31 @@ function startDirectory() {
       }
     );
   }
+
+  if (config.DirectoryBootstrapService) {
+    node.logger.info(
+      `bootstrapping local directory using ${config.DirectoryBootstrapService}`
+    );
+    directory.bootstrap(err => {
+      if (err) {
+        node.logger.warn(`failed to bootstrap directory, ${err.message}`);
+      } else {
+        node.logger.info('finished bootstrapping directory');
+      }
+    });
+  }
 }
+
+// Keep a record of the contacts we've seen
+node.router.events.on('add', (identity) => {
+  let contact = node.router.getContactByNodeId(identity);
+
+  database.PeerProfile.findOneAndUpdate(
+    { identity },
+    { identity, contact, updated: Date.now() },
+    { upsert: true }
+  );
+});
 
 // Bind to listening port and join the network
 logger.info('bootstrapping tor and establishing hidden service');

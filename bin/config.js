@@ -76,7 +76,8 @@ module.exports = {
   DirectoryOnionServicePrivateKeyPath: join(datadir, 'directory_key'),
   DirectoryServiceKeyPath: join(datadir, 'service_key.pem'),
   DirectoryCertificatePath: join(datadir, 'certificate.pem'),
-  DirectoryAuthorityChains: []
+  DirectoryAuthorityChains: [],
+  DirectoryBootstrapService: 'https://orcucqxc54fkhupb.onion:443'
 
 };
 
