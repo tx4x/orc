@@ -69,6 +69,7 @@ DirectoryUseSSL = 0
 DirectoryServiceKeyPath: /home/bookchin/.config/orc/directory_key.pem
 DirectoryCertificatePath: /home/bookchin/.config/orc/directory_cert.pem
 ;DirectoryAuthorityChains[] = /home/bookchin/.config/fullchain.pem
+DirectoryBootstrapService = https://orcucqxc54fkhupb.onion:443
 
 ; Paths to this node's SSL key and certificat. If you don't have one, you can 
 ; generate one with the following:

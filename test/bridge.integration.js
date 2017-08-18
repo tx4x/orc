@@ -18,6 +18,8 @@ const bunyan = require('bunyan');
 const ws = require('ws');
 const boscar = require('boscar');
 const getDatabase = require('./fixtures/database');
+const url = require('url');
+const qs = require('querystring');
 
 
 describe('@class Bridge (integration)', function() {
@@ -27,6 +29,7 @@ describe('@class Bridge (integration)', function() {
   let shardsdir = path.join(tmpdir(), crypto.randomBytes(6).toString('hex'));
   let file = crypto.randomBytes(3000);
   let id = null;
+  let magnet = null;
 
   mkdirp.sync(shardsdir);
 
@@ -89,6 +92,11 @@ describe('@class Bridge (integration)', function() {
         },
         control: new boscar.Server(node)
       });
+      node.iterativeFindValue = function(key, callback) {
+        database.NetworkBlob.findOne({ key }, (err, obj) => {
+          callback(err, obj ? [obj.toObject()] : []);
+        });
+      };
       let profile = new database.PeerProfile({
         identity: 'ca458055841255795bfc2e2b6e6480dd2ea80506',
         capacity: {
@@ -202,6 +210,7 @@ describe('@class Bridge (integration)', function() {
       res.on('data', (data) => body += data);
       res.on('end', () => {
         body = JSON.parse(body);
+        id = body.id;
         expect(body.shards).to.have.lengthOf(3);
         expect(body.shards[0].size).to.equal(1504);
         expect(body.shards[1].size).to.equal(1504);
@@ -212,6 +221,61 @@ describe('@class Bridge (integration)', function() {
         done();
       });
     });
+  });
+
+  it('should fetch the magnet link for the object', function(done) {
+    let body = '';
+    let req = http.request({
+      auth: 'orctest:orctest',
+      hostname: 'localhost',
+      port,
+      path: `/${id}/magnet`
+    });
+    req.on('response', (res) => {
+      res.on('data', (data) => body += data.toString());
+      res.on('end', () => {
+        let { href } = JSON.parse(body);
+        magnet = href;
+        href = url.parse(href);
+        let query = qs.parse(href.query);
+        let params = Object.keys(query);
+        expect(params.includes('xt')).to.equal(true);
+        expect(params.includes('xs')).to.equal(true);
+        expect(params.includes('dn')).to.equal(true);
+        expect(params.includes('x.ecprv')).to.equal(true);
+        expect(params.includes('x.pword')).to.equal(true);
+        done();
+      });
+    });
+    req.end();
+  });
+
+  it('should resolve the encrypted pointer and save it', function(done) {
+    let body = '';
+    let req = http.request({
+      auth: 'orctest:orctest',
+      hostname: 'localhost',
+      port,
+      path: '/',
+      method: 'PUT'
+    });
+    req.on('response', (res) => {
+      res.on('data', (data) => body += data.toString());
+      res.on('end', () => {
+        body = JSON.parse(body);
+        expect(body.size).to.equal(3000);
+        expect(body.shards.length).to.equal(3);
+        expect(body.shards).to.have.lengthOf(3);
+        expect(body.shards[0].size).to.equal(1504);
+        expect(body.shards[1].size).to.equal(1504);
+        expect(body.shards[2].size).to.equal(1504);
+        expect(body.status).to.equal('finished');
+        expect(body.mimetype).to.equal('application/octet-stream');
+        expect(body.name).to.equal('random');
+        done();
+      });
+    });
+    req.end(magnet);
   });
 
   it('should fail to upload if error loading capacity', function(done) {
@@ -276,7 +340,7 @@ describe('@class Bridge (integration)', function() {
     });
   });
 
-  it('should respond with 3 objects', function(done) {
+  it('should respond with 4 objects', function(done) {
     let body = '';
     let req = http.request({
       auth: 'orctest:orctest',
@@ -290,7 +354,7 @@ describe('@class Bridge (integration)', function() {
       res.on('end', () => {
         body = JSON.parse(body);
         id = body[0].id;
-        expect(body).to.have.lengthOf(3);
+        expect(body).to.have.lengthOf(4);
         expect(body[0].shards).to.have.lengthOf(3);
         expect(body[0].shards[0].size).to.equal(1504);
         expect(body[0].shards[1].size).to.equal(1504);
@@ -384,7 +448,7 @@ describe('@class Bridge (integration)', function() {
     req.end();
   });
 
-  it('should respond with 2 objects', function(done) {
+  it('should respond with 3 objects', function(done) {
     let body = '';
     let req = http.request({
       auth: 'orctest:orctest',
@@ -397,7 +461,7 @@ describe('@class Bridge (integration)', function() {
       res.on('data', (data) => body += data.toString());
       res.on('end', () => {
         body = JSON.parse(body);
-        expect(body).to.have.lengthOf(2);
+        expect(body).to.have.lengthOf(3);
         done();
       });
     });

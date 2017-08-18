@@ -57,6 +57,7 @@ module.exports = {
   BridgeHostname: '127.0.0.1',
   BridgePort: '4445',
   BridgeUseSSL: '1',
+  BridgeOnionServiceEnabled: '1',
   BridgeOnionServicePrivateKeyPath: join(datadir, 'bridge_key'),
   BridgeServiceKeyPath: join(datadir, 'service_key.pem'),
   BridgeCertificatePath: join(datadir, 'certificate.pem'),
@@ -71,10 +72,12 @@ module.exports = {
   DirectoryPort: '4446',
   DirectoryHostname: '127.0.0.1',
   DirectoryUseSSL: '1',
+  DirectoryOnionServiceEnabled: '1',
   DirectoryOnionServicePrivateKeyPath: join(datadir, 'directory_key'),
   DirectoryServiceKeyPath: join(datadir, 'service_key.pem'),
   DirectoryCertificatePath: join(datadir, 'certificate.pem'),
-  DirectoryAuthorityChains: []
+  DirectoryAuthorityChains: [],
+  DirectoryBootstrapService: 'https://orcucqxc54fkhupb.onion:443'
 
 };
 

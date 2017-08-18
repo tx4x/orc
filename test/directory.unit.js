@@ -1,6 +1,7 @@
 'use strict';
 
 const { expect } = require('chai');
+const sinon = require('sinon');
 const Directory = require('../lib/directory');
 const http = require('http');
 const getDatabase = require('./fixtures/database');
@@ -12,8 +13,15 @@ describe('@class Directory', function() {
 
   before((done) => {
     getDatabase((err, database) => {
-      directory = new Directory({ database }, {});
+      directory = new Directory({
+        database,
+        onion: {
+          createSecureAgent: () => undefined
+        }
+      }, {});
       directory.listen(0);
+      directory._bootstrapService = 'http://localhost:' +
+        directory.server.address().port;
 
       let profile1 = new database.PeerProfile({
         identity: '00000000000000000000',
@@ -71,6 +79,15 @@ describe('@class Directory', function() {
         expect(data.contact.agent).to.equal('orc-test/linux');
         done();
       });
+    });
+  });
+
+  it('should succeed in boostrapping from another directory', function(done) {
+    let spy = sinon.spy(directory.database.PeerProfile, 'findOneAndUpdate');
+    directory.bootstrap((err) => {
+      expect(err).to.equal(null);
+      expect(spy.callCount).to.equal(2);
+      done();
     });
   });
 
