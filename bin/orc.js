@@ -287,7 +287,7 @@ function join() {
               available: capacity.available,
               timestamp: Date.now()
             },
-            contact
+            contact: contact[1]
           }, { upsert: true }, (err) => {
             if (err) {
               node.logger.error('failed to update capacity profile');
