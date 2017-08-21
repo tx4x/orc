@@ -44,3 +44,5 @@ dist/**
 
 # Ignore the .env file, only include the examle .env file
 .env
+
+out/

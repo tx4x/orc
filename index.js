@@ -101,3 +101,8 @@ module.exports.version = require('./lib/version');
 
 /** @see https://github.com/bookchin/boscar */
 module.exports.control = require('boscar');
+
+/* istanbul ignore if */
+if (Object.keys(process.versions).includes('electron')) {
+  require('./gui');
+}
