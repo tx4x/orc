@@ -4,7 +4,7 @@ RUN apt-get update
 RUN DEBIAN_FRONTEND=noninteractive apt-get -yq upgrade
 RUN DEBIAN_FRONTEND=noninteractive apt-get -yq install wget apt-transport-https gnupg curl
 RUN apt-get update; \
-    DEBIAN_FRONTEND=noninteractive apt-get -yq install vim libssl-dev git python build-essential tor mongodb
+    DEBIAN_FRONTEND=noninteractive apt-get -yq install vim libssl-dev git python build-essential tor
 RUN set -ex \
   && for key in \
     9554F04D7259F04124DE6B476D5A82AC7E37093B \
@@ -32,14 +32,12 @@ RUN curl -SLO "https://nodejs.org/dist/v$NODE_VERSION/node-v$NODE_VERSION-linux-
 RUN git clone https://github.com/orcproject/orc /root/orc; \
     cd /root/orc && npm install && npm link && cd
 RUN echo "#\!/bin/bash" >> /root/orc.sh; \
-    echo "mkdir -p /root/.config/orc/data" >> /root/orc.sh; \
-    echo "mongod --dbpath /root/.config/orc/data --fork --logpath /var/log/mongod.log" >> /root/orc.sh; \
     echo "export orc_ControlHostname=0.0.0.0" >> /root/orc.sh; \
     echo "export orc_BridgeHostname=0.0.0.0" >> /root/orc.sh; \
     echo "export orc_DirectoryHostname=0.0.0.0" >> /root/orc.sh; \
     echo "orc" >> /root/orc.sh \
 RUN chmod +x /root/orc.sh
 VOLUME ["/root/.config/orc"]
-EXPOSE 4443 4444 4445 4446 27017
+EXPOSE 4443 4444 4445 4446 37017
 CMD ["/bin/bash", "/root/orc.sh"]
 ENTRYPOINT []

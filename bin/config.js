@@ -14,6 +14,10 @@ module.exports = {
   PrivateExtendedKeyPath: join(datadir, 'x_private_key'),
   ChildDerivationIndex: '0',
 
+  // Database
+  MongoDBDataDirectory: join(datadir, 'data'),
+  MongoDBPort: '37017',
+
   // Shard Database
   ShardStorageBaseDir: datadir,
   ShardStorageMaxAllocation: '5GB',
@@ -84,4 +88,8 @@ module.exports = {
 if (!existsSync(join(datadir, 'config'))) {
   mkdirp.sync(datadir);
   writeFileSync(join(datadir, 'config'), ini.stringify(module.exports));
+}
+
+if (!existsSync(join(datadir, 'data'))) {
+  mkdirp.sync(join(datadir, 'data'));
 }

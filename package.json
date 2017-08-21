@@ -13,6 +13,7 @@
     "doc": "doc"
   },
   "scripts": {
+    "postinstall": "node script/postinstall.js",
     "test": "npm run unit-tests && npm run integration-tests && npm run e2e-tests && npm run linter",
     "unit-tests": "mocha test/*.unit.js",
     "integration-tests": "mocha test/*.integration.js",
@@ -71,6 +72,7 @@
     "knuth-shuffle": "^1.0.1",
     "merge": "^1.2.0",
     "mkdirp": "^0.5.1",
+    "mongodb-prebuilt": "github:bookchin/mongodb-prebuilt",
     "mongoose": "^4.11.6",
     "ms": "^2.0.0",
     "mtree": "^1.0.0",

@@ -47,6 +47,11 @@ PrivateExtendedKeyPath = /home/bookchin/.config/orc/x_private_key
 ; you must set the value to -1
 ChildDerivationIndex = 0
 
+; Set the directory to store database and the port that MongoDB should use 
+; to accept connections
+MongoDBDataDirectory = /home/bookchin/.config/orc/data
+MongoDBPort = 37017
+
 ; Set the base directory (parent) for where the shards folder will be 
 ; placed. The shards stores other nodes data shards, so be sure you set 
 ; this to where you intend to store farmed shards.
