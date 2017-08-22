@@ -1,6 +1,7 @@
 'use strict';
 
-const { app, BrowserWindow } = require('electron');
+const orc = require('..');
+const { app, BrowserWindow, ipcMain } = require('electron');
 
 let mainWindow;
 
@@ -46,3 +47,33 @@ app.on('activate', () => {
   }
 });
 
+// Start orcd and setup IPC communication
+const opts = {};
+const { orcd: child, controller } = orc(opts);
+
+// The orcd controller is ready
+controller.on('ready', () => {
+
+});
+
+// Handle errors from controller
+controller.on('error', (err) => {
+
+});
+
+// Send live logs from child process to renderer
+orcd.stdout.on('data', (data) => {
+  let lines = data.split('\n');
+
+  lines.forEach((line) => {
+    try {
+      line = JSON.parse(line);
+    } catch (err) {
+      return err;
+    }
+
+    if (mainWindow) {
+      mainWindow.webContents.send('log', line);
+    }
+  });
+});
