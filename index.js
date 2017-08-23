@@ -5,7 +5,7 @@
 
 'use strict';
 
-const { spawn } = require('child_process');
+const { fork } = require('child_process');
 const { join } = require('path');
 
 
@@ -21,15 +21,20 @@ const { join } = require('path');
 /* istanbul ignore next */
 module.exports = function(config = {}) {
   /* eslint max-statements: [2, 18] */
-  const defaults = require('./bin/_config');
+  const defaults = require('./bin/config');
   const cport = config.ControlPort || defaults.ControlPort;
   const caddr = config.ControlHostname || defaults.ControlHostname;
   const controller = new module.exports.control.Client();
 
   let envs = {};
-  let args = [join(__dirname, './bin/orc.js')];
+  let file = join(__dirname, './bin/orcd.js');
+  let args = [];
   let trys = 10;
-  let opts = { env: envs };
+  let opts = {
+    env: envs,
+    execPath: process.execPath,
+    stdio: ['pipe', 'pipe', 'pipe', 'ipc']
+  };
 
   if (typeof config === 'string') {
     args = args.concat(['--config', config]);
@@ -39,7 +44,7 @@ module.exports = function(config = {}) {
     }
   }
 
-  const child = spawn(process.execPath, args, opts);
+  const child = fork(file, args, opts);
 
   function connect() {
     controller.once('error', () => {
@@ -101,8 +106,3 @@ module.exports.version = require('./lib/version');
 
 /** @see https://github.com/bookchin/boscar */
 module.exports.control = require('boscar');
-
-/* istanbul ignore if */
-if (Object.keys(process.versions).includes('electron')) {
-  require('./gui');
-}

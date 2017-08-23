@@ -1,6 +1,6 @@
 'use strict';
 
-const orc = require('..');
+const orc = require('../index');
 const { app, BrowserWindow, ipcMain } = require('electron');
 
 let mainWindow;
@@ -48,12 +48,12 @@ app.on('activate', () => {
 });
 
 // Start orcd and setup IPC communication
-const opts = {};
-const { orcd: child, controller } = orc(opts);
+const opts = { MongoDBPort: 47017 };
+const { child: orcd, controller } = orc(opts);
 
 // The orcd controller is ready
 controller.on('ready', () => {
-
+  // Do really low level stuff here - probably not needed for most use cases
 });
 
 // Handle errors from controller
@@ -61,11 +61,15 @@ controller.on('error', (err) => {
 
 });
 
-// Send live logs from child process to renderer
-orcd.stdout.on('data', (data) => {
-  let lines = data.split('\n');
+// Handle process errors
+orcd.on('error', (err) => {
 
-  lines.forEach((line) => {
+});
+
+const updateLogs = (data) => {
+  let lines = data.toString().split('\n');
+
+  lines.filter((l) => !!l).forEach((line) => {
     try {
       line = JSON.parse(line);
     } catch (err) {
@@ -76,4 +80,8 @@ orcd.stdout.on('data', (data) => {
       mainWindow.webContents.send('log', line);
     }
   });
-});
+};
+
+// Send live logs from child process to renderer
+orcd.stdout.on('data', (data) => updateLogs(data));
+orcd.stderr.on('data', (data) => updateLogs(data));
