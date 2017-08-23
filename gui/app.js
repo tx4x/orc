@@ -14,8 +14,14 @@ const app = new Vue({
   },
   created: function() {
     // First check if the bridge is running already (the page was reloaded)
-    net.connect(parseInt(config.BridgePort))
-      .once('connect', () => this.isInitializing = false);
+    let sock = net.connect(parseInt(config.BridgePort));
+
+    sock.once('connect', () => {
+      this.isInitializing = false;
+      sock.end();
+    });
+
+    sock.once('error', () => this.isInitializing = true);
 
     // Keep a buffer of logs from the daemon and when we see the bridge is
     // established, we can safely proceed to do everything else

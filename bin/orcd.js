@@ -105,11 +105,16 @@ if (!fs.existsSync(path.join(config.ShardStorageBaseDir, 'shards'))) {
 const logger = bunyan.createLogger({ name: identity });
 
 // Start mongod before everything else
-mongod.run().then(() => {
+mongod.run().then((proc) => {
   init();
+  process.on('SIGTERM', () => {
+    logger.info('exiting, killing mongod');
+    proc.kill();
+    process.exit();
+  });
 }, (err) => {
-  logger.debug('failed to start mongod, but will try to connect anyway');
-  setTimeout(() => init(), 2000);
+  logger.error(`failed to start mongod: ${err}`);
+  process.exit(1);
 });
 
 function init() {
