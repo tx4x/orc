@@ -106,7 +106,13 @@ const logger = bunyan.createLogger({ name: identity });
 
 // Start mongod before everything else
 mongod.run().then(() => {
+  init();
+}, (err) => {
+  logger.debug('failed to start mongod, but will try to connect anyway');
+  setTimeout(() => init(), 2000);
+});
 
+function init() {
   // Initialize the shard storage database
   const shards = new orc.Shards(
     path.join(config.ShardStorageBaseDir, 'shards'),
@@ -453,8 +459,4 @@ mongod.run().then(() => {
       `control server bound to ${config.ControlHostname}:${config.ControlPort}`
     );
   });
-
-}, (err) =>  {
-  console.log(err)
-  logger.error(`failed to start mongod: ${err}`);
-});
+}
