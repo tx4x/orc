@@ -14,7 +14,7 @@ const app = new Vue({
     ipcRenderer.on('log', (e, data) => {
       this.logStack.unshift(data);
 
-      if (this.logStack.length > 10) {
+      if (this.logStack.length > 50) {
         this.logStack.pop();
       }
 
