@@ -1,7 +1,7 @@
 'use strict';
 
 const orc = require('../index');
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, BrowserWindow, ipcMain, Menu } = require('electron');
 
 let mainWindow;
 
@@ -23,6 +23,8 @@ function createWindow() {
     mainWindow.show();
     mainWindow.focus();
   });
+
+  Menu.setApplicationMenu(require('./menu'));
 };
 
 // Start orcd and setup IPC communication
