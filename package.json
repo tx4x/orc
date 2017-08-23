@@ -62,7 +62,7 @@
     "du": "^0.1.0",
     "electron-compile": "^6.4.1",
     "express": "^4.15.4",
-    "finalhandler": "^1.0.3",
+    "finalhandler": "^1.0.4",
     "granax": "^2.0.7",
     "ip": "littleskunk/node-ip#b1e7ec0cbff9f7841b1584e50339a774363437c0",
     "jsen": "bugventure/jsen#9e57a9d653ff4ea47d364fc37da0f1659bfb8e89",
@@ -85,7 +85,6 @@
     "rc": "^1.2.1",
     "secp256k1": "^3.2.2",
     "semver": "^5.1.0",
-    "serve-static": "^1.12.3",
     "stream-slice": "^0.1.2",
     "vue": "^2.4.2",
     "ws": "^3.0.0"
