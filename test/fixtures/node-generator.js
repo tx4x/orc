@@ -6,7 +6,7 @@ const async = require('async');
 const pem = require('pem');
 const path = require('path');
 const bunyan = require('bunyan');
-const orc = require('../..');
+const orc = require('../../index');
 const mkdirp = require('mkdirp');
 const getDatabase = require('./database');
 

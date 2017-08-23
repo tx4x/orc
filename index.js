@@ -20,7 +20,7 @@ const { join } = require('path');
  */
 /* istanbul ignore next */
 module.exports = function(config = {}) {
-  /* eslint max-statements: [2, 18] */
+  /* eslint max-statements: [2, 20] */
   const defaults = require('./bin/config');
   const cport = config.ControlPort || defaults.ControlPort;
   const caddr = config.ControlHostname || defaults.ControlHostname;
