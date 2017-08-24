@@ -157,12 +157,14 @@
       "electronInstallerRedhat": {
         "name": "orc",
         "productName": "orc",
-        "genericName": "File Manager",
-        "description": "Anonymous Distributed Cloud",
+        "genericName": "onion routed cloud",
+        "description": "The Onion Routed Cloud",
+        "productDescription": "ORC is a distributed anonymous file storage system owned and operated by all of us!",
         "section": "web",
         "maintainer": "Gordon Hall <gordonh@member.fsf.org",
         "homepage": "https://orc.network",
-        "icon": "gui/assets/logo-app-icon.png"
+        "icon": "gui/assets/logo-app-icon.png",
+        "bin": "orc"
       }
     }
   }
