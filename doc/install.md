@@ -1,7 +1,5 @@
 Make sure you have the following prerequisites installed:
 
-* [MongoDB](https://mongodb.org)
-* [Tor](https://torproject.org)
 * [Git](https://git-scm.org)
 * [Node.js LTS + NPM (6.10.x)](https://nodejs.org)
 * Python 2.7
@@ -49,7 +47,7 @@ xcode-select --install
 
 ### Daemon + Utilities CLI
 
-This package exposes two command line programs: `orc` and `orctool`. To 
+This package exposes 3 command line programs: `orc`, `orcd`,  and `orctool`. To 
 install these, use the `--global` flag.
 
 ```

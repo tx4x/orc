@@ -3,7 +3,7 @@ from your program and connect to it over the control port. This package exposes
 a convenience method for doing this. 
 
 ```js
-const orc = require('@orcproject/orc');
+const orc = require('@orcproject/orc/lib');
 const { child, controller } = orc(config);
 
 // The `config` argument can be either a string path to config file to use or 
