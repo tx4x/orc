@@ -3,17 +3,18 @@
 const path = require('path');
 const { homedir } = require('os');
 const orc = require('../lib');
-const { app, BrowserWindow, ipcMain, Menu } = require('electron');
+const { app, BrowserWindow, ipcMain, Menu, Tray } = require('electron');
 
-let mainWindow;
+let mainWindow, tray;
 
 
 function createWindow() {
   mainWindow = new BrowserWindow({
+    title: 'ORC',
     width: 800,
     height: 600,
     show: false,
-    icon: 'assets/logo-app-icon.png'
+    icon: path.join(__dirname, 'assets/logo-app-icon.png')
   });
 
   mainWindow.loadURL(`file://${__dirname}/index.html`);
@@ -25,6 +26,10 @@ function createWindow() {
   mainWindow.on('ready-to-show', () => {
     mainWindow.show();
     mainWindow.focus();
+
+    if (tray) {
+      tray.destroy();
+    }
   });
 
   Menu.setApplicationMenu(require('./menu'));
@@ -54,16 +59,22 @@ orcd.on('error', (err) => {
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.on('ready', createWindow);
+app.on('ready', () => {
+  createWindow();
+});
 
 // Quit when all windows are closed.
 app.on('window-all-closed', () => {
   // On OS X it is common for applications and their menu bar
   // to stay active until the user quits explicitly with Cmd + Q
   if (process.platform !== 'darwin') {
-    orcd.kill('SIGTERM');
-    app.quit();
+    tray = new Tray(path.join(__dirname, 'assets/logo-app-icon.png'));
+    tray.on('click', createWindow);
   }
+});
+
+app.on('will-quit', () => {
+  orcd.kill('SIGTERM');
 });
 
 app.on('activate', () => {

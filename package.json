@@ -1,6 +1,6 @@
 {
   "name": "@orcproject/orc",
-  "version": "8.0.3-beta1",
+  "version": "8.1.0-beta1",
   "description": "distributed anonymous storage network",
   "main": "gui/index.js",
   "bin": {
@@ -139,22 +139,24 @@
       "electronWinstallerConfig": {
         "name": "orc.exe",
         "description": "Anonymous Distributed Cloud",
-        "title": "ORC",
+        "title": "orc",
         "iconUrl": "gui/assets/logo-app-icon.ico"
       },
       "electronInstallerDebian": {
         "name": "orc",
-        "productName": "ORC",
-        "genericName": "File Manager",
-        "description": "Anonymous Distributed Cloud",
+        "productName": "orc",
+        "genericName": "onion routed cloud",
+        "description": "The Onion Routed Cloud",
+        "productDescription": "ORC is a distributed anonymous file storage system owned and operated by all of us!",
         "section": "web",
         "maintainer": "Gordon Hall <gordonh@member.fsf.org",
         "homepage": "https://orc.network",
-        "icon": "gui/assets/logo-app-icon.png"
+        "icon": "gui/assets/logo-app-icon.png",
+        "bin": "orc"
       },
       "electronInstallerRedhat": {
         "name": "orc",
-        "productName": "ORC",
+        "productName": "orc",
         "genericName": "File Manager",
         "description": "Anonymous Distributed Cloud",
         "section": "web",
