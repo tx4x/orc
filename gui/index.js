@@ -87,15 +87,34 @@ app.on('activate', () => {
 const updateLogs = (data) => {
   let lines = data.toString().split('\n');
 
-  lines.filter((l) => !!l).forEach((line) => {
+  lines.filter((l) => !!l).forEach((l) => {
+    if (!l) {
+      return;
+    }
+
     try {
-      line = JSON.parse(line);
+      l = JSON.parse(l);
     } catch (err) {
-      return err;
+      // NB: The only things that should log non-json are first-run dep
+      // NB: installation or errors so we can show a message that gives
+      // NB: updates if the former, and just print the latter
+      if (mainWindow) {
+        if (l.includes('Completed:')) {
+          mainWindow.webContents.send('log', {
+            msg: 'first run initialization... ' +
+              l.split('(')[0].toLowerCase(),
+            time: Date.now()
+          });
+        } else {
+          mainWindow.webContents.send('log', { msg: l, time: Date.now() });
+        }
+      }
+
+      return;
     }
 
     if (mainWindow) {
-      mainWindow.webContents.send('log', line);
+      mainWindow.webContents.send('log', l);
     }
   });
 };
