@@ -76,6 +76,7 @@
     "kad-traverse": "^1.1.1",
     "knuth-shuffle": "^1.0.1",
     "merge": "^1.2.0",
+    "mime-types": "^2.1.16",
     "mkdirp": "^0.5.1",
     "mongodb-prebuilt": "github:bookchin/mongodb-prebuilt",
     "mongoose": "^4.11.6",

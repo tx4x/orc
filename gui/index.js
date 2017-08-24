@@ -1,5 +1,7 @@
 'use strict';
 
+const path = require('path');
+const { homedir } = require('os');
 const orc = require('../index');
 const { app, BrowserWindow, ipcMain, Menu } = require('electron');
 
@@ -29,7 +31,9 @@ function createWindow() {
 
 // Start orcd and setup IPC communication
 const opts = { MongoDBPort: 47017 };
-const { child: orcd, controller } = orc(opts);
+const { child: orcd, controller } = orc(
+  path.join(homedir(), '.config/orc/config')
+);
 
 // The orcd controller is ready
 controller.on('ready', () => {
