@@ -2,7 +2,7 @@
 
 const path = require('path');
 const { homedir } = require('os');
-const orc = require('../index');
+const orc = require('../lib');
 const { app, BrowserWindow, ipcMain, Menu } = require('electron');
 
 let mainWindow;

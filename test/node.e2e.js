@@ -3,7 +3,7 @@
 const { expect } = require('chai');
 const async = require('async');
 const netgen = require('./fixtures/node-generator');
-const orc = require('../index');
+const orc = require('../lib');
 
 
 describe('@module orc (end-to-end)', function() {

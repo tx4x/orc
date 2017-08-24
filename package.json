@@ -122,8 +122,7 @@
           "zip"
         ],
         "linux": [
-          "deb",
-          "rpm"
+          "deb"
         ]
       },
       "electronPackagerConfig": {
@@ -138,7 +137,10 @@
         ]
       },
       "electronWinstallerConfig": {
-        "name": ""
+        "name": "orc.exe",
+        "description": "Anonymous Distributed Cloud",
+        "title": "ORC",
+        "iconUrl": "gui/assets/logo-app-icon.ico"
       },
       "electronInstallerDebian": {
         "name": "orc",
@@ -150,13 +152,15 @@
         "homepage": "https://orc.network",
         "icon": "gui/assets/logo-app-icon.png"
       },
-      "electronInstallerRedhat": {},
-      "github_repository": {
-        "owner": "",
-        "name": ""
-      },
-      "windowsStoreConfig": {
-        "packageName": ""
+      "electronInstallerRedhat": {
+        "name": "orc",
+        "productName": "ORC",
+        "genericName": "File Manager",
+        "description": "Anonymous Distributed Cloud",
+        "section": "web",
+        "maintainer": "Gordon Hall <gordonh@member.fsf.org",
+        "homepage": "https://orc.network",
+        "icon": "gui/assets/logo-app-icon.png"
       }
     }
   }
