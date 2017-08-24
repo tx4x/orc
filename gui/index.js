@@ -12,7 +12,8 @@ function createWindow() {
   mainWindow = new BrowserWindow({
     width: 800,
     height: 600,
-    show: false
+    show: false,
+    icon: 'assets/logo-app-icon.png'
   });
 
   mainWindow.loadURL(`file://${__dirname}/index.html`);

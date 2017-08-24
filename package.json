@@ -126,11 +126,30 @@
           "rpm"
         ]
       },
-      "electronPackagerConfig": {},
+      "electronPackagerConfig": {
+        "appCopyright": "Copyright (C) 2017  Counterpoint Hackerspace, Ltd.",
+        "asar": false,
+        "overwrite": true,
+        "name": "orc",
+        "extraResource": [
+          "./node_modules/.bin",
+          "./index.js",
+          "./package.json"
+        ]
+      },
       "electronWinstallerConfig": {
         "name": ""
       },
-      "electronInstallerDebian": {},
+      "electronInstallerDebian": {
+        "name": "orc",
+        "productName": "ORC",
+        "genericName": "File Manager",
+        "description": "Anonymous Distributed Cloud",
+        "section": "web",
+        "maintainer": "Gordon Hall <gordonh@member.fsf.org",
+        "homepage": "https://orc.network",
+        "icon": "gui/assets/logo-app-icon.png"
+      },
       "electronInstallerRedhat": {},
       "github_repository": {
         "owner": "",
