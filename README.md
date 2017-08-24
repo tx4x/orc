@@ -8,7 +8,12 @@ the discussion in `#orc` on our [community chat](https://matrix.counterpointhack
 [![Docker Hub](https://img.shields.io/docker/pulls/orcproject/orc.svg?style=flat-square)](https://hub.docker.com/r/orcproject/orc) | 
 [![License (AGPL-3.0)](https://img.shields.io/badge/license-AGPL3.0-blue.svg?style=flat-square)](https://raw.githubusercontent.com/orcproject/orc/master/LICENSE)
 
-### Quick Start
+### Desktop Installation (Recommended)
+
+Simply [download a pre-built package](https://github.com/orcproject/orc/releaes/latest) 
+for your platform from the releases page!
+
+### Server Installation (Advanced)
 
 Pull the [image from Docker Hub](https://hub.docker.com/r/orcproject/orc/).
 
@@ -55,13 +60,17 @@ To hack on the ORC project, clone this repository and use
 [Docker Compose](https://docs.docker.com/compose/):
 
 ```
-git clone https://github.com/orcproject/orc && cd orc
+git clone https://github.com/orcproject/orc
+cd orc
 docker-compose up
 ```
 
 This will volume mount the the appropriate directories for development, and 
 then boots up the ORC container. **Note that stable releases are tagged and 
 the `master` branch may contain unstable or bleeding-edge code.**
+
+> Alternatively, you can run directly on your host. Use `npm install` and 
+> `npm start` to install dependencies and start the application.
 
 Happy hacking!
 
