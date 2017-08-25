@@ -64,6 +64,7 @@
     "cors": "^2.8.4",
     "du": "^0.1.0",
     "electron-compile": "^6.4.1",
+    "electron-squirrel-startup": "^1.0.0",
     "express": "^4.15.4",
     "finalhandler": "^1.0.4",
     "form-data": "^2.3.1",
@@ -135,16 +136,15 @@
         "overwrite": true,
         "name": "orc",
         "extraResource": [
-          "./node_modules/.bin",
-          "./index.js",
-          "./package.json"
+        
         ]
       },
       "electronWinstallerConfig": {
         "name": "orc.exe",
         "description": "Anonymous Distributed Cloud",
         "title": "orc",
-        "iconUrl": "gui/assets/logo-app-icon.ico"
+        "setupIcon": "gui/assets/logo-app-icon.ico",
+        "setupExe": "orc.exe"
       },
       "electronInstallerDebian": {
         "name": "orc",
