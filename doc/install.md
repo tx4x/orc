@@ -46,6 +46,14 @@ You might also find yourself lacking a C++11 compiler -
 xcode-select --install
 ```
 
+#### Windows
+
+Run as administrator in PowerShell or cmd:
+
+```
+npm install -g windows-build-tools
+```
+
 ### Daemon + Utilities CLI
 
 This package exposes 3 command line programs: `orc`, `orcd`,  and `orctool`. To 
@@ -53,6 +61,17 @@ install these, use the `--global` flag.
 
 ```
 npm install -g @orcproject/orc
+```
+
+On Windows, things are different. Instead, do the following.
+
+```
+git clone https://github.com/orproject/orc
+cd orc
+npm install --ignore-scripts
+npm install granax
+npm link
+npm start
 ```
 
 ### Core Library
