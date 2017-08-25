@@ -13,6 +13,8 @@ the discussion in `#orc` on our [community chat](https://matrix.counterpointhack
 Simply [download a pre-built package](https://github.com/orcproject/orc/releaes/latest) 
 for your platform from the releases page!
 
+> Note that Windows is not *yet* supported.
+
 ### Server Installation (Advanced)
 
 Pull the [image from Docker Hub](https://hub.docker.com/r/orcproject/orc/).
