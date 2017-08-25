@@ -71,7 +71,7 @@ cd orc
 npm install --ignore-scripts
 npm install granax
 npm link
-npm start
+npm start-win
 ```
 
 ### Core Library
