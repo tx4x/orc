@@ -25,9 +25,11 @@ const config = require('rc')('orc', options);
 const boscar = require('boscar');
 const kad = require('kad');
 const { MongodHelper } = require('mongodb-prebuilt');
-const mongod = new MongodHelper(
-  ['--port', config.MongoDBPort, '--dbpath', config.MongoDBDataDirectory]
-);
+const mongodArgs = [
+  '--port', config.MongoDBPort,
+  '--dbpath', config.MongoDBDataDirectory
+];
+const mongod = new MongodHelper(mongodArgs);
 
 
 program.version(`
@@ -103,10 +105,12 @@ const logger = bunyan.createLogger({ name: identity });
 
 // Start mongod before everything else
 mongod.run().then((proc) => {
+  const mongodShutdown = new MongodHelper(mongodArgs.concat(['--shutdown']));
+
   init();
   process.on('exit', () => {
     logger.info('exiting, killing mongod');
-    proc.kill('SIGINT');
+    mongodShutdown.run().then(() => null, () => null);
   });
 }, (err) => {
   logger.error(`failed to start mongod: ${err}`);
