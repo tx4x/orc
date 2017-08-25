@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 'use strict';
 
 const pem = require('pem');
@@ -7,7 +5,22 @@ const { utils: keyutils } = require('kad-spartacus');
 const orc = require('../lib');
 const options = require('./config');
 const program = require('commander');
+const path = require('path');
+const os = require('os');
 
+
+if (process.platform === 'win32') {
+  process.env.OPENSSL_CONF = path.join(
+    __dirname, '../vendor', 'openssl', 'shared', 'openssl.cnf'
+  );
+  pem.config({
+    pathOpenSSL: path.join(
+      __dirname, '../vendor', 'openssl',
+      os.arch() === 'x64' ? 'x64' : 'ia32',
+      'openssl'
+    )
+  });
+}
 
 program.version(`
   orctool  ${orc.version.software}

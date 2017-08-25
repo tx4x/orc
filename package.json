@@ -1,12 +1,12 @@
 {
   "name": "@orcproject/orc",
-  "version": "8.1.0-beta1",
+  "version": "8.1.1-beta1",
   "description": "distributed anonymous storage network",
   "main": "gui/index.js",
   "bin": {
-    "orc": "bin/orc.js",
-    "orcd": "bin/orcd.js",
-    "orctool": "bin/orctool.js"
+    "orc": "bin/_orc",
+    "orcd": "bin/_orcd",
+    "orctool": "bin/_orctool"
   },
   "directories": {
     "test": "test",
@@ -63,14 +63,14 @@
     "electron-compile": "^6.4.1",
     "express": "^4.15.4",
     "finalhandler": "^1.0.4",
-    "granax": "^2.0.7",
+    "granax": "^2.0.9",
     "ip": "littleskunk/node-ip#b1e7ec0cbff9f7841b1584e50339a774363437c0",
     "jsen": "bugventure/jsen#9e57a9d653ff4ea47d364fc37da0f1659bfb8e89",
     "json-stable-stringify": "^1.0.1",
     "kad": "^2.4.0",
     "kad-content": "^1.0.0",
     "kad-hibernate": "^1.0.0",
-    "kad-onion": "^1.6.2",
+    "kad-onion": "^1.6.4",
     "kad-quasar": "^2.1.0",
     "kad-spartacus": "^2.4.1",
     "kad-traverse": "^1.1.1",

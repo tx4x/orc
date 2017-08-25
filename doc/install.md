@@ -1,5 +1,6 @@
 Make sure you have the following prerequisites installed:
 
+* [Tor](https://torproject.org)
 * [Git](https://git-scm.org)
 * [Node.js LTS + NPM (6.10.x)](https://nodejs.org)
 * Python 2.7

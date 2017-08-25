@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 'use strict';
 
 const os = require('os');
@@ -21,7 +19,7 @@ const fs = require('fs');
 const manifest = require('../package');
 const orc = require('../lib');
 const options = require('./config');
-const { execFileSync } = require('child_process');
+const { execSync } = require('child_process');
 const { Transform } = require('stream');
 const config = require('rc')('orc', options);
 const boscar = require('boscar');
@@ -46,10 +44,9 @@ program.option('--config <file>', 'path to a orc configuration file');
 program.parse(process.argv);
 
 function orctool() {
-  return execFileSync(
-    path.join(__dirname, 'orctool.js'),
-    [...arguments]
-  ).toString().trim();
+  return execSync([
+    `"${process.execPath}"`, path.join(__dirname, 'orctool.js'), ...arguments
+  ].join(' ')).toString().trim();
 }
 
 // Extend the Kad T_RESPONSETIMEOUT to 30s because Tor
@@ -126,7 +123,7 @@ function init() {
 
   // Initialize the storage database
   const database = new orc.Database(
-    `mongodb://localhost:${config.MongoDBPort}/orc-${identity}`
+    `mongodb://127.0.0.1:${config.MongoDBPort}/orc-${identity}`
   );
 
   // Initialize transport adapter with SSL
