@@ -144,7 +144,8 @@
         "description": "Anonymous Distributed Cloud",
         "title": "orc",
         "setupIcon": "gui/assets/logo-app-icon.ico",
-        "setupExe": "orc.exe"
+        "setupExe": "orc.exe",
+        "loadingGif": "gui/assets/loader.gif"
       },
       "electronInstallerDebian": {
         "name": "orc",

@@ -104,9 +104,9 @@ const logger = bunyan.createLogger({ name: identity });
 // Start mongod before everything else
 mongod.run().then((proc) => {
   init();
-  process.on('SIGTERM', () => {
+  process.on('exit', () => {
     logger.info('exiting, killing mongod');
-    proc.kill();
+    proc.kill('SIGINT');
     process.exit();
   });
 }, (err) => {

@@ -234,7 +234,7 @@ const app = new Vue({
   },
   created() {
     // First check if the bridge is running already (the page was reloaded)
-    let sock = net.connect(parseInt(config.BridgePort));
+    let sock = net.connect(parseInt(config.BridgePort), '127.0.0.1');
 
     sock.once('connect', () => {
       this.isInitializing = false;
