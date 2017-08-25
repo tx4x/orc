@@ -107,7 +107,6 @@ mongod.run().then((proc) => {
   process.on('exit', () => {
     logger.info('exiting, killing mongod');
     proc.kill('SIGINT');
-    process.exit();
   });
 }, (err) => {
   logger.error(`failed to start mongod: ${err}`);

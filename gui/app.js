@@ -26,7 +26,8 @@ const app = new Vue({
   methods: {
     // Establishes a connection to the daemon
     connectToControlPort() {
-      controlClient.connect(parseInt(config.ControlPort));
+      controlClient.connect(parseInt(config.ControlPort))
+        .on('error', console.error);
     },
     // Queries the daemon for what the user has configured to allocate
     // and how much space is still available

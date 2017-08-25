@@ -85,6 +85,7 @@ function init() {
       createWindow();
     }
   });
+
   const updateLogs = (data) => {
     let lines = data.toString().split('\n');
 
