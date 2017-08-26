@@ -124,20 +124,27 @@
           "squirrel"
         ],
         "darwin": [
-          "zip"
+          "zip",
+          "dmg"
         ],
         "linux": [
-          "deb"
+          "deb",
+          "rpm"
         ]
       },
       "electronPackagerConfig": {
         "appCopyright": "Copyright (C) 2017  Counterpoint Hackerspace, Ltd.",
         "asar": false,
         "overwrite": true,
-        "name": "orc",
+        "name": "ORC",
+        "icon": "gui/assets/logo-app-icon",
         "extraResource": [
         
         ]
+      },
+      "electronInstallerDMG": {
+        "icon": "gui/assets/logo-app-icon.icns",
+        "background": "gui/assets/dmg-bg.jpg"
       },
       "electronWinstallerConfig": {
         "name": "orc.exe",
