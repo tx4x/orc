@@ -113,6 +113,10 @@ mongod.run().then((proc) => {
     mongodShutdown.run().then(() => null, () => null);
   });
 }, (err) => {
+  if (err.includes('already running') || err.includes('shutting down')) {
+    return init();
+  }
+
   logger.error(`failed to start mongod: ${err}`);
   process.exit(1);
 });

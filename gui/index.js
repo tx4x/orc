@@ -1,12 +1,19 @@
 'use strict';
 
+const config = require('rc')('orc', require('../bin/config'));
 const path = require('path');
 const { homedir } = require('os');
 const orc = require('../lib');
 const { app, BrowserWindow, ipcMain, Menu, Tray } = require('electron');
+const { MongodHelper } = require('mongodb-prebuilt');
+const mongodArgs = [
+  '--port', config.MongoDBPort,
+  '--dbpath', config.MongoDBDataDirectory
+];
+const mongod = new MongodHelper(mongodArgs);
 
 
-let mainWindow, tray;
+let mainWindow, tray, mongodProcess;
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -37,7 +44,6 @@ function createWindow() {
 
 function init() {
   // Start orcd and setup IPC communication
-  const opts = { MongoDBPort: 47017 };
   const { child: orcd, controller } = orc(
     path.join(homedir(), '.config/orc/config')
   );
@@ -57,33 +63,9 @@ function init() {
 
   });
 
-  // This method will be called when Electron has finished
-  // initialization and is ready to create browser windows.
-  // Some APIs can only be used after this event occurs.
-  app.on('ready', () => {
-    createWindow();
-  });
-
-  // Quit when all windows are closed.
-  app.on('window-all-closed', () => {
-    // On OS X it is common for applications and their menu bar
-    // to stay active until the user quits explicitly with Cmd + Q
-    if (process.platform !== 'darwin') {
-      tray = new Tray(path.join(__dirname, 'assets/logo-app-icon.png'));
-      tray.on('click', createWindow);
-    }
-  });
-
   app.on('will-quit', () => {
-    orcd.kill('SIGTERM');
-  });
-
-  app.on('activate', () => {
-    // On OS X it's common to re-create a window in the app when the
-    // dock icon is clicked and there are no other windows open.
-    if (mainWindow === null) {
-      createWindow();
-    }
+    process.kill(mongodProcess.pid);
+    process.kill(orcd.pid);
   });
 
   const updateLogs = (data) => {
@@ -129,5 +111,34 @@ function init() {
 if (require('electron-squirrel-startup')) {
   app.quit();
 } else {
-  init();
+  mongod.run().then((proc) => {
+    mongodProcess = proc;
+    init();
+  }, (err) => console.error(err));
 }
+
+// This method will be called when Electron has finished
+// initialization and is ready to create browser windows.
+// Some APIs can only be used after this event occurs.
+app.on('ready', () => {
+  createWindow();
+});
+
+// Quit when all windows are closed.
+app.on('window-all-closed', () => {
+  // On OS X it is common for applications and their menu bar
+  // to stay active until the user quits explicitly with Cmd + Q
+  if (process.platform !== 'darwin') {
+    tray = new Tray(path.join(__dirname, 'assets/logo-app-icon.png'));
+    tray.on('click', createWindow);
+  }
+});
+
+app.on('activate', () => {
+  // On OS X it's common to re-create a window in the app when the
+  // dock icon is clicked and there are no other windows open.
+  if (mainWindow === null) {
+    createWindow();
+  }
+});
+
