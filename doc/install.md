@@ -63,16 +63,22 @@ install these, use the `--global` flag.
 npm install -g @orcproject/orc
 ```
 
-On Windows, things are different. Instead, do the following.
+On Windows, things are different - and a little weird. Instead, do the following.
 
 ```
 git clone https://github.com/orproject/orc
 cd orc
 npm install --ignore-scripts
 npm install granax
+npm remove electron-prebuilt-compile
+npm install electron-prebuilt-compile
 npm link
 npm run start-win
 ```
+
+> Note that some native dependencies do not work on Windows and will fallback
+> to JavaScript implementations. This will impact performance. You should run 
+> GNU+Linux. :)
 
 ### Core Library
 
@@ -84,3 +90,18 @@ install as a dependency.
 npm install @orcproject/orc --save
 ```
 
+Then you can require the library with:
+
+```
+const orc = require('@orcproject/orc/lib');
+```
+
+### Building Packages
+
+To build a distributable package for your platform, clone the repository and 
+follow the steps above for your platform, then run:
+
+```
+npm run make # linux/osx
+npm run make-win # windows
+```
