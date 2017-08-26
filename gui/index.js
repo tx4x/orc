@@ -90,7 +90,10 @@ function init() {
               time: Date.now()
             });
           } else {
-            mainWindow.webContents.send('log', { msg: l, time: Date.now() });
+            mainWindow.webContents.send('err', {
+              msg: data.toString(),
+              time: Date.now()
+            });
           }
         }
 
