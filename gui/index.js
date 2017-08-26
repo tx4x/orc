@@ -1,8 +1,16 @@
 'use strict';
 
+const config = require('rc')('orc', require('../bin/config'));
 const path = require('path');
 const { homedir } = require('os');
 const orc = require('../lib');
+const { MongodHelper } = require('mongodb-prebuilt');
+const mongodArgs = [
+  '--port', config.MongoDBPort,
+  '--dbpath', config.MongoDBDataDirectory,
+  '--shutdown'
+];
+const mongodShutdown = new MongodHelper(mongodArgs);
 const { app, BrowserWindow, ipcMain, Menu, Tray } = require('electron');
 
 
@@ -76,6 +84,11 @@ function init() {
 
   app.on('will-quit', () => {
     orcd.kill('SIGTERM');
+
+    // NB: Without this, Windows will zombie our mongod process
+    if (process.platform === 'win32') {
+      mongodShutdown.run().then(() => null, () => null);
+    }
   });
 
   app.on('activate', () => {
