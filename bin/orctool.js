@@ -11,11 +11,11 @@ const os = require('os');
 
 if (process.platform === 'win32') {
   process.env.OPENSSL_CONF = path.join(
-    __dirname, '../vendor', 'openssl', 'shared', 'openssl.cnf'
+    __dirname, '../vendor', 'openssl-win32', 'shared', 'openssl.cnf'
   );
   pem.config({
     pathOpenSSL: path.join(
-      __dirname, '../vendor', 'openssl',
+      __dirname, '../vendor', 'openssl-win32',
       os.arch() === 'x64' ? 'x64' : 'ia32',
       'openssl'
     )
