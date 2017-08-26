@@ -113,6 +113,8 @@ mongod.run().then((proc) => {
     mongodShutdown.run().then(() => null, () => null);
   });
 }, (err) => {
+  // HACK: This will happen when orcd is started from the GUI
+  // HACK: The GUI start mongod itself so it can properly terminate it on exit
   if (err.includes('already running') || err.includes('shutting down')) {
     return init();
   }
