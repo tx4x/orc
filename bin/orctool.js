@@ -20,14 +20,14 @@ if (process.platform === 'win32') {
       'openssl'
     )
   });
-}
-
-if (process.platform === 'darwin') {
+} else if (process.platform === 'darwin') {
   pem.config({
     pathOpenSSL: path.join(
       __dirname, '../vendor', 'openssl-darwin', 'bin', 'openssl'
     )
   });
+} else {
+  pem.config({ pathOpenSSL: '/usr/bin/openssl' });
 }
 
 program.version(`

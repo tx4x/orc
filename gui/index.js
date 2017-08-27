@@ -21,7 +21,7 @@ function createWindow() {
     width: 800,
     height: 600,
     show: false,
-    icon: path.join(__dirname, 'assets/logo-app-icon-x24.png')
+    icon: path.join(__dirname, 'assets/logo-app-icon.png')
   });
 
   mainWindow.loadURL(`file://${__dirname}/index.html`);
