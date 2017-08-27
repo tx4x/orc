@@ -57,6 +57,7 @@ program
           : undefined
       ).privateExtendedKey);
     }
+    process.exit();
   });
 
 program
@@ -73,6 +74,7 @@ program
       } else {
         console.info(`${data.serviceKey}\r\n\r\n${data.certificate}`);
       }
+      process.exit();
     });
   });
 
@@ -86,6 +88,7 @@ program
       } else {
         console.info(data.key);
       }
+      process.exit();
     });
   });
 
@@ -96,6 +99,7 @@ program
     for (let prop in options) {
       console.info(prop);
     }
+    process.exit();
   });
 
 program.command('*').action(() => program.help());
