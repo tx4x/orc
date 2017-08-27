@@ -22,6 +22,14 @@ if (process.platform === 'win32') {
   });
 }
 
+if (process.platform === 'darwin') {
+  pem.config({
+    pathOpenSSL: path.join(
+      __dirname, '../vendor', 'openssl-darwin', 'bin', 'openssl'
+    )
+  });
+}
+
 program.version(`
   orctool  ${orc.version.software}
   protocol ${orc.version.protocol}

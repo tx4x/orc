@@ -247,7 +247,7 @@ const app = new Vue({
 
     // Keep a buffer of logs from the daemon and when we see the bridge is
     // established, we can safely proceed to do everything else
-    ipcRenderer.on('log', (e, data) => {
+    const handleLogEvent = (e, data) => {
       this.logStack.unshift(data);
 
       if (this.logStack.length > 50) {
@@ -258,6 +258,8 @@ const app = new Vue({
         this.isInitializing = false;
         this.onInitialized();
       }
-    });
+    };
+
+    ipcRenderer.on('log', handleLogEvent).on('err', handleLogEvent);
   }
 });

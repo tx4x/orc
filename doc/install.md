@@ -105,3 +105,9 @@ follow the steps above for your platform, then run:
 npm run make # linux/osx
 npm run make-win # windows
 ```
+
+On Mac OS, you'll want to remove this package before building:
+
+```
+npm remove dtrace-provider
+```
