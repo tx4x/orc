@@ -35,7 +35,7 @@ RUN echo "#\!/bin/bash" >> /root/orc.sh; \
     echo "export orc_ControlHostname=0.0.0.0" >> /root/orc.sh; \
     echo "export orc_BridgeHostname=0.0.0.0" >> /root/orc.sh; \
     echo "export orc_DirectoryHostname=0.0.0.0" >> /root/orc.sh; \
-    echo "orcd" >> /root/orc.sh \
+    echo "node /root/orc/bin/orcd.js" >> /root/orc.sh \
 RUN chmod +x /root/orc.sh
 VOLUME ["/root/.config/orc"]
 EXPOSE 4443 4444 4445 4446 37017
