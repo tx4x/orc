@@ -326,7 +326,6 @@ function init() {
           rs.on('data', ([capacity, contact]) => {
             let timestamp = Date.now();
 
-            // TODO: Update online/uptime score
             database.PeerProfile.findOneAndUpdate({ identity: contact[0] }, {
               capacity: {
                 allocated: capacity.allocated,
