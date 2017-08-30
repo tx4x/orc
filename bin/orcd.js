@@ -264,8 +264,8 @@ function init() {
   }
 
   function reapExpiredShards(callback = () => null) {
-    // TODO: Reaping should abandon shards that have not been audited within
-    // TODO: the last 10-20 scoring intervals
+    // TODO: Reaping should abandon shards that have not been audited or accessed
+    // TODO: within the last 10-20 scoring intervals
     // TODO:
     // TODO: Load all contracts that have not been audited in the last 72 hours
     // TODO: + a grace period of 48 hours (5 days)
