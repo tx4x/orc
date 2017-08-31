@@ -1,9 +1,11 @@
 <template>
-<!-- Main Intializing Indicator -->
-<div v-if="isInitializing" id="main-loader">
-  <div class="spinner"></div>
-  <div id="loader-status">{{logStack[0].msg}}</div>
-</div>
+  <div id="app">
+    <!-- Main Intializing Indicator -->
+    <div v-if="isInitializing" id="main-loader">
+      <div class="spinner"></div>
+      <div id="loader-status">{{logStack[0].msg}}</div>
+    </div>
+  </div>
 </template>
 
 <script>
@@ -22,18 +24,15 @@ const mimeTypes = require('mime-types');
 const path = require('path');
 const ms = require('ms');
 
-const Vuetify = require('vuetify');
-Vue.use(Vuetify);
-
-const app = new Vue({
-  el: '#app',
-  data: {
+module.exports = {
+  name: "app",
+  data: () => ({
     isInitializing: true,
     logStack: [{ time: Date.now(), msg: 'starting orc daemon' }],
     objectList: [],
     localCapacity: { allocated: '?', available: '?' },
     capacityDirectory: []
-  },
+  }),
   methods: {
     // Establishes a connection to the daemon
     connectToControlPort() {
@@ -273,7 +272,7 @@ const app = new Vue({
 
     ipcRenderer.on('log', handleLogEvent).on('err', handleLogEvent);
   }
-});
+};
 </script>
 
 <style lang="stylus">
