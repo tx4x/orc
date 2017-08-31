@@ -264,13 +264,30 @@ function init() {
   }
 
   function reapExpiredShards(callback = () => null) {
-    // TODO: Reaping should abandon shards that have not been audited or accessed
-    // TODO: within the last 10-20 scoring intervals
-    // TODO:
-    // TODO: Load all contracts that have not been audited in the last 72 hours
-    // TODO: + a grace period of 48 hours (5 days)
-    // TODO:   - FOR EACH (SERIES) => remove shard, reap contract, update peer
-    // TODO:     profile score/reputation
+    const query = {
+      _lastAuditTimestamp: { $lt: Date.now() - ms('5DAYS') },
+      _lastAccessTimestamp: { $lt: Date.now() - ms('5DAYS') },
+      _lastFundingTimestamp: { $lt: Date.now() - ms('5DAYS') },
+      ownerIdentity: identity.toString('hex')
+    };
+
+    database.ShardContract.find(query, (err, contracts) => {
+      if (err) {
+        node.logger.error(`failed to start reaper, reason: ${err.message}`);
+        return callback(err);
+      }
+
+      async.eachSeries(contracts, (contract, next) => {
+       shards.unlink(contract.shardHash, (err) => {
+        if (err) {
+          node.logger.error(`failed to reap shard ${contract.shardHash}`);
+          return next();
+        }
+
+        contract.remove(() => next());
+       });
+      }, callback);
+    });
   }
 
   let retry = null;
