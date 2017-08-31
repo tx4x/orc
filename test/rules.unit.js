@@ -230,13 +230,15 @@ describe('@class Rules', function() {
           }
         }
       });
+      const saveContract = sinon.stub().callsArg(0);
       const rules = new Rules({
         database: {
           ShardContract: {
             findOne: sinon.stub().callsArgWith(1, null, {
               shardHash: 'datahash',
               auditLeaves: auditStream.getPublicRecord(),
-              checkAccessPolicy: sinon.stub().returns(['AUDIT'])
+              checkAccessPolicy: sinon.stub().returns(['AUDIT']),
+              save: saveContract
             })
           }
         },
@@ -262,6 +264,7 @@ describe('@class Rules', function() {
           let { root, depth } = auditStream.getPrivateRecord();
           let [expected, actual] = ProofStream.verify(proof, root, depth);
           expect(Buffer.compare(expected, actual)).to.equal(0);
+          expect(saveContract.called).to.equal(true);
           done();
         }
       };
