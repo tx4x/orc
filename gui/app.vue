@@ -1,3 +1,12 @@
+<template>
+<!-- Main Intializing Indicator -->
+<div v-if="isInitializing" id="main-loader">
+  <div class="spinner"></div>
+  <div id="loader-status">{{logStack[0].msg}}</div>
+</div>
+</template>
+
+<script>
 'use strict';
 
 const config = require('rc')('orc', require('../bin/config'));
@@ -13,6 +22,8 @@ const mimeTypes = require('mime-types');
 const path = require('path');
 const ms = require('ms');
 
+const Vuetify = require('vuetify');
+Vue.use(Vuetify);
 
 const app = new Vue({
   el: '#app',
@@ -263,3 +274,8 @@ const app = new Vue({
     ipcRenderer.on('log', handleLogEvent).on('err', handleLogEvent);
   }
 });
+</script>
+
+<style lang="stylus">
+@require 'assets/css/main'
+</style>

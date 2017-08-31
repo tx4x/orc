@@ -94,6 +94,9 @@
     "semver": "^5.1.0",
     "stream-slice": "^0.1.2",
     "vue": "^2.4.2",
+    "vue-router": "^2.7.0",
+    "vueify": "^9.4.1",
+    "vuetify": "^0.15.0-beta.3",
     "ws": "^3.0.0"
   },
   "devDependencies": {
@@ -137,9 +140,7 @@
         "overwrite": true,
         "name": "ORC",
         "icon": "gui/assets/logo-app-icon",
-        "extraResource": [
-        
-        ]
+        "extraResource": []
       },
       "electronInstallerDMG": {
         "icon": "gui/assets/logo-app-icon.icns",
