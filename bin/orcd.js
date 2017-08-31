@@ -264,10 +264,12 @@ function init() {
   }
 
   function reapExpiredShards(callback = () => null) {
+    const now = Date.now();
+    const stale = now - (constants.SCORE_INTERVAL + constants.REAPER_GRACE);
     const query = {
-      _lastAuditTimestamp: { $lt: Date.now() - ms('5DAYS') },
-      _lastAccessTimestamp: { $lt: Date.now() - ms('5DAYS') },
-      _lastFundingTimestamp: { $lt: Date.now() - ms('5DAYS') },
+      _lastAuditTimestamp: { $lt: stale },
+      _lastAccessTimestamp: { $lt: stale  },
+      _lastFundingTimestamp: { $lt: stale },
       providerIdentity: identity.toString('hex')
     };
 
