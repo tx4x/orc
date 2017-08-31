@@ -268,7 +268,7 @@ function init() {
       _lastAuditTimestamp: { $lt: Date.now() - ms('5DAYS') },
       _lastAccessTimestamp: { $lt: Date.now() - ms('5DAYS') },
       _lastFundingTimestamp: { $lt: Date.now() - ms('5DAYS') },
-      ownerIdentity: identity.toString('hex')
+      providerIdentity: identity.toString('hex')
     };
 
     database.ShardContract.find(query, (err, contracts) => {
@@ -278,14 +278,14 @@ function init() {
       }
 
       async.eachSeries(contracts, (contract, next) => {
-       shards.unlink(contract.shardHash, (err) => {
-        if (err) {
-          node.logger.error(`failed to reap shard ${contract.shardHash}`);
-          return next();
-        }
+        shards.unlink(contract.shardHash, (err) => {
+          if (err) {
+            node.logger.error(`failed to reap shard ${contract.shardHash}`);
+            return next();
+          }
 
-        contract.remove(() => next());
-       });
+          contract.remove(() => next());
+        });
       }, callback);
     });
   }
