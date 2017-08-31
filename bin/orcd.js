@@ -270,6 +270,23 @@ function init() {
 
   let retry = null;
 
+  function bootstrapFromLocalProfiles(callback) {
+    database.PeerProfile.find({ updated: { $gt: Date.now() - ms('48HR') } })
+      .sort({ updated: -1 })
+      .limit(10)
+      .exec((err, profiles) => {
+        if (err) {
+          return callback(err);
+        }
+
+        profiles
+          .map((p) => p.toString())
+          .forEach((url) => config.NetworkBootstrapNodes.unshift(url));
+
+        callback();
+      });
+  }
+
   function join() {
     let entry = null;
 
@@ -304,6 +321,7 @@ function init() {
           rs.on('data', ([capacity, contact]) => {
             let timestamp = Date.now();
 
+            // TODO: Update online/uptime score
             database.PeerProfile.findOneAndUpdate({ identity: contact[0] }, {
               capacity: {
                 allocated: capacity.allocated,
@@ -461,7 +479,7 @@ function init() {
       startDirectory();
     }
 
-    join();
+    bootstrapFromLocalProfiles(() => join());
   });
 
   // Establish control server and wrap node instance
