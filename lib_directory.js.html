@@ -168,7 +168,7 @@ class Directory {
 
         async.eachSeries(body, (profile, next) => {
           this.database.PeerProfile.findOneAndUpdate(
-            { identity: profile.identity, updated: { $lte: profile.updated } },
+            { identity: profile.identity },
             profile,
             { upsert: true },
             next

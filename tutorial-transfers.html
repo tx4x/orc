@@ -116,7 +116,7 @@ default, which is <code>~/.config/orc/__bridge.staging</code>.</p>
 <h3>List Objects Stored</h3><p>You can get a JSON list of your objects stored in the network by sending a 
 request to <code>GET /</code>.</p>
 <p>Example:</p>
-<pre class="prettyprint source"><code>$ curl http://127.0.0.1:4445 | jq
+<pre class="prettyprint source"><code>$ curl -H &quot;Accept: application/json&quot; http://127.0.0.1:4445 | jq
 [
   {
     &quot;id&quot;: &quot;d049bff2-21b5-4f2f-bac3-efb3832a5afb&quot;,
