@@ -33,7 +33,7 @@ request to `GET /`.
 Example:
 
 ```
-$ curl http://127.0.0.1:4445 | jq
+$ curl -H "Accept: application/json" http://127.0.0.1:4445 | jq
 [
   {
     "id": "d049bff2-21b5-4f2f-bac3-efb3832a5afb",
