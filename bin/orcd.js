@@ -265,7 +265,8 @@ function init() {
 
   function reapExpiredShards(callback = () => null) {
     const now = Date.now();
-    const stale = now - (constants.SCORE_INTERVAL + constants.REAPER_GRACE);
+    const stale = now -
+      (orc.constants.SCORE_INTERVAL + orc.constants.REAPER_GRACE);
     const query = {
       _lastAuditTimestamp: { $lt: stale },
       _lastAccessTimestamp: { $lt: stale  },
