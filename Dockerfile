@@ -30,6 +30,8 @@ RUN curl -SLO "https://nodejs.org/dist/v$NODE_VERSION/node-v$NODE_VERSION-linux-
   && rm "node-v$NODE_VERSION-linux-x64.tar.xz" SHASUMS256.txt.asc SHASUMS256.txt \
   && ln -s /usr/local/bin/node /usr/local/bin/nodejs
 RUN git clone https://github.com/orcproject/orc /root/orc; \
+    git fetch --tags; \
+    git checkout $(git describe --tags `git rev-list --tags --max-count=1`); \
     cd /root/orc && npm install && npm link && cd
 RUN echo "#\!/bin/bash" >> /root/orc.sh; \
     echo "export orc_ControlHostname=0.0.0.0" >> /root/orc.sh; \
