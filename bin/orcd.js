@@ -419,6 +419,8 @@ function init() {
         }
       );
     }
+
+    return bridge;
   }
 
   function startDirectory() {
@@ -477,6 +479,8 @@ function init() {
         }
       });
     }
+
+    return directory;
   }
 
   // Keep a record of the contacts we've seen
@@ -493,14 +497,28 @@ function init() {
   // Bind to listening port and join the network
   logger.info('bootstrapping tor and establishing hidden service');
   node.listen(parseInt(config.ListenPort), () => {
+    let directory, bridge;
+
     logger.info(`node listening on port ${config.ListenPort}`);
 
     if (parseInt(config.BridgeEnabled)) {
-      startBridge();
+      bridge = startBridge();
     }
 
     if (parseInt(config.DirectoryEnabled)) {
-      startDirectory();
+      directory = startDirectory();
+    }
+
+    if (directory && bridge) {
+      bridge.on('auditInternalFinished', () => {
+        directory.scoreAndPublishAuditReports(err => {
+          if (err) {
+            logger.error(err.message);
+          } else {
+            logger.info('finished peer scoring');
+          }
+        });
+      });
     }
 
     bootstrapFromLocalProfiles(() => join());

@@ -20,7 +20,7 @@ describe('@class Directory', function() {
         }
       }, {});
       directory.listen(0);
-      directory._bootstrapService = 'http://localhost:' +
+      directory.bootstrapService = 'http://localhost:' +
         directory.server.address().port;
 
       let profile1 = new database.PeerProfile({
