@@ -1,4 +1,4 @@
-FROM debian:sid
+FROM debian:8
 LABEL maintainer "gordonh@member.fsf.org"
 RUN apt-get update
 RUN DEBIAN_FRONTEND=noninteractive apt-get -yq upgrade
@@ -32,14 +32,9 @@ RUN curl -SLO "https://nodejs.org/dist/v$NODE_VERSION/node-v$NODE_VERSION-linux-
 RUN git clone https://github.com/orcproject/orc /root/orc; \
     git fetch --tags; \
     git checkout $(git describe --tags `git rev-list --tags --max-count=1`); \
-    cd /root/orc && npm install && npm link && cd
-RUN echo "#\!/bin/bash" >> /root/orc.sh; \
-    echo "export orc_ControlHostname=0.0.0.0" >> /root/orc.sh; \
-    echo "export orc_BridgeHostname=0.0.0.0" >> /root/orc.sh; \
-    echo "export orc_DirectoryHostname=0.0.0.0" >> /root/orc.sh; \
-    echo "node /root/orc/bin/orcd.js" >> /root/orc.sh \
-RUN chmod +x /root/orc.sh
+    cd /root/orc && npm install --unsafe-perm && npm run postinstall --unsafe-perm
+ENV orc_ControlHostname="0.0.0.0" orc_BridgeHostname="0.0.0.0" orc_DirectoryHostname="0.0.0.0"
 VOLUME ["/root/.config/orc"]
 EXPOSE 4443 4444 4445 4446 37017
-CMD ["/bin/bash", "/root/orc.sh"]
-ENTRYPOINT []
+ENTRYPOINT ["node", "/root/orc/bin/orcd.js"]
+CMD []
