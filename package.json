@@ -1,6 +1,6 @@
 {
   "name": "@orcproject/orc",
-  "version": "8.0.3-beta1",
+  "version": "8.0.3-beta2",
   "description": "distributed anonymous storage network",
   "main": "index.js",
   "bin": {
@@ -58,7 +58,7 @@
     "du": "^0.1.0",
     "express": "^4.15.4",
     "finalhandler": "^1.0.3",
-    "granax": "^2.0.7",
+    "granax": "^2.0.10",
     "ip": "littleskunk/node-ip#b1e7ec0cbff9f7841b1584e50339a774363437c0",
     "jsen": "bugventure/jsen#9e57a9d653ff4ea47d364fc37da0f1659bfb8e89",
     "json-stable-stringify": "^1.0.1",
