@@ -472,4 +472,10 @@ describe('@class Bridge (integration)', function() {
     });
   });
 
+  describe('@method audit', function() {
+
+    // TODO
+
+  });
+
 });

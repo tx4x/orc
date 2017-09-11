@@ -91,4 +91,10 @@ describe('@class Directory', function() {
     });
   });
 
+  describe('@method scoreAndPublishAuditReports', function() {
+
+    // TODO
+
+  });
+
 });

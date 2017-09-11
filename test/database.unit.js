@@ -60,6 +60,34 @@ describe('@class Database', function() {
 
   });
 
+  describe('@class AuditReport', function() {
+
+    describe('@property outcome', function() {
+
+      // TODO
+
+    });
+
+    describe('@method toCompressedAuthenticated', function() {
+
+      // TODO
+
+    });
+
+    describe('@method verifyCompressedAuthenticated', function() {
+
+      // TODO
+
+    });
+
+    describe('@static @method create', function() {
+
+      // TODO
+
+    });
+
+  });
+
   describe('@class ShardContract', function() {
 
     describe('@method checkAccessPolicy', function() {

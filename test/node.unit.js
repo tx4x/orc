@@ -457,4 +457,10 @@ describe('@class Node', function() {
 
   });
 
+  describe('@method reportAuditResults', function() {
+
+    // TODO
+
+  });
+
 });

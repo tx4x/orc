@@ -932,4 +932,10 @@ describe('@class Rules', function() {
 
   });
 
+  describe('@method report', function() {
+
+    // TODO
+
+  });
+
 });
