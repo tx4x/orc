@@ -296,20 +296,20 @@ function init() {
   let retry = null;
 
   function bootstrapFromLocalProfiles(callback) {
-    database.PeerProfile.find({ updated: { $gt: Date.now() - ms('48HR') } })
-      .sort({ updated: -1 })
-      .limit(10)
-      .exec((err, profiles) => {
-        if (err) {
-          return callback(err);
-        }
+    database.PeerProfile.find({
+      updated: { $gt: Date.now() - ms('48HR') },
+      identity: { $not: identity.toString('hex') }
+    }).sort({ updated: -1 }).limit(10).exec((err, profiles) => {
+      if (err) {
+        return callback(err);
+      }
 
-        profiles
-          .map((p) => p.toString())
-          .forEach((url) => config.NetworkBootstrapNodes.unshift(url));
+      profiles
+        .map((p) => p.toString())
+        .forEach((url) => config.NetworkBootstrapNodes.unshift(url));
 
-        callback();
-      });
+      callback();
+    });
   }
 
   function join() {
@@ -493,6 +493,13 @@ function init() {
       { upsert: true }
     );
   });
+
+  // Update our own peer profile
+  database.PeerProfile.findOneAndUpdate(
+    { identity: identity.toString('hex') },
+    { contact, updated: 0 },
+    { upsert: true }
+  );
 
   // Bind to listening port and join the network
   logger.info('bootstrapping tor and establishing hidden service');
