@@ -934,7 +934,53 @@ describe('@class Rules', function() {
 
   describe('@method report', function() {
 
-    // TODO
+    it('should verify the reports and save them', function(done) {
+      const rules = new Rules({
+        identity: randomBytes(20),
+        database
+      });
+      const reporterKey = keyutils.toHDKeyFromSeed().deriveChild(1);
+      const reports = [
+        new database.AuditReport({
+          provider: rules.node.identity.toString('hex'),
+          reporter: keyutils.toPublicKeyHash(reporterKey.publicKey)
+                      .toString('hex'),
+          expected: '0000000000000000000000000000000000000000',
+          actual: '0000000000000000000000000000000000000000',
+          challenge: randomBytes(32).toString('hex')
+        }),
+        new database.AuditReport({
+          provider: rules.node.identity.toString('hex'),
+          reporter: keyutils.toPublicKeyHash(reporterKey.publicKey)
+                      .toString('hex'),
+          expected: '0000000000000000000000000000000000000000',
+          actual: '0000000000000000000000000000000000000000',
+          challenge: randomBytes(32).toString('hex')
+        }),
+        new database.AuditReport({
+          provider: rules.node.identity.toString('hex'),
+          reporter: keyutils.toPublicKeyHash(reporterKey.publicKey)
+                      .toString('hex'),
+          expected: '0000000000000000000000000000000000000000',
+          actual: '0000000000000000000000000000000000000000',
+          challenge: randomBytes(32).toString('hex')
+        })
+      ].map(r => r.toCompressedAuthenticated(reporterKey.privateKey));
+      const request = {
+        params: reports,
+        contact: [
+          'identity',
+          { xpub: 'xpubkey' }
+        ]
+      };
+      const response = {
+        send: (reports) => {
+          expect(reports).to.have.lengthOf(3);
+          done();
+        }
+      };
+      rules.report(request, response, done);
+    });
 
   });
 

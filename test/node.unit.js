@@ -459,7 +459,21 @@ describe('@class Node', function() {
 
   describe('@method reportAuditResults', function() {
 
-    // TODO
+    const sandbox = sinon.sandbox.create();
+
+    after(() => sandbox.restore());
+
+    it('should send the report payload to 3 nearest peers', function(done) {
+      const node = createNode({});
+      const send = sandbox.stub(node, 'send').callsArg(3);
+      sandbox.stub(node.router, 'getClosestContactsToKey').returns(
+        [['identity', {}], ['identity', {}], ['identity', {}]]
+      );
+      node.reportAuditResults([/* payload */], () => {
+        expect(send.callCount).to.equal(3);
+        done();
+      });
+    });
 
   });
 
