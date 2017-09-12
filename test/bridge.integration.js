@@ -20,6 +20,8 @@ const boscar = require('boscar');
 const getDatabase = require('./fixtures/database');
 const url = require('url');
 const qs = require('querystring');
+const { utils: keyutils } = require('kad-spartacus');
+const ProofStream = require('../lib/proof');
 
 
 describe('@class Bridge (integration)', function() {
@@ -162,12 +164,14 @@ describe('@class Bridge (integration)', function() {
       node,
       'claimFarmerCapacity'
     ).callsFake(function(a, b, cb) {
-      cb(null, [
-        {
-          shardHash: crypto.randomBytes(6).toString('hex')
-        },
-        'token'
-      ]);
+      let key = keyutils.toHDKeyFromSeed().deriveChild(1);
+      b.providerIdentity = keyutils.toPublicKeyHash(key.publicKey)
+        .toString('hex');
+      b.providerIndex = 1;
+      b.providerParentKey = key.publicExtendedKey;
+      let complete = new bridge.database.ShardContract(b);
+      complete.sign('provider', key.privateKey);
+      cb(null, [complete.toObject(), 'token']);
     });
     node.onion = { createSecureAgent: sandbox.stub() };
     let form = new FormData();
@@ -413,6 +417,70 @@ describe('@class Bridge (integration)', function() {
       });
     });
     req.end();
+  });
+
+  it('should audit, rebuilt, and regenerate challenges', function(done) {
+    let auditRemoteShards = sandbox.stub(node, 'auditRemoteShards').callsFake(
+      function(a, b, cb) {
+        bridge.database.ShardContract.findOne({
+          shardHash: b[0].hash
+        }, (err, contract) => {
+          const auditLeaves = contract.auditLeaves;
+          const proofStream = new ProofStream(auditLeaves, b[0].challenge);
+          proofStream.on('finish', () => {
+            cb(null, [
+             { hash: b[0].hash, proof: proofStream.getProofResult() }
+            ]);
+          });
+          proofStream.end(shards[b[0].hash]);
+        });
+      }
+    );
+    auditRemoteShards.onCall(1).callsFake(function(a, b, cb) {
+      cb(null, []); // Bad Proof
+    });
+    let claimFarmerCapacity = sandbox.stub(
+      node,
+      'claimFarmerCapacity'
+    ).callsFake(function(a, b, cb) {
+      let key = keyutils.toHDKeyFromSeed().deriveChild(1);
+      b.providerIdentity = keyutils.toPublicKeyHash(key.publicKey)
+        .toString('hex');
+      b.providerIndex = 1;
+      b.providerParentKey = key.publicExtendedKey;
+      let complete = new bridge.database.ShardContract(b);
+      complete.sign('provider', key.privateKey);
+      cb(null, [complete.toObject(), 'token']);
+    });
+    let authorizeRetrieval = sandbox.stub(
+      node,
+      'authorizeRetrieval'
+    ).callsArgWith(2, null, ['token']);
+    authorizeRetrieval.onCall(1).callsArgWith(2, new Error('Failed'));
+    let requestContractRenewal = sandbox.stub(
+      node,
+      'requestContractRenewal'
+    ).callsFake(function(a, b, cb) {
+      cb(null, [b]);
+    });
+    let eventTriggered = false;
+    node.database.ObjectPointer.findOne({}, (err, obj) => {
+      obj._lastAuditTimestamp = 0;
+      obj.shards[0].decayed = true;
+      obj.shards[0].audits.challenges = [obj.shards[0].audits.challenges[0]];
+      obj.save(() => {
+        bridge.on('auditInternalFinished', () => eventTriggered = true);
+        bridge.audit((err) => {
+          claimFarmerCapacity.restore();
+          authorizeRetrieval.restore();
+          auditRemoteShards.restore();
+          requestContractRenewal.restore();
+          expect(err).to.equal(undefined);
+          expect(eventTriggered).to.equal(true);
+          done();
+        });
+      });
+    });
   });
 
   it('should delete the object stored', function(done) {
