@@ -230,13 +230,15 @@ describe('@class Rules', function() {
           }
         }
       });
+      const saveContract = sinon.stub().callsArg(0);
       const rules = new Rules({
         database: {
           ShardContract: {
             findOne: sinon.stub().callsArgWith(1, null, {
               shardHash: 'datahash',
               auditLeaves: auditStream.getPublicRecord(),
-              checkAccessPolicy: sinon.stub().returns(['AUDIT'])
+              checkAccessPolicy: sinon.stub().returns(['AUDIT']),
+              save: saveContract
             })
           }
         },
@@ -262,6 +264,7 @@ describe('@class Rules', function() {
           let { root, depth } = auditStream.getPrivateRecord();
           let [expected, actual] = ProofStream.verify(proof, root, depth);
           expect(Buffer.compare(expected, actual)).to.equal(0);
+          expect(saveContract.called).to.equal(true);
           done();
         }
       };
@@ -925,6 +928,59 @@ describe('@class Rules', function() {
         expect(err.message).to.equal('Invalid shard descriptor');
         done();
       });
+    });
+
+  });
+
+  describe('@method report', function() {
+
+    it('should verify the reports and save them', function(done) {
+      const rules = new Rules({
+        identity: randomBytes(20),
+        database
+      });
+      const reporterKey = keyutils.toHDKeyFromSeed().deriveChild(1);
+      const reports = [
+        new database.AuditReport({
+          provider: rules.node.identity.toString('hex'),
+          reporter: keyutils.toPublicKeyHash(reporterKey.publicKey)
+                      .toString('hex'),
+          expected: '0000000000000000000000000000000000000000',
+          actual: '0000000000000000000000000000000000000000',
+          challenge: randomBytes(32).toString('hex')
+        }),
+        new database.AuditReport({
+          provider: rules.node.identity.toString('hex'),
+          reporter: keyutils.toPublicKeyHash(reporterKey.publicKey)
+                      .toString('hex'),
+          expected: '0000000000000000000000000000000000000000',
+          actual: '0000000000000000000000000000000000000000',
+          challenge: randomBytes(32).toString('hex')
+        }),
+        new database.AuditReport({
+          provider: rules.node.identity.toString('hex'),
+          reporter: keyutils.toPublicKeyHash(reporterKey.publicKey)
+                      .toString('hex'),
+          expected: '0000000000000000000000000000000000000000',
+          actual: '0000000000000000000000000000000000000000',
+          challenge: randomBytes(32).toString('hex')
+        })
+      ].map(r => r.toCompressedAuthenticated(reporterKey.privateKey));
+      reports.push(['random', 'garbage', 'that', 'is', 'not', 'valid'])
+      const request = {
+        params: reports,
+        contact: [
+          'identity',
+          { xpub: 'xpubkey' }
+        ]
+      };
+      const response = {
+        send: (reports) => {
+          expect(reports).to.have.lengthOf(3);
+          done();
+        }
+      };
+      rules.report(request, response, done);
     });
 
   });

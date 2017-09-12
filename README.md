@@ -38,7 +38,8 @@ docker run -v ~/.config/orc:/root/.config/orc -t orcproject/orc:latest
 
 Modify the created configuration at `~/.config/orc/config` as desired (see 
 the {@tutorial config}) and restart the container for the changes to take 
-effect. Be sure to expose `BridgePort` and map it to the host.
+effect. Be sure to expose `BridgePort` and map it to the host if you want to 
+use the API.
 
 ```
 docker run \
@@ -69,11 +70,12 @@ docker-compose up
 ```
 
 This will volume mount the the appropriate directories for development, and 
-then boots up the ORC container. **Note that stable releases are tagged and 
-the `master` branch may contain unstable or bleeding-edge code.**
+then boots up the ORC container. Note that stable releases are tagged and 
+the `master` branch may contain unstable or bleeding-edge code.
 
 > Alternatively, you can run directly on your host. Use `npm install` and 
-> `npm start` to install dependencies and start the application.
+> `npm link` to install dependencies. Start the daemon with `orcd` or the 
+> desktop application with `orc`.
 
 Happy hacking!
 

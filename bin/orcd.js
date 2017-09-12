@@ -264,27 +264,52 @@ function init() {
   }
 
   function reapExpiredShards(callback = () => null) {
-    // TODO: Reaping should abandon shards that have not been audited within
-    // TODO: the last 10-20 scoring intervals
+    const now = Date.now();
+    const stale = now -
+      (orc.constants.SCORE_INTERVAL + orc.constants.REAPER_GRACE);
+    const query = {
+      _lastAuditTimestamp: { $lt: stale },
+      _lastAccessTimestamp: { $lt: stale  },
+      _lastFundingTimestamp: { $lt: stale },
+      providerIdentity: identity.toString('hex')
+    };
+
+    database.ShardContract.find(query, (err, contracts) => {
+      if (err) {
+        node.logger.error(`failed to start reaper, reason: ${err.message}`);
+        return callback(err);
+      }
+
+      async.eachSeries(contracts, (contract, next) => {
+        shards.unlink(contract.shardHash, (err) => {
+          if (err) {
+            node.logger.error(`failed to reap shard ${contract.shardHash}`);
+            return next();
+          }
+
+          contract.remove(() => next());
+        });
+      }, callback);
+    });
   }
 
   let retry = null;
 
   function bootstrapFromLocalProfiles(callback) {
-    database.PeerProfile.find({ updated: { $gt: Date.now() - ms('48HR') } })
-      .sort({ updated: -1 })
-      .limit(10)
-      .exec((err, profiles) => {
-        if (err) {
-          return callback(err);
-        }
+    database.PeerProfile.find({
+      updated: { $gt: Date.now() - ms('48HR') },
+      identity: { $not: identity.toString('hex') }
+    }).sort({ updated: -1 }).limit(10).exec((err, profiles) => {
+      if (err) {
+        return callback(err);
+      }
 
-        profiles
-          .map((p) => p.toString())
-          .forEach((url) => config.NetworkBootstrapNodes.unshift(url));
+      profiles
+        .map((p) => p.toString())
+        .forEach((url) => config.NetworkBootstrapNodes.unshift(url));
 
-        callback();
-      });
+      callback();
+    });
   }
 
   function join() {
@@ -321,7 +346,6 @@ function init() {
           rs.on('data', ([capacity, contact]) => {
             let timestamp = Date.now();
 
-            // TODO: Update online/uptime score
             database.PeerProfile.findOneAndUpdate({ identity: contact[0] }, {
               capacity: {
                 allocated: capacity.allocated,
@@ -395,6 +419,8 @@ function init() {
         }
       );
     }
+
+    return bridge;
   }
 
   function startDirectory() {
@@ -453,6 +479,8 @@ function init() {
         }
       });
     }
+
+    return directory;
   }
 
   // Keep a record of the contacts we've seen
@@ -466,17 +494,38 @@ function init() {
     );
   });
 
+  // Update our own peer profile
+  database.PeerProfile.findOneAndUpdate(
+    { identity: identity.toString('hex') },
+    { contact, updated: 0 },
+    { upsert: true }
+  );
+
   // Bind to listening port and join the network
   logger.info('bootstrapping tor and establishing hidden service');
   node.listen(parseInt(config.ListenPort), () => {
+    let directory, bridge;
+
     logger.info(`node listening on port ${config.ListenPort}`);
 
     if (parseInt(config.BridgeEnabled)) {
-      startBridge();
+      bridge = startBridge();
     }
 
     if (parseInt(config.DirectoryEnabled)) {
-      startDirectory();
+      directory = startDirectory();
+    }
+
+    if (directory && bridge) {
+      bridge.on('auditInternalFinished', () => {
+        directory.scoreAndPublishAuditReports(err => {
+          if (err) {
+            logger.error(err.message);
+          } else {
+            logger.info('finished peer scoring');
+          }
+        });
+      });
     }
 
     bootstrapFromLocalProfiles(() => join());
