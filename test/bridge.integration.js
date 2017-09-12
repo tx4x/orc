@@ -468,7 +468,7 @@ describe('@class Bridge (integration)', function() {
       obj._lastAuditTimestamp = 0;
       obj.shards[0].decayed = true;
       obj.shards[0].audits.challenges = [obj.shards[0].audits.challenges[0]];
-      obj.save((err) => {
+      obj.save(() => {
         bridge.on('auditInternalFinished', () => eventTriggered = true);
         bridge.audit((err) => {
           claimFarmerCapacity.restore();
