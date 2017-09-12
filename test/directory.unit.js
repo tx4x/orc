@@ -29,7 +29,6 @@ describe('@class Directory', function() {
   let identity5 = keyutils.toPublicKeyHash(key5.publicKey);
   let identity6 = keyutils.toPublicKeyHash(key6.publicKey);
 
-
   before((done) => {
     getDatabase((err, database) => {
       directory = new Directory({
@@ -209,9 +208,6 @@ describe('@class Directory', function() {
           actual: '0000000000000000000000000000000000000000',
           challenge: 'FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF'
         }),
-
-
-
         new database.AuditReport({
           reporter: profile4.identity,
           provider: profile1.identity,
@@ -284,11 +280,17 @@ describe('@class Directory', function() {
         })
       ];
 
-      async.each(
+      async.eachSeries(
         profiles.concat(reports),
-        (doc, done) => doc.save(done),
+        (d, done) => d.save(done),
         done
       );
+    });
+  });
+
+  after((done) => {
+    directory.database.AuditReport.remove(() => {
+      directory.database.PeerProfile.remove(done);
     });
   });
 
