@@ -966,6 +966,7 @@ describe('@class Rules', function() {
           challenge: randomBytes(32).toString('hex')
         })
       ].map(r => r.toCompressedAuthenticated(reporterKey.privateKey));
+      reports.push(['random', 'garbage', 'that', 'is', 'not', 'valid'])
       const request = {
         params: reports,
         contact: [

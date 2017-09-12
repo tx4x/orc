@@ -20,6 +20,7 @@ const boscar = require('boscar');
 const getDatabase = require('./fixtures/database');
 const url = require('url');
 const qs = require('querystring');
+const { utils: keyutils } = require('kad-spartacus');
 
 
 describe('@class Bridge (integration)', function() {
@@ -162,12 +163,14 @@ describe('@class Bridge (integration)', function() {
       node,
       'claimFarmerCapacity'
     ).callsFake(function(a, b, cb) {
-      cb(null, [
-        {
-          shardHash: crypto.randomBytes(6).toString('hex')
-        },
-        'token'
-      ]);
+      let key = keyutils.toHDKeyFromSeed().deriveChild(1);
+      b.providerIdentity = keyutils.toPublicKeyHash(key.publicKey)
+        .toString('hex');
+      b.providerIndex = 1;
+      b.providerParentKey = key.publicExtendedKey;
+      let complete = new bridge.database.ShardContract(b);
+      complete.sign('provider', key.privateKey);
+      cb(null, [complete.toObject(), 'token']);
     });
     node.onion = { createSecureAgent: sandbox.stub() };
     let form = new FormData();
@@ -415,6 +418,32 @@ describe('@class Bridge (integration)', function() {
     req.end();
   });
 
+  it('should audit, rebuilt, and regenerate challenges', function(done) {
+    let auditRemoteShards = sandbox.stub(node, 'auditRemoteShards');
+    auditRemoteShards.onCall(0).callsArgWith(2, null, [
+      /* stub expected proof structure */
+    ]);
+    auditRemoteShards.onCall(1).callsArgWith(2, null, [
+      /* stub expected proof structure */
+    ]);
+    auditRemoteShards.onCall(2).callsArgWith(2, null, [
+      /* stub expected proof structure */
+    ]);
+    let eventTriggered = false;
+    node.database.ObjectPointer.findOne({}, (err, obj) => {
+      obj._lastAuditTimestamp = 0;
+      obj.shards[0].decayed = true;
+      obj.shards[0].audits.challenges = obj.shards[0].audits.challenges[0];
+      obj.save((err) => {
+        bridge.on('auditInternalFinished', () => eventTriggered = true);
+        bridge.audit((err) => {
+          expect(eventTriggered).to.equal(true);
+          done();
+        });
+      });
+    });
+  });
+
   it('should delete the object stored', function(done) {
     let req = http.request({
       auth: 'orctest:orctest',
@@ -470,12 +499,6 @@ describe('@class Bridge (integration)', function() {
         ]
       }) + '\r\n');
     });
-  });
-
-  describe('@method audit', function() {
-
-    // TODO
-
   });
 
 });
