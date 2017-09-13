@@ -315,6 +315,41 @@ describe('@class Directory', function() {
     });
   });
 
+  it('should respond with profile requested', function(done) {
+    let { port } = directory.server.address();
+    let identity = identity1.toString('hex');
+    http.get(`http://localhost:${port}/${identity}`, (res) => {
+      let data = '';
+      res.on('data', (d) => data += d.toString());
+      res.on('end', () => {
+        data = JSON.parse(data);
+        expect(data.capacity.allocated).to.equal(2000);
+        expect(data.capacity.available).to.equal(1000);
+        expect(data.identity).to.equal(profiles[0].identity.toString('hex'));
+        expect(data.contact.hostname).to.equal('test.onion');
+        expect(data.contact.port).to.equal(443);
+        expect(data.contact.protocol).to.equal('https:');
+        expect(data.contact.xpub).to.equal('{xpubkey}');
+        expect(data.contact.index).to.equal(0);
+        expect(data.contact.agent).to.equal('orc-test/linux');
+        done();
+      });
+    });
+  });
+
+  it('should respond with not found', function(done) {
+    let { port } = directory.server.address();
+    http.get(`http://localhost:${port}/invalid`, (res) => {
+      let data = '';
+      res.on('data', (d) => data += d.toString());
+      res.on('end', () => {
+        expect(res.statusCode).to.equal(404);
+        expect(data).to.equal('Profile not known');
+        done();
+      });
+    });
+  });
+
   it('should succeed in boostrapping from another directory', function(done) {
     let spy = sinon.spy(directory.database.PeerProfile, 'findOneAndUpdate');
     directory.bootstrap((err) => {
