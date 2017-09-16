@@ -1,10 +1,13 @@
 <template>
   <div id="app">
-    <!-- Main Intializing Indicator -->
+    <nav-primary></nav-primary>
+    <router-view></router-view>
+    <!-- Main Intializing Indicator
     <div v-if="isInitializing" id="main-loader">
       <div class="spinner"></div>
       <div id="loader-status">{{logStack[0].msg}}</div>
     </div>
+    -->
   </div>
 </template>
 
@@ -54,7 +57,7 @@ module.exports = {
     },
     // Loads the object list and populates it
     populateObjectList() {
-      this.loadObjectList((err, result) => this.localCapacity = result);
+      this.loadObjectList((err, result) => this.objectList = result);
     },
     // Returns a list of known nodes with available capacity within the last
     // 24 hours
