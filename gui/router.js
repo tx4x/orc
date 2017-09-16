@@ -1,10 +1,11 @@
-import Vue from 'vue';
-import App from './app.vue';
-import Vuetify from 'vuetify';
+import vue from 'vue';
+import vuetify from 'vuetify';
 import VueRouter from 'vue-router';
 
-Vue.use(Vuetify);
-Vue.use(VueRouter);
+import appStore from './app-store';
+
+vue.use(vuetify);
+vue.use(vueRouter);
 
 let router = new VueRouter({
   routes: [
@@ -18,20 +19,27 @@ let router = new VueRouter({
       children: [
         {
           path: '',
-          component: require('views/use.vue')
+          component: require('views/use.vue'),
+          beforeRouteUpdate: (to, prev, next) => {
+            appStore.objectList.getList().then(() => {
+              next();
+            });
+          }
         },
         {
           path: 'profile',
-          component: require('views/profile.vue')
+          component: require('views/profile.vue'),
+          beforeRouteUpdate: (to, prev, next) => {
+            appStore.profile.getCapacityDirectory().then(() => {
+              next();
+            });
+          }
         }
       ]
     }
   ]
 });
 
-new Vue({
-  router,
-  created() {
-    
-  }
+const app = new vue({
+  router
 }).$mount('#app');

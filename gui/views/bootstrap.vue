@@ -1,21 +1,19 @@
 <template>
-  <div v-if="isInitializing" id="main-loader">
+  <div v-if="app.isInitializing" id="main-loader">
     <div class="spinner"></div>
-    <div id="loader-status">{{logStack[0].msg}}</div>
+    <div id="loader-status">{{logs.logStack[0].msg}}</div>
   </div>
 </template>
 
 <script>
-import Store from '../store'
+import appStore from '../app-store';
 
 export {
   name: 'bootstrap',
   data: () => ({
-
-  }),
-  methods: {
-
-  }
+    app: appStore.state,
+    logs: appStore.logs.state
+  })
 };
 </script>
 

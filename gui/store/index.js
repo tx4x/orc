@@ -23,22 +23,22 @@ export default class Store extends State{
       // First check if the bridge is running already (the page was reloaded)
       sock.once('connect', () => {
         sock.end();
-        resolve({...appModel, isInitializing=false});
+        return resolve({ ...appState, { isInitializing: false } });
       });
 
-      sock.once('error', () => reject());
+      sock.once('error', () => return reject());
     });
   }
 
   _initConnection() {
     return new Promise((resolve, reject) => {
       const handleInitEvent = (e, data) => {
-        if (e) reject(e);
+        if (e) return reject(e);
         if (data.msg.includes('establishing local bridge')) {
           ipcRenderer
             .removeListener('log', handleInitEvent)
             .removeListener('err', handleInitEvent);
-          resolve();
+          return resolve();
         }
       };
 
@@ -69,9 +69,9 @@ export default class Store extends State{
     }
 
     connectToControlPort();
-    let appState = _initAppState()
+    let appState = _initAppState(this.controlClient)
     //commit initial app states as part of this state's state
-    return this.commit(err, {...appState, {isInitializing:false}});
+    return this.commit(err, { ...appState, { isInitializing:false } });
   }
 };
 

@@ -9,10 +9,10 @@ export default class Logs extends State {
   }
 
   handleLogEvent(e, data) {
-    if (this.logStack.length > 50) {
-      this.logStack.pop();
+    if (this.state.logStack.length > 50) {
+      this.state.logStack.pop();
     }
 
-    this.logStack.unshift(data);
+    this.state.logStack.unshift(data);
   }
 };

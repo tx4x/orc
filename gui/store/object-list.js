@@ -29,13 +29,13 @@ export default class ObjectList extends State{
 
   async destroy(id) {
     let [err, state] = await State.resolveTo(this._destroyObject(id));
-    this.commit(err);
+    if(err) return this.commit(err);
     await this.getList();
   }
 
   async importMagnet(href) {
     let [err, state] = await State.resolveTo(this._insertObjectFromLink(href));
-    this.commit(err);
+    if(err) return this.commit(err);
     await this.getList();
   }
 
