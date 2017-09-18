@@ -21,18 +21,14 @@ let router = new VueRouter({
           path: '',
           component: require('views/use.vue'),
           beforeRouteUpdate: (to, prev, next) => {
-            appStore.objectList.getList().then(() => {
-              next();
-            });
+            appStore.objectList.getList().then(next);
           }
         },
         {
           path: 'profile',
           component: require('views/profile.vue'),
           beforeRouteUpdate: (to, prev, next) => {
-            appStore.profile.getCapacityDirectory().then(() => {
-              next();
-            });
+            appStore.profile.getCapacityDirectory().then(next);
           }
         }
       ]
