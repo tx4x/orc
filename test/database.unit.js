@@ -54,6 +54,7 @@ describe('@class Database', function() {
       const object = profile.toObject();
       expect(object._id).to.equal(undefined);
       expect(object.__v).to.equal(undefined);
+      expect(profile.toString()).to.equal('https://test.onion:443');
       profile.save(done);
     });
 

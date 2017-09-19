@@ -2,9 +2,21 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>ORC - Dashboard</title>
+    <title>ORC</title>
+    <link rel="stylesheet" href="main.css">
   </head>
   <body>
-    <h1>ORC DASHBOARD</h1>  
+
+    <div id="app">
+
+      <!-- Main Intializing Indicator -->
+      <div v-if="isInitializing" id="main-loader">
+        <div class="spinner"></div>
+        <div id="loader-status">{{logStack[0].msg}}</div>
+      </div>
+
+    </div>
+
+    <script src="app.js"></script>
   </body>
 </html>

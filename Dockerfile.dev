@@ -34,9 +34,11 @@ RUN curl -SLO "https://nodejs.org/dist/v$NODE_VERSION/node-v$NODE_VERSION-linux-
   && rm "node-v$NODE_VERSION-linux-x64.tar.xz" SHASUMS256.txt.asc SHASUMS256.txt \
   && ln -s /usr/local/bin/node /usr/local/bin/nodejs
 RUN git clone https://github.com/orcproject/orc /root/orc; \
+    git fetch --tags; \
+    git checkout $(git describe --tags `git rev-list --tags --max-count=1`); \
     cd /root/orc && npm install --unsafe-perm
 ENV orc_ControlHostname="0.0.0.0" orc_BridgeHostname="0.0.0.0" orc_DirectoryHostname="0.0.0.0"
 VOLUME ["/root/.config/orc"]
 EXPOSE 4443 4444 4445 4446 37017
-ENTRYPOINT ["node", "/root/orc/bin/orc.js"]
+ENTRYPOINT ["node", "/root/orc/bin/orcd.js"]
 CMD []

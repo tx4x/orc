@@ -1,13 +1,34 @@
-#!/usr/bin/env node
-
 'use strict';
 
 const pem = require('pem');
 const { utils: keyutils } = require('kad-spartacus');
-const orc = require('..');
+const orc = require('../lib');
 const options = require('./config');
 const program = require('commander');
+const path = require('path');
+const os = require('os');
 
+
+if (process.platform === 'win32') {
+  process.env.OPENSSL_CONF = path.join(
+    __dirname, '../vendor', 'openssl-win32', 'shared', 'openssl.cnf'
+  );
+  pem.config({
+    pathOpenSSL: path.join(
+      __dirname, '../vendor', 'openssl-win32',
+      os.arch() === 'x64' ? 'x64' : 'ia32',
+      'openssl'
+    )
+  });
+} else if (process.platform === 'darwin') {
+  pem.config({
+    pathOpenSSL: path.join(
+      __dirname, '../vendor', 'openssl-darwin', 'bin', 'openssl'
+    )
+  });
+} else {
+  pem.config({ pathOpenSSL: '/usr/bin/openssl' });
+}
 
 program.version(`
   orctool  ${orc.version.software}
@@ -36,6 +57,7 @@ program
           : undefined
       ).privateExtendedKey);
     }
+    process.exit();
   });
 
 program
@@ -52,6 +74,7 @@ program
       } else {
         console.info(`${data.serviceKey}\r\n\r\n${data.certificate}`);
       }
+      process.exit();
     });
   });
 
@@ -65,6 +88,7 @@ program
       } else {
         console.info(data.key);
       }
+      process.exit();
     });
   });
 
@@ -75,6 +99,7 @@ program
     for (let prop in options) {
       console.info(prop);
     }
+    process.exit();
   });
 
 program.command('*').action(() => program.help());

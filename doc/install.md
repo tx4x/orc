@@ -1,6 +1,5 @@
 Make sure you have the following prerequisites installed:
 
-* [MongoDB](https://mongodb.org)
 * [Tor](https://torproject.org)
 * [Git](https://git-scm.org)
 * [Node.js LTS + NPM (6.10.x)](https://nodejs.org)
@@ -47,14 +46,39 @@ You might also find yourself lacking a C++11 compiler -
 xcode-select --install
 ```
 
+#### Windows
+
+Run as administrator in PowerShell or cmd:
+
+```
+npm install -g windows-build-tools
+```
+
 ### Daemon + Utilities CLI
 
-This package exposes two command line programs: `orc` and `orctool`. To 
+This package exposes 3 command line programs: `orc`, `orcd`,  and `orctool`. To 
 install these, use the `--global` flag.
 
 ```
 npm install -g @orcproject/orc
 ```
+
+On Windows, things are different - and a little weird. Instead, do the following.
+
+```
+git clone https://github.com/orproject/orc
+cd orc
+npm install --ignore-scripts
+npm install granax
+npm remove electron-prebuilt-compile
+npm install electron-prebuilt-compile
+npm link
+npm run start-win
+```
+
+> Note that some native dependencies do not work on Windows and will fallback
+> to JavaScript implementations. This will impact performance. You should run 
+> GNU+Linux. :)
 
 ### Core Library
 
@@ -66,3 +90,24 @@ install as a dependency.
 npm install @orcproject/orc --save
 ```
 
+Then you can require the library with:
+
+```
+const orc = require('@orcproject/orc/lib');
+```
+
+### Building Packages
+
+To build a distributable package for your platform, clone the repository and 
+follow the steps above for your platform, then run:
+
+```
+npm run make # linux/osx
+npm run make-win # windows
+```
+
+On Mac OS, you'll want to remove this package before building:
+
+```
+npm remove dtrace-provider
+```
