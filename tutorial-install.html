@@ -55,7 +55,7 @@
 			<li class="dropdown">
 				<a href="tutorials.list.html" class="dropdown-toggle" data-toggle="dropdown">Tutorials<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="tutorial-config.html">Configuration Guide</a></li><li><a href="tutorial-directory_.html">Running a Directory</a></li><li><a href="tutorial-farming.html">Setting Up Farming</a></li><li><a href="tutorial-install.html">Manual Installation</a></li><li><a href="tutorial-transfers.html">Uploading and Downloading</a></li><li><a href="tutorial-usage.html">Basic Usage Guide</a></li>
+					<li><a href="tutorial-config.html">Configuration Guide</a></li><li><a href="tutorial-directory_.html">Running a Directory</a></li><li><a href="tutorial-install.html">Manual Installation</a></li><li><a href="tutorial-providing.html">Providing Capacity</a></li><li><a href="tutorial-transfers.html">Uploading and Downloading</a></li><li><a href="tutorial-usage.html">Basic Usage Guide</a></li>
 				</ul>
 			</li>
 			
@@ -101,7 +101,6 @@
 <article>
     <p>Make sure you have the following prerequisites installed:</p>
 <ul>
-<li><a href="https://mongodb.org">MongoDB</a></li>
 <li><a href="https://torproject.org">Tor</a></li>
 <li><a href="https://git-scm.org">Git</a></li>
 <li><a href="https://nodejs.org">Node.js LTS + NPM (6.10.x)</a></li>
@@ -114,12 +113,31 @@ install Node.js (which comes with NPM):</p>
 <pre class="prettyprint source"><code>apt install git python build-essential</code></pre><p>Red Hat / Fedora / CentOS</p>
 <pre class="prettyprint source"><code>yum groupinstall 'Development Tools'</code></pre><p>You might also find yourself lacking a C++11 compiler - 
 <a href="http://hiltmon.com/blog/2015/08/09/c-plus-plus-11-on-centos-6-dot-6/">see this</a>.</p>
-<h4>Mac OSX</h4><pre class="prettyprint source"><code>xcode-select --install</code></pre><h3>Daemon + Utilities CLI</h3><p>This package exposes two command line programs: <code>orc</code> and <code>orctool</code>. To 
+<h4>Mac OSX</h4><pre class="prettyprint source"><code>xcode-select --install</code></pre><h4>Windows</h4><p>Run as administrator in PowerShell or cmd:</p>
+<pre class="prettyprint source"><code>npm install -g windows-build-tools</code></pre><h3>Daemon + Utilities CLI</h3><p>This package exposes 3 command line programs: <code>orc</code>, <code>orcd</code>,  and <code>orctool</code>. To 
 install these, use the <code>--global</code> flag.</p>
-<pre class="prettyprint source"><code>npm install -g @orcproject/orc</code></pre><h3>Core Library</h3><p>This package exposes a module providing a complete implementation of the 
+<pre class="prettyprint source"><code>npm install -g @orcproject/orc</code></pre><p>On Windows, things are different - and a little weird. Instead, do the following.</p>
+<pre class="prettyprint source"><code>git clone https://github.com/orproject/orc
+cd orc
+npm install --ignore-scripts
+npm install granax
+npm remove electron-prebuilt-compile
+npm install electron-prebuilt-compile
+npm link
+npm run start-win</code></pre><blockquote>
+<p>Note that some native dependencies do not work on Windows and will fallback
+to JavaScript implementations. This will impact performance. You should run 
+GNU+Linux. :)</p>
+</blockquote>
+<h3>Core Library</h3><p>This package exposes a module providing a complete implementation of the 
 protocol. To use it in your project, from your project's root directory, 
 install as a dependency.</p>
-<pre class="prettyprint source"><code>npm install @orcproject/orc --save</code></pre>
+<pre class="prettyprint source"><code>npm install @orcproject/orc --save</code></pre><p>Then you can require the library with:</p>
+<pre class="prettyprint source"><code>const orc = require('@orcproject/orc/lib');</code></pre><h3>Building Packages</h3><p>To build a distributable package for your platform, clone the repository and 
+follow the steps above for your platform, then run:</p>
+<pre class="prettyprint source"><code>npm run make # linux/osx
+npm run make-win # windows</code></pre><p>On Mac OS, you'll want to remove this package before building:</p>
+<pre class="prettyprint source"><code>npm remove dtrace-provider</code></pre>
 </article>
 
 </section>

@@ -4,7 +4,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width">
-	<title>ORC Source: lib/rules.js</title>
+	<title>ORC Source: rules.js</title>
 
 	<!--[if lt IE 9]>
 	<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
@@ -55,7 +55,7 @@
 			<li class="dropdown">
 				<a href="tutorials.list.html" class="dropdown-toggle" data-toggle="dropdown">Tutorials<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="tutorial-config.html">Configuration Guide</a></li><li><a href="tutorial-directory_.html">Running a Directory</a></li><li><a href="tutorial-farming.html">Setting Up Farming</a></li><li><a href="tutorial-install.html">Manual Installation</a></li><li><a href="tutorial-transfers.html">Uploading and Downloading</a></li><li><a href="tutorial-usage.html">Basic Usage Guide</a></li>
+					<li><a href="tutorial-config.html">Configuration Guide</a></li><li><a href="tutorial-directory_.html">Running a Directory</a></li><li><a href="tutorial-install.html">Manual Installation</a></li><li><a href="tutorial-providing.html">Providing Capacity</a></li><li><a href="tutorial-transfers.html">Uploading and Downloading</a></li><li><a href="tutorial-usage.html">Basic Usage Guide</a></li>
 				</ul>
 			</li>
 			
@@ -92,7 +92,7 @@
 		<div id="main">
 			
 
-		<h1 class="page-title">Source: lib/rules.js</h1>
+		<h1 class="page-title">Source: rules.js</h1>
     
 <section>
     <article>
@@ -155,8 +155,12 @@ class Rules {
         });
 
         proofStream.on('finish', () => {
+          contract._lastAuditTimestamp = Date.now();
+
           proofStream.removeAllListeners('error');
-          done(null, { hash, proof: proofStream.getProofResult() });
+          contract.save(() => {
+            done(null, { hash, proof: proofStream.getProofResult() });
+          });
         });
 
         this.node.shards.createReadStream(hash, (err, shardStream) => {
@@ -164,7 +168,6 @@ class Rules {
             return done(null, { hash, proof: null });
           }
 
-          // TODO Add audit result record and report to directory
           shardStream.pipe(proofStream);
         });
       });
@@ -350,7 +353,6 @@ class Rules {
     if (!contract.verify('owner')) {
       return next(new Error('Invalid shard descriptor'));
     }
-   // TODO Check reputation score
 
     this.node.shards.size((err, result) => {
       if (err || (result.available &lt; contract.shardSize)) {
@@ -378,6 +380,33 @@ class Rules {
         response.send([contract.toObject(), token]);
       });
     });
+  }
+
+  /**
+   * Handles the receipt of a REPORT message containing audit results for N
+   * total peers
+   * @param {object} request
+   * @param {object} response
+   * @param {function} next
+   */
+  report(request, response) {
+    let reports = request.params
+      .filter((compressed) => {
+        return this.node.database.AuditReport
+          .verifyCompressedAuthenticated(compressed);
+      })
+      .map(([reporter, provider, challenge, expected, actual]) => {
+        return new this.node.database.AuditReport({
+          reporter, provider, challenge, expected, actual
+        });
+      });
+
+    async.filterLimit(
+      reports,
+      6,
+      (report, next) => report.save(err => next(null, err ? false : true)),
+      (err, accepted) => response.send(accepted.map(a => a.challenge))
+    );
   }
 
 }

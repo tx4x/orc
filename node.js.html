@@ -4,7 +4,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width">
-	<title>ORC Source: lib/node.js</title>
+	<title>ORC Source: node.js</title>
 
 	<!--[if lt IE 9]>
 	<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
@@ -55,7 +55,7 @@
 			<li class="dropdown">
 				<a href="tutorials.list.html" class="dropdown-toggle" data-toggle="dropdown">Tutorials<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="tutorial-config.html">Configuration Guide</a></li><li><a href="tutorial-directory_.html">Running a Directory</a></li><li><a href="tutorial-farming.html">Setting Up Farming</a></li><li><a href="tutorial-install.html">Manual Installation</a></li><li><a href="tutorial-transfers.html">Uploading and Downloading</a></li><li><a href="tutorial-usage.html">Basic Usage Guide</a></li>
+					<li><a href="tutorial-config.html">Configuration Guide</a></li><li><a href="tutorial-directory_.html">Running a Directory</a></li><li><a href="tutorial-install.html">Manual Installation</a></li><li><a href="tutorial-providing.html">Providing Capacity</a></li><li><a href="tutorial-transfers.html">Uploading and Downloading</a></li><li><a href="tutorial-usage.html">Basic Usage Guide</a></li>
 				</ul>
 			</li>
 			
@@ -92,7 +92,7 @@
 		<div id="main">
 			
 
-		<h1 class="page-title">Source: lib/node.js</h1>
+		<h1 class="page-title">Source: node.js</h1>
     
 <section>
     <article>
@@ -103,12 +103,13 @@ const url = require('url');
 const { Readable: ReadableStream } = require('stream');
 const { createLogger } = require('bunyan');
 const merge = require('merge');
-const { KademliaNode } = require('kad');
+const kad = require('kad');
 const quasar = require('kad-quasar');
 const spartacus = require('kad-spartacus');
 const cas = require('kad-content');
 const constants = require('./constants');
 const https = require('https');
+const async = require('async');
 
 const Rules = require('./rules');
 const Server = require('./server');
@@ -120,7 +121,7 @@ const Database = require('./database');
  * Extends Kademlia with Orc protocol rules
  * @license AGPL-3.0
  */
-class Node extends KademliaNode {
+class Node extends kad.KademliaNode {
 
   static get DEFAULTS() {
     return {
@@ -413,6 +414,22 @@ class Node extends KademliaNode {
    * @param {object} result.0 - Completed contract result
    * @param {string} result.1 - Consignment token
    */
+
+  /**
+   * Publishes the supplied audit reports to nearest neighbors
+   * @param {array[]} report
+   * @param {Node~reportAuditResultsCallback} callback
+   */
+  reportAuditResults(report, callback) {
+    const peers = this.router.getClosestContactsToKey(
+      this.identity,
+      kad.constants.ALPHA
+    );
+
+    async.each(peers, (peer, done) => {
+      this.send('REPORT', report, peer, done);
+    }, callback);
+  }
 
 }
 

@@ -4,7 +4,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width">
-	<title>ORC Source: lib/directory.js</title>
+	<title>ORC Source: audit.js</title>
 
 	<!--[if lt IE 9]>
 	<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
@@ -55,7 +55,7 @@
 			<li class="dropdown">
 				<a href="tutorials.list.html" class="dropdown-toggle" data-toggle="dropdown">Tutorials<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="tutorial-config.html">Configuration Guide</a></li><li><a href="tutorial-directory_.html">Running a Directory</a></li><li><a href="tutorial-farming.html">Setting Up Farming</a></li><li><a href="tutorial-install.html">Manual Installation</a></li><li><a href="tutorial-transfers.html">Uploading and Downloading</a></li><li><a href="tutorial-usage.html">Basic Usage Guide</a></li>
+					<li><a href="tutorial-config.html">Configuration Guide</a></li><li><a href="tutorial-directory_.html">Running a Directory</a></li><li><a href="tutorial-install.html">Manual Installation</a></li><li><a href="tutorial-providing.html">Providing Capacity</a></li><li><a href="tutorial-transfers.html">Uploading and Downloading</a></li><li><a href="tutorial-usage.html">Basic Usage Guide</a></li>
 				</ul>
 			</li>
 			
@@ -92,126 +92,166 @@
 		<div id="main">
 			
 
-		<h1 class="page-title">Source: lib/directory.js</h1>
+		<h1 class="page-title">Source: audit.js</h1>
     
 <section>
     <article>
         <pre
             class="sunlight-highlight-javascript ">'use strict';
 
-const http = require('http');
-const https = require('https');
-const fs = require('fs');
-const cors = require('cors');
-const ms = require('ms');
-const async = require('async');
-const merge = require('merge');
-const url = require('url');
+const { Writable: WritableStream } = require('stream');
+const assert = require('assert');
+const crypto = require('crypto');
+const constants = require('./constants');
+const MerkleTree = require('mtree');
+const utils = require('./utils');
 
 
 /**
- * Serves a single endpoint for retreiving network statistics
+ * Represents a streaming audit challenge generator
  */
-class Directory {
+class Audit extends WritableStream {
 
   /**
    * @constructor
-   * @param {Node} node
-   * @param {object} options
-   * @param {boolean} options.enableSSL - Use SSL
-   * @param {string} options.serviceKeyPath - Path to PEM private key
-   * @param {string} options.certificatePath - Path to PEM certificate
-   * @param {string[]} options.authorityChains - Path to PEM CA certificates
-   * @param {string} options.bootstrapService - Address to bootstrap profiles
+   * @param {number} audits - Total number of challenges to generate
    */
-  constructor(node, options) {
-    this.node = node;
-    this.database = this.node.database;
-    this._bootstrapService = options.bootstrapService;
+  constructor(audits) {
+    super();
 
-    /* istanbul ignore if */
-    if (options.enableSSL) {
-      this.server = https.createServer({
-        key: fs.readFileSync(options.serviceKeyPath),
-        cert: fs.readFileSync(options.certificatePath),
-        ca: options.authorityChains
-          ? options.authorityChains.map(fs.readFileSync)
-          : []
-      }, (req, res) => this._handleRequest(req, res));
-    } else {
-      this.server = http.createServer(
-        (req, res) => this._handleRequest(req, res)
-      );
-    }
+    assert(typeof audits === 'number', 'Invalid number of audits supplied');
+    assert(!Number.isNaN(audits), 'Invalid number of audits supplied');
+    assert(Number.isFinite(audits), 'Invalid number of audits supplied');
+
+    this._audits = audits;
+    this._finished = false;
+    this._challenges = [];
+    this._inputs = this._prepareChallenges();
+
+    this.on('finish', this._generateTree.bind(this));
   }
 
   /**
-   * Bootstraps the peer profiles
-   * @param {function} callback
+   * Returns the bottom leaves of the merkle tree for sending to farmer
+   * @returns {Array} leaves - Bottom merkle leaves of audit tree
    */
-  bootstrap(callback) {
-    let opts = merge(url.parse(this._bootstrapService), {
-      agent: this.node.onion.createSecureAgent()
-    });
-    let proto = opts.protocol === 'https:' ? https : http;
-
-    proto.get(opts, (res) => {
-      let body = '';
-
-      res.on('data', (d) => body += d.toString()).on('end', () => {
-        try {
-          body = JSON.parse(body);
-        } catch (err) {
-          /* istanbul ignore next */
-          return callback('Failed to parse directory payload');
-        }
-
-        async.eachSeries(body, (profile, next) => {
-          this.database.PeerProfile.findOneAndUpdate(
-            { identity: profile.identity },
-            profile,
-            { upsert: true },
-            next
-          );
-        }, callback);
-      }).on('error', callback);
-    }).on('error', callback);
+  getPublicRecord() {
+    assert(this._finished, 'Challenge generation is not finished');
+    return this._tree.level(this._tree.levels() - 1)
+      .map((i) => i.toString('hex'));
   }
 
   /**
+   * Returns the challenges, the tree depth, and merkle root
+   * @returns {Object} challenge - Private audit record with challenges
+   */
+  getPrivateRecord() {
+    assert(this._finished, 'Challenge generation is not finished');
+    return {
+      root: this._tree.root(),
+      depth: this._tree.levels(),
+      challenges: this._challenges.map((i) => i.toString('hex'))
+    };
+  }
+
+  /**
+   * Implements the underlying write method
    * @private
    */
-  _handleRequest(req, res) {
-    let now = Date.now();
-
-    cors()(req, res, () => {
-      this.database.PeerProfile.find({
-        $or: [
-          { 'capacity.timestamp': { $gt: now - ms('24HR') } },
-          { updated: { $gt: now - ms('24HR') } }
-        ]
-      }, [], {
-        sort: { 'capacity.timestamp': -1 }
-      }, (err, results) => {
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify(results.map((r) => r.toObject())));
-      });
+  _write(bytes, encoding, next) {
+    this._inputs.forEach((input, i) => {
+      if (i &lt; this._audits) {
+        input.update(bytes);
+      }
     });
+    next();
   }
 
   /**
-   * Start the server on the supplied port and hostname
-   * @param {number} port
-   * @param {string} hostname
-   * @param {function} callback
+   * Prepares the challenge hasher instances
+   * @private
    */
-  listen() {
-    this.server.listen(...arguments);
+  _prepareChallenges() {
+    let iterations = 0;
+    let inputs = [];
+
+    while (iterations &lt; this._audits) {
+      const challenge = this._generateChallenge();
+      const input = this._createResponseInput(challenge);
+
+      this._challenges.push(challenge);
+      inputs.push(input);
+      iterations++;
+    }
+
+    while (iterations &lt; utils.getNextPowerOfTwo(this._audits)) {
+      inputs.push(utils.rmd160sha256(''));
+      iterations++;
+    }
+
+    return inputs;
+  }
+
+  /**
+   * Generate the audit merkle tree from a series of challenges
+   * @private
+   */
+  _generateTree() {
+    this._finished = true;
+    this._tree = new MerkleTree(this._inputs.map((input, i) => {
+      if (i >= this._audits) {
+        return input;
+      } else {
+        return utils.rmd160sha256(utils.rmd160(input.digest()));
+      }
+    }), utils.rmd160sha256);
+  }
+
+  /**
+   * Generate a random challenge buffer
+   * @private
+   * @returns {buffer}
+   */
+  _generateChallenge() {
+    return crypto.randomBytes(constants.AUDIT_BYTES);
+  }
+
+  /**
+   * Create a challenge response input to merkle tree
+   * @private
+   */
+  _createResponseInput(challenge) {
+    return crypto.createHash('sha256').update(challenge);
+  }
+
+  /**
+   * Returns a new instance from the predefined challenges and tree
+   * @param {array} challenges - The precomputed challenges
+   * @param {array} tree - The bottom leaves of the existing merkle tree
+   * @returns {Audit}
+   */
+  static fromRecords(challenges, tree) {
+    assert(Array.isArray(challenges), 'Invalid challenges supplied');
+    assert(Array.isArray(tree), 'Invalid tree supplied');
+    assert(
+      tree.length === utils.getNextPowerOfTwo(challenges.length),
+      'Challenges and tree do not match'
+    );
+
+    tree = tree.map((i) => Buffer.from(i, 'hex'));
+
+    const auditor = new Audit(challenges.length);
+
+    auditor._challenges = challenges;
+    auditor._tree = new MerkleTree(tree, utils.rmd160sha256);
+    auditor._finished = true;
+
+    return auditor;
   }
 
 }
 
-module.exports = Directory;
+module.exports = Audit;
 </pre>
     </article>
 </section>

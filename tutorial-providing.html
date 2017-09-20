@@ -4,7 +4,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width">
-	<title>ORC Source: lib/audit.js</title>
+	<title>ORC Tutorial: Providing Capacity</title>
 
 	<!--[if lt IE 9]>
 	<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
@@ -55,7 +55,7 @@
 			<li class="dropdown">
 				<a href="tutorials.list.html" class="dropdown-toggle" data-toggle="dropdown">Tutorials<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="tutorial-config.html">Configuration Guide</a></li><li><a href="tutorial-directory_.html">Running a Directory</a></li><li><a href="tutorial-farming.html">Setting Up Farming</a></li><li><a href="tutorial-install.html">Manual Installation</a></li><li><a href="tutorial-transfers.html">Uploading and Downloading</a></li><li><a href="tutorial-usage.html">Basic Usage Guide</a></li>
+					<li><a href="tutorial-config.html">Configuration Guide</a></li><li><a href="tutorial-directory_.html">Running a Directory</a></li><li><a href="tutorial-install.html">Manual Installation</a></li><li><a href="tutorial-providing.html">Providing Capacity</a></li><li><a href="tutorial-transfers.html">Uploading and Downloading</a></li><li><a href="tutorial-usage.html">Basic Usage Guide</a></li>
 				</ul>
 			</li>
 			
@@ -90,175 +90,35 @@
 	<div class="col-md-12">
 	
 		<div id="main">
-			
+			<section class="tutorial-section">
 
-		<h1 class="page-title">Source: lib/audit.js</h1>
+<header>
     
-<section>
-    <article>
-        <pre
-            class="sunlight-highlight-javascript ">'use strict';
 
-const { Writable: WritableStream } = require('stream');
-const assert = require('assert');
-const crypto = require('crypto');
-const constants = require('./constants');
-const MerkleTree = require('mtree');
-const utils = require('./utils');
+    <h2>Providing Capacity</h2>
+</header>
 
+<article>
+    <p>It's easy to configure ORC for providing. Check out the <a href="tutorial-config.html">Configuration Guide</a> for 
+an overview of all configuration properties - this guide only covers what is 
+needed for providing. This guide also assumes you have properly installed ORC via 
+the provided Docker image or have completed the <a href="tutorial-install.html">Manual Installation</a> guide.</p>
+<blockquote>
+<p>Note that ORC will provide 5GB to the network without any modification.</p>
+</blockquote>
+<h3>Allocate Storage Capacity</h3><p>Set the base directory (parent) for where the shards folder will be placed. The 
+shards stores other nodes data shards, so be sure you set this to where you 
+intend to store shards.</p>
+<pre class="prettyprint source"><code>ShardStorageBaseDir = /home/bookchin/.config/orc</code></pre><p>Define the maximum size you wish to allocate for shards. This can be 
+increased later, but decreasing it will not delete existing data.</p>
+<pre class="prettyprint source"><code>ShardStorageMaxAllocation = 5GB</code></pre><h3>Fine Tune Provider Behavior</h3><p>How often a provider profile should scan contract database to reap expired 
+shards it is storing.</p>
+<pre class="prettyprint source"><code>ShardReaperInterval = 24HR</code></pre><p>How often a provider profile should publish a capacity announcement to it's
+neighboring nodes.</p>
+<pre class="prettyprint source"><code>CapacityAnnounceInterval = 15M</code></pre>
+</article>
 
-/**
- * Represents a streaming audit challenge generator
- */
-class Audit extends WritableStream {
-
-  /**
-   * @constructor
-   * @param {number} audits - Total number of challenges to generate
-   */
-  constructor(audits) {
-    super();
-
-    assert(typeof audits === 'number', 'Invalid number of audits supplied');
-    assert(!Number.isNaN(audits), 'Invalid number of audits supplied');
-    assert(Number.isFinite(audits), 'Invalid number of audits supplied');
-
-    this._audits = audits;
-    this._finished = false;
-    this._challenges = [];
-    this._inputs = this._prepareChallenges();
-
-    this.on('finish', this._generateTree.bind(this));
-  }
-
-  /**
-   * Returns the bottom leaves of the merkle tree for sending to farmer
-   * @returns {Array} leaves - Bottom merkle leaves of audit tree
-   */
-  getPublicRecord() {
-    assert(this._finished, 'Challenge generation is not finished');
-    return this._tree.level(this._tree.levels() - 1)
-      .map((i) => i.toString('hex'));
-  }
-
-  /**
-   * Returns the challenges, the tree depth, and merkle root
-   * @returns {Object} challenge - Private audit record with challenges
-   */
-  getPrivateRecord() {
-    assert(this._finished, 'Challenge generation is not finished');
-    return {
-      root: this._tree.root(),
-      depth: this._tree.levels(),
-      challenges: this._challenges.map((i) => i.toString('hex'))
-    };
-  }
-
-  /**
-   * Implements the underlying write method
-   * @private
-   */
-  _write(bytes, encoding, next) {
-    this._inputs.forEach((input, i) => {
-      if (i &lt; this._audits) {
-        input.update(bytes);
-      }
-    });
-    next();
-  }
-
-  /**
-   * Prepares the challenge hasher instances
-   * @private
-   */
-  _prepareChallenges() {
-    let iterations = 0;
-    let inputs = [];
-
-    while (iterations &lt; this._audits) {
-      const challenge = this._generateChallenge();
-      const input = this._createResponseInput(challenge);
-
-      this._challenges.push(challenge);
-      inputs.push(input);
-      iterations++;
-    }
-
-    while (iterations &lt; utils.getNextPowerOfTwo(this._audits)) {
-      inputs.push(utils.rmd160sha256(''));
-      iterations++;
-    }
-
-    return inputs;
-  }
-
-  /**
-   * Generate the audit merkle tree from a series of challenges
-   * @private
-   */
-  _generateTree() {
-    this._finished = true;
-    this._tree = new MerkleTree(this._inputs.map((input, i) => {
-      if (i >= this._audits) {
-        return input;
-      } else {
-        return utils.rmd160sha256(utils.rmd160(input.digest()));
-      }
-    }), utils.rmd160sha256);
-  }
-
-  /**
-   * Generate a random challenge buffer
-   * @private
-   * @returns {buffer}
-   */
-  _generateChallenge() {
-    return crypto.randomBytes(constants.AUDIT_BYTES);
-  }
-
-  /**
-   * Create a challenge response input to merkle tree
-   * @private
-   */
-  _createResponseInput(challenge) {
-    return crypto.createHash('sha256').update(challenge);
-  }
-
-  /**
-   * Returns a new instance from the predefined challenges and tree
-   * @param {array} challenges - The precomputed challenges
-   * @param {array} tree - The bottom leaves of the existing merkle tree
-   * @returns {Audit}
-   */
-  static fromRecords(challenges, tree) {
-    assert(Array.isArray(challenges), 'Invalid challenges supplied');
-    assert(Array.isArray(tree), 'Invalid tree supplied');
-    assert(
-      tree.length === utils.getNextPowerOfTwo(challenges.length),
-      'Challenges and tree do not match'
-    );
-
-    tree = tree.map((i) => Buffer.from(i, 'hex'));
-
-    const auditor = new Audit(challenges.length);
-
-    auditor._challenges = challenges;
-    auditor._tree = new MerkleTree(tree, utils.rmd160sha256);
-    auditor._finished = true;
-
-    return auditor;
-  }
-
-}
-
-module.exports = Audit;
-</pre>
-    </article>
 </section>
-
-
-
-
 
 		</div>
 	</div>

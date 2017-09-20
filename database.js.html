@@ -4,7 +4,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width">
-	<title>ORC Source: lib/database.js</title>
+	<title>ORC Source: database.js</title>
 
 	<!--[if lt IE 9]>
 	<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
@@ -55,7 +55,7 @@
 			<li class="dropdown">
 				<a href="tutorials.list.html" class="dropdown-toggle" data-toggle="dropdown">Tutorials<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="tutorial-config.html">Configuration Guide</a></li><li><a href="tutorial-directory_.html">Running a Directory</a></li><li><a href="tutorial-farming.html">Setting Up Farming</a></li><li><a href="tutorial-install.html">Manual Installation</a></li><li><a href="tutorial-transfers.html">Uploading and Downloading</a></li><li><a href="tutorial-usage.html">Basic Usage Guide</a></li>
+					<li><a href="tutorial-config.html">Configuration Guide</a></li><li><a href="tutorial-directory_.html">Running a Directory</a></li><li><a href="tutorial-install.html">Manual Installation</a></li><li><a href="tutorial-providing.html">Providing Capacity</a></li><li><a href="tutorial-transfers.html">Uploading and Downloading</a></li><li><a href="tutorial-usage.html">Basic Usage Guide</a></li>
 				</ul>
 			</li>
 			
@@ -92,7 +92,7 @@
 		<div id="main">
 			
 
-		<h1 class="page-title">Source: lib/database.js</h1>
+		<h1 class="page-title">Source: database.js</h1>
     
 <section>
     <article>
@@ -169,7 +169,8 @@ const PeerProfile = new Schema({
   reputation: {
     score: {
       type: Number,
-      default: 0
+      default: 0,
+      min: 0
     },
     timestamp: {
       type: Date,
@@ -179,6 +180,16 @@ const PeerProfile = new Schema({
   updated: {
     type: Date,
     default: Date.now
+  },
+  _reports: {
+    missed: {
+      type: Number,
+      default: 0
+    },
+    streak: {
+      type: Number,
+      default: 0
+    }
   }
 });
 
@@ -186,8 +197,97 @@ PeerProfile.set('toObject', {
   transform: function(doc, ret) {
     delete ret._id;
     delete ret.__v;
+    delete ret._reports;
   }
-})
+});
+
+PeerProfile.methods.toString = function() {
+  return [
+    this.contact.protocol, '//', this.contact.hostname, ':', this.contact.port
+  ].join('');
+};
+
+/**
+ * Describes the result of an audit as a report to directories
+ * @type {object}
+ */
+const AuditReport = new Schema({
+  reporter: {
+    type: String,
+    required: true,
+    match: new RegExp('[A-Fa-f0-9]{40}$')
+  },
+  provider: {
+    type: String,
+    required: true,
+    match: new RegExp('[A-Fa-f0-9]{40}$')
+  },
+  challenge: {
+    type: String,
+    required: true
+  },
+  expected: {
+    type: String,
+    required: true,
+    match: new RegExp('[A-Fa-f0-9]{40}$')
+  },
+  actual: {
+    type: String,
+    required: true,
+    match: new RegExp('[A-Fa-f0-9]{40}$')
+  }
+});
+
+AuditReport.virtual('outcome').get(function() {
+  return this.expected === this.actual ? 1 : 0;
+});
+
+AuditReport.methods.toCompressedAuthenticated = function(privateKey) {
+  let compressed, { signature, recovery } = secp256k1.sign(
+    utils.sha256(Buffer.from(this.getSigningArray().join(''), 'hex')),
+    privateKey
+  );
+
+  signature = Buffer.concat([Buffer.from([recovery]), signature]);
+  compressed = this.getSigningArray();
+
+  compressed.push(signature.toString('base64'));
+
+  return compressed;
+};
+
+AuditReport.methods.getSigningArray = function() {
+  return [
+    this.reporter, this.provider, this.challenge, this.expected, this.actual
+  ];
+};
+
+AuditReport.statics.verifyCompressedAuthenticated = function(compressed) {
+  const report = new this({
+    reporter: compressed[0],
+    provider: compressed[1],
+    challenge: compressed[2],
+    expected: compressed[3],
+    actual: compressed[4]
+  });
+
+  if (report.validateSync()) {
+    return false;
+  }
+
+  const compactSig = Buffer.from(compressed[5], 'base64');
+  const recovery = compactSig[0];
+  const signature = compactSig.slice(1);
+  const message = utils.sha256(Buffer.from(
+    report.getSigningArray().join(''),
+    'hex'
+  ));
+  const pubkey = secp256k1.recover(message, signature, recovery, true);
+  const pubkeyhash = report.reporter;
+
+  return secp256k1.verify(message, signature, pubkey) &amp;&amp;
+    keyutils.toPublicKeyHash(pubkey).toString('hex') === pubkeyhash;
+};
 
 /**
  * Describes a contract between two peers for shard storage
@@ -272,6 +372,10 @@ const ShardContract = new Schema({
   _lastFundingTimestamp: {
     type: Date,
     default: Date.now
+  },
+  _lastAccessTimestamp: {
+    type: Date,
+    default: Date.now
   }
 });
 
@@ -281,6 +385,7 @@ ShardContract.set('toObject', {
   virtuals: false,
   transform: function(doc, ret) {
     delete ret._lastAuditTimestamp;
+    delete ret._lastAccessTimestamp;
     delete ret._lastFundingTimestamp;
     delete ret._id;
     delete ret.__v;
@@ -381,39 +486,6 @@ ShardContract.methods.checkAccessPolicy = function(contact) {
 };
 
 /**
- * Record a report of storage audit between two peers
- * @type {object}
- */
-const AuditReport = new Schema({
-  reporter: {
-    type: String,
-    required: true,
-    min: 20,
-    max: 20
-  },
-  provider: {
-    type: String,
-    required: true,
-    min: 20,
-    max: 20
-  },
-  challenge: {
-    type: String,
-    required: true
-  },
-  expected: {
-    type: Schema.Types.Mixed
-  },
-  actual: {
-    type: Schema.Types.Mixed
-  },
-  timestamp: {
-    type: Date,
-    default: Date.now
-  }
-});
-
-/**
  * Keeps references to the location of shards that compose an object
  * @type {object}
  */
@@ -454,7 +526,22 @@ const ObjectPointer = new Schema({
       type: String,
       required: true
     },
-    service: [Schema.Types.Mixed]
+    service: [Schema.Types.Mixed],
+    decayed: {
+      type: Boolean,
+      default: false
+    },
+    audits: {
+      root: {
+        type: String
+      },
+      challenges: [{
+        type: String
+      }],
+      depth: {
+        type: Number
+      }
+    }
   }],
   ecpub: {
     type: String,
@@ -468,7 +555,15 @@ const ObjectPointer = new Schema({
   },
   policies: [{
     type: String
-  }]
+  }],
+  _lastAuditTimestamp: {
+    type: Date,
+    default: Date.now
+  },
+  _isOwner: {
+    type: Boolean,
+    default: true
+  }
 });
 
 ObjectPointer.index({ uuid: 1 });
@@ -477,6 +572,8 @@ ObjectPointer.set('toObject', {
   transform: (doc, ret) => {
     delete ret._id;
     delete ret.__v;
+    delete ret._lastAuditTimestamp;
+    delete ret._isOwner;
     delete ret.ecprv;
     ret.id = doc._id;
     ret.shards = doc.shards.map(s => {
@@ -487,6 +584,13 @@ ObjectPointer.set('toObject', {
       };
     });
   }
+});
+
+ObjectPointer.virtual('percentDecayed').get(function() {
+  let total = this.shards.length;
+  let decayed = this.shards.filter(s => s.decayed).length;
+
+  return decayed / total;
 });
 
 ObjectPointer.methods.toEncryptedBlob = function() {

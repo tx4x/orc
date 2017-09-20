@@ -4,7 +4,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width">
-	<title>ORC Source: lib/bridge.js</title>
+	<title>ORC Source: bridge.js</title>
 
 	<!--[if lt IE 9]>
 	<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
@@ -55,7 +55,7 @@
 			<li class="dropdown">
 				<a href="tutorials.list.html" class="dropdown-toggle" data-toggle="dropdown">Tutorials<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="tutorial-config.html">Configuration Guide</a></li><li><a href="tutorial-directory_.html">Running a Directory</a></li><li><a href="tutorial-farming.html">Setting Up Farming</a></li><li><a href="tutorial-install.html">Manual Installation</a></li><li><a href="tutorial-transfers.html">Uploading and Downloading</a></li><li><a href="tutorial-usage.html">Basic Usage Guide</a></li>
+					<li><a href="tutorial-config.html">Configuration Guide</a></li><li><a href="tutorial-directory_.html">Running a Directory</a></li><li><a href="tutorial-install.html">Manual Installation</a></li><li><a href="tutorial-providing.html">Providing Capacity</a></li><li><a href="tutorial-transfers.html">Uploading and Downloading</a></li><li><a href="tutorial-usage.html">Basic Usage Guide</a></li>
 				</ul>
 			</li>
 			
@@ -92,13 +92,16 @@
 		<div id="main">
 			
 
-		<h1 class="page-title">Source: lib/bridge.js</h1>
+		<h1 class="page-title">Source: bridge.js</h1>
     
 <section>
     <article>
         <pre
             class="sunlight-highlight-javascript ">'use strict';
 
+const constants = require('./constants');
+const { Readable: ReadableStream } = require('stream');
+const { EventEmitter } = require('events');
 const BusBoy = require('busboy');
 const ReedSolomon = require('@ronomon/reed-solomon');
 const https = require('https');
@@ -115,6 +118,7 @@ const path = require('path');
 const mkdirp = require('mkdirp');
 const uuid = require('uuid');
 const AuditStream = require('./audit');
+const Proof = require('./proof');
 const { knuthShuffle } = require('knuth-shuffle');
 const stream = require('stream');
 const async = require('async');
@@ -126,8 +130,6 @@ const bytes = require('bytes');
 const querystring = require('querystring');
 const cors = require('cors');
 const url = require('url');
-const serveStatic = require('serve-static');
-const finalhandler = require('finalhandler');
 const { utils: keyutils } = require('kad-spartacus');
 const concat = require('concat-stream');
 const qs = require('querystring');
@@ -148,7 +150,7 @@ const qs = require('querystring');
  * If auth is enabled, then the websocket control bridge expects:
  * ?auth={base64(user:pass)} as the query string
  */
-class Bridge {
+class Bridge extends EventEmitter {
 
   static get DEFAULTS() {
     return {
@@ -160,7 +162,6 @@ class Bridge {
         tmpdir(),
         `staging.${crypto.randomBytes(16).toString('hex')}`
       ),
-      auditInterval: 432000000, // 5 days
       enableSSL: false,
       serviceKeyPath: null,
       certificatePath: null,
@@ -175,6 +176,8 @@ class Bridge {
    * @param {object} options
    */
   constructor(node, options) {
+    super();
+
     this.options = merge(Bridge.DEFAULTS, options);
     this.api = express();
     this.node = node;
@@ -193,7 +196,7 @@ class Bridge {
 
     this.server.setTimeout(0);
     this._bindRoutes();
-    setInterval(() => this.audit(), 21600000); // 6 hours
+    setInterval(() => this.audit(), constants.AUDIT_INTERVAL);
   }
 
   /**
@@ -327,12 +330,6 @@ class Bridge {
    * @param {function} next
    */
   list(req, res) {
-    if (req.accepts('html')) {
-      return serveStatic(
-        path.join(__dirname, '../gui')
-      )(req, res, finalhandler(req, res));
-    }
-
     this.database.ObjectPointer.find({}, (err, pointers) => {
       /* istanbul ignore if */
       if (err) {
@@ -467,7 +464,7 @@ class Bridge {
 
       const prepareContracts = () => {
         async.eachSeries(shards, (shard, next) => {
-          const audit = new AuditStream(12); // TODO: Configurable
+          const audit = new AuditStream(constants.NUM_CHALLENGES);
           const readStream = fs.createReadStream(shard.path);
           const hash = crypto.createHash('sha256');
           const hasher = new stream.Transform({
@@ -516,97 +513,19 @@ class Bridge {
     const uploadShards = (shards, object, callback) => {
       async.eachLimit(shards, 3, (shard, next) => {
         async.retry({ times: 5 }, (done) => {
-          this.database.PeerProfile.find({
-            'capacity.timestamp': { $gt: Date.now() - ms('24HR') },
-            'capacity.available': { $gt: shard.size }
-          }, (err, profiles) => {
-            /* eslint max-statements: [2, 20] */
+          this._pluckStorageProvider(shard.size, (err, target) => {
             if (err) {
-              this.node.logger.warn('failed to load capacity cache');
-              profiles = [];
+              return done(err);
             }
 
-            let proposal = shard.proposal.toObject();
-            let target = undefined;
-            let contact = undefined;
+            let proposal = shard.proposal;
+            let rs = fs.createReadStream(shard.path);
 
-            knuthShuffle(profiles);
-
-            for (let i = 0; i &lt; profiles.length; i++) {
-              contact = this.node.router.getContactByNodeId(
-                profiles[i].identity
-              );
-              target = contact
-                     ? [profiles[i].identity, contact]
-                     : [profiles[i].identity, profiles[i].contact];
-
-              /* istanbul ignore else */
-              if (target !== undefined) {
-                break;
-              }
-            }
-
-            if (target === undefined) {
-              this.node.logger.warn(
-                'not enough capacity data collected to upload'
-              );
-              return done(new Error('Not enough capacity information'));
-            }
-
-            this.node.claimFarmerCapacity(target, proposal, (err, data) => {
-              if (err) {
-                this.node.logger.warn(
-                  `failed to claim capacity, reason: ${err.message}`
-                );
-                return done(err);
-              }
-
-              this.node.logger.info(`capacity claimed from ${target[0]}`);
-
-              let [completedContract, consignToken] = data;
-              let uploadStream = utils.createShardUploader(
-                target,
-                completedContract.shardHash,
-                consignToken,
-                this.node.onion.createSecureAgent()
-              );
-
-              completedContract = new this.database.ShardContract(
-                completedContract
-              );
-
-              uploadStream.on('error', done);
-              uploadStream.on('response', (res) => {
-                let body = '';
-                res.on('data', (data) => body += data.toString());
-                res.on('end', () => {
-                  /* istanbul ignore if */
-                  if (res.statusCode !== 200) {
-                    this.node.logger.warn(
-                      `failed to upload shard, reason: ${body}`
-                    );
-                    return done(new Error(body));
-                  }
-
-                  this.node.logger.debug(`shard uploaded to ${target[0]}`);
-                  delete shard.proposal;
-                  delete shard.path;
-                  shard.service = target;
-                  shard.hash = completedContract.shardHash;
-                  completedContract.save(() => done());
-                });
-              });
-              this.node.logger.info(`uploading shard to ${target[0]}`);
-              fs.createReadStream(shard.path)
-                .on('data', (data) => uploadStream.write(data))
-                .on('end', () => uploadStream.end())
-                .on('error', (err) => {
-                  /* istanbul ignore next */
-                  uploadStream.removeAllListeners();
-                  /* istanbul ignore next */
-                  done(err);
-                });
-            });
+            this.node.logger.info(`uploading shard to ${target[0]}`);
+            this._createUploadChannel({
+              stream: rs,
+              target, proposal, shard
+            }, done);
           });
         }, next);
       }, (err) => {
@@ -662,12 +581,52 @@ class Bridge {
    * @param {function} next
    */
   download(req, res, next) {
+    this._downloadObject(req.params.id, (err, buffer, object, info) => {
+      /* istanbul ignore if */
+      if (err) {
+        return next(err);
+      }
+
+      const { rsparams } = info;
+      const decipher = utils.createDecipher(
+        Buffer.from(object.ecpub, 'hex'),
+        Buffer.from(object.ecprv, 'hex')
+      );
+
+      decipher.on('error', (err) => {
+        this.node.logger.error(err.message);
+        res.end();
+      });
+
+      res.writeHead(200, {
+        'Content-Type': object.mimetype,
+        'Content-Length': object.size,
+        'Transfer-Encoding': ''
+      });
+
+      decipher.pipe(slice(0, object.size - rsparams.padding)).pipe(res);
+      decipher.end(buffer);
+    });
+  }
+
+  /**
+   * @private
+   * @param {string} id
+   * @param {function} callback
+   */
+  _downloadObject(id, next) {
     let targets = 0;
+    let failed = [];
     let buffer = null;
-    let id = req.params.id;
 
     function updateRecovery(shard, i) {
-      buffer.fill(0, shard.size * i, (shard.size * i) + shard.size);
+      let recovery = {
+        shard,
+        offset: shard.size * i,
+        length: (shard.size * i) + shard.size
+      };
+      failed.push(recovery);
+      buffer.fill(0, recovery.offset, recovery.length);
       targets |= (1 &lt;&lt; i);
     }
 
@@ -767,16 +726,17 @@ class Bridge {
 
           decipher.on('error', (err) => {
             this.node.logger.error(err.message);
-            res.end();
           });
-          res.writeHead(200, {
-            'Content-Type': object.mimetype,
-            'Content-Length': object.size,
-            'Transfer-Encoding': ''
-          });
-          decipher.pipe(slice(0, object.size - rsparams.padding)).pipe(res);
+
+          decipher.pipe(slice(0, object.size - rsparams.padding)),
           decipher.end(buffer);
-        })
+
+          next(null,
+            buffer,
+            object,
+            { failed, rsparams }
+          );
+        });
       });
     });
   }
@@ -791,13 +751,35 @@ class Bridge {
   destroy(req, res, next) {
     let id = req.params.id;
 
-    this.database.ObjectPointer.remove({ _id: id }, (err) => {
+    this.database.ObjectPointer.findOne({ _id: id }, (err, object) => {
       /* istanbul ignore if */
       if (err) {
         return next(err);
       }
 
-      res.status(201).send();
+      async.each(object.shards, (shard, done) => {
+        this.database.ShardContract.remove({
+          shardHash: shard.hash
+        }, (err) => {
+          /* istanbul ignore if */
+          if (err) {
+            this.node.logger.error(
+              `failed to remove shard contract ${shard.hash}`
+            );
+          }
+
+          done();
+        });
+      }, () => {
+        object.remove((err) => {
+          /* istanbul ignore if */
+          if (err) {
+            return next(err);
+          }
+
+          res.status(201).send();
+        })
+      });
     });
   }
 
@@ -860,7 +842,7 @@ class Bridge {
           ]).toString('utf8');
           let object = new this.database.ObjectPointer(merge(
             JSON.parse(cleartext),
-            { ecprv: parsed['x.ecprv'] }
+            { ecprv: parsed['x.ecprv'], _isOwner: false }
           ));
 
           object.save((err) => {
@@ -878,12 +860,356 @@ class Bridge {
 
   /**
    * Periodically call this to scan the object store for shards that need to
-   * be audited, perform audit, and issue payment
+   * be audited
+   * @param
    * @param {function} callback
    */
   audit(callback = () => null) {
-    // TODO: Implement auditor
-    callback(new Error('Auditor not implemented'));
+    const opportunities = constants.SCORE_INTERVAL / constants.AUDIT_INTERVAL;
+    const query = {
+      _lastAuditTimestamp: { $lt: Date.now() - constants.SCORE_INTERVAL },
+      _isOwner: true
+    };
+
+    this.database.ObjectPointer.find(query, (err, objects) => {
+      /* istanbul ignore if */
+      if (err) {
+        return callback(err);
+      }
+
+      const total = Math.ceil(objects.length / opportunities);
+      const candidates = [];
+
+      while (candidates.length !== total) {
+        candidates.push(knuthShuffle(objects).pop());
+      }
+
+      async.eachSeries(
+        candidates,
+        (obj, next) => this._auditObject(obj, next),
+        (err) => {
+          /* istanbul ignore if */
+          if (err) {
+            this.node.logger.warn(err.message);
+            return callback(err);
+          }
+
+          this.emit('auditInternalFinished');
+          callback();
+        }
+      );
+    });
+  }
+
+  /**
+   * @private
+   */
+  _createUploadChannel({ stream, target, proposal, shard }, done) {
+    this.node.claimFarmerCapacity(target, proposal, (err, data) => {
+      if (err) {
+        this.node.logger.warn(
+          `failed to claim capacity, reason: ${err.message}`
+        );
+        return done(err);
+      }
+
+      this.node.logger.info(`capacity claimed from ${target[0]}`);
+
+      let [completedContract, consignToken] = data;
+      let uploadStream = utils.createShardUploader(
+        target,
+        completedContract.shardHash,
+        consignToken,
+        this.node.onion.createSecureAgent()
+      );
+
+      completedContract = new this.database.ShardContract(
+        completedContract
+      );
+
+      uploadStream.on('error', done);
+      uploadStream.on('response', (res) => {
+        let body = '';
+        res.on('data', (data) => body += data.toString());
+        res.on('end', () => {
+          /* istanbul ignore if */
+          if (res.statusCode !== 200) {
+            this.node.logger.warn(
+              `failed to upload shard, reason: ${body}`
+            );
+            return done(new Error(body));
+          }
+
+          this.node.logger.debug(`shard uploaded to ${target[0]}`);
+          delete shard.proposal;
+          delete shard.path;
+          shard.service = target;
+          shard.hash = completedContract.shardHash;
+          completedContract.save((err) => done(err));
+        });
+      });
+
+      stream.on('data', (data) => uploadStream.write(data))
+        .on('end', () => uploadStream.end())
+        .on('error', (err) => {
+          /* istanbul ignore next */
+          uploadStream.removeAllListeners();
+          /* istanbul ignore next */
+          done(err);
+        });
+    });
+  }
+
+  /**
+   * @private
+   */
+  _auditObject(object, callback) {
+    async.mapLimit(object.shards, 3, (shard, done) => {
+      this.database.ShardContract.findOne({
+        shardHash: shard.hash
+      }, (err, contract) => done(err, [shard, contract]));
+    }, (err, results) => {
+      /* istanbul ignore if */
+      if (err) {
+        return callback(err);
+      }
+
+      async.eachLimit(results, 3, ([shard, contract], done) => {
+        let challenge = shard.audits.challenges.shift();
+        let audits = [{ hash: shard.hash, challenge }];
+        let contact = this.node.router.getContactByNodeId(
+          shard.service[0]
+        ) || shard.service;
+
+        contract._lastAuditTimestamp = Date.now();
+
+        this.node.auditRemoteShards(contact, audits, (err, proofs) => {
+          const fail = (err, expected, actual) => {
+            shard.decayed = true;
+
+            const report = new this.database.AuditReport({
+              reporter: this.node.identity.toString('hex'),
+              provider: contract.providerIdentity,
+              challenge, expected, actual
+            });
+
+            this.node.logger.warn(err.message);
+            report.save(() => contract.save(() => done()));
+          };
+
+          /* istanbul ignore if */
+          if (err) {
+            return fail(err);
+          }
+
+          const pass = (report) => {
+            report.save(() => contract.save(() => done()));
+          };
+
+          let { proof } = proofs.pop() || { proof: [] };
+          let [expected, actual] = Proof.verify(
+            proof,
+            Buffer.from(shard.audits.root, 'hex'),
+            shard.audits.depth
+          );
+
+          if (Buffer.compare(expected, actual) !== 0) {
+            return fail(new Error('Audit response failed verification'),
+                        expected.toString('hex'), actual.toString('hex'));
+          }
+
+          const report = new this.database.AuditReport({
+            reporter: this.node.identity.toString('hex'),
+            provider: contract.providerIdentity,
+            challenge,
+            expected: expected.toString('hex'),
+            actual: actual.toString('hex')
+          });
+
+          if (shard.audits.challenges.length === 0) {
+            this._regenerateChallenges(shard, () => pass(report));
+          } else {
+            pass(report);
+          }
+        });
+      }, () => {
+        object.save((err) => {
+          /* istanbul ignore if */
+          if (err) {
+            return callback(err);
+          }
+
+          /* istanbul ignore else */
+          if (object.percentDecayed >= 0.25) {
+            this.node.logger.info('object decay more than 25%, will rebuild');
+            this._rebuildObject(object, callback);
+          } else {
+            callback();
+          }
+        });
+      });
+    });
+  }
+
+  /**
+   * @private
+   */
+  _rebuildObject(object, callback = () => null) {
+    this._downloadObject(object.id, (err, buffer, object, info) => {
+      /* istanbul ignore if */
+      if (err) {
+        return callback(err);
+      }
+
+      const rs = new ReadableStream({
+        read: function() {
+          if (this.bufferDrained) {
+            this.push(null);
+          } else {
+            this.bufferDrained = true;
+            this.push(buffer);
+          }
+        }
+      });
+      const { failed, rsparams } = info;
+
+      async.eachLimit(failed, 3, (recovery, done) => {
+        const { shard, offset, length } = recovery;
+        const auditStream = new AuditStream(constants.NUM_CHALLENGES);
+        const slice = buffer.slice(offset, length);
+
+        auditStream.on('error', done).on('finish', () => {
+          shard.audits = auditStream.getPrivateRecord();
+          shard.audits.root = shard.audits.root.toString('hex');
+
+          const proposal = new this.database.ShardContract({
+            shardHash: shard.hash,
+            shardSize: rsparams.size,
+            auditLeaves: auditStream.getPublicRecord(),
+            ownerParentKey: this.node.contact.xpub,
+            ownerIndex: this.node.contact.index,
+            ownerIdentity: this.node.identity.toString('hex'),
+            accessPolicies: object.policies
+          });
+
+          this._pluckStorageProvider(shard.size, (err, target) => {
+            /* istanbul ignore if */
+            if (err) {
+              return done(err);
+            }
+
+            this.database.ShardContract.remove(
+              {
+                shardHash: shard.hash,
+                ownerIdentity: {
+                  $not: { $eq: this.node.identity.toString('hex') }
+                }
+              },
+              () => this._createUploadChannel({
+                stream: rs,
+                proposal: proposal.toObject(),
+                target, shard
+              }, done)
+            );
+          });
+        });
+
+        auditStream.end(slice);
+      }, () => object.save(callback));
+    });
+  }
+
+  /**
+   * @private
+   * @param {number} size
+   * @param {function} callback
+   */
+  _pluckStorageProvider(size, callback) {
+    this.database.PeerProfile.find({
+      'capacity.timestamp': { $gt: Date.now() - ms('24HR') },
+      'capacity.available': { $gt: size }
+    }, (err, profiles) => {
+      /* eslint max-statements: [2, 20] */
+      if (err) {
+        this.node.logger.warn('failed to load capacity cache');
+        profiles = [];
+      }
+
+      let target = undefined;
+      let contact = undefined;
+
+      knuthShuffle(profiles);
+
+      for (let i = 0; i &lt; profiles.length; i++) {
+        contact = this.node.router.getContactByNodeId(
+          profiles[i].identity
+        );
+        target = contact
+               ? [profiles[i].identity, contact]
+               : [profiles[i].identity, profiles[i].contact];
+
+        /* istanbul ignore else */
+        if (target !== undefined) {
+          break;
+        }
+      }
+
+      if (target === undefined) {
+        this.node.logger.warn(
+          'not enough capacity data collected to upload'
+        );
+        callback(new Error('Not enough capacity information'));
+      } else {
+        callback(null, target);
+      }
+    });
+  }
+
+  /**
+   * @private
+   */
+  _regenerateChallenges(shard, callback = () => null) {
+    const auditStream = new AuditStream(constants.NUM_CHALLENGES);
+
+    this.node.authorizeRetrieval(shard.service, [shard.hash], (err, result) => {
+      /* istanbul ignore if */
+      if (err) {
+        return callback(err);
+      }
+
+      const downloadStream = utils.createShardDownloader(
+        shard.service,
+        shard.hash,
+        result[0],
+        this.node.onion.createSecureAgent()
+      );
+
+      downloadStream.pipe(auditStream).on('finish', () => {
+        shard.audits = auditStream.getPrivateRecord();
+        shard.audits.root = shard.audits.root.toString('hex')
+
+        this.node.database.ShardContract.findOne({
+          shardHash: shard.hash
+        }, (err, contract) => {
+          /* istanbul ignore if */
+          if (err) {
+            return callback(err);
+          }
+
+          contract.auditLeaves = auditStream.getPublicRecord();
+          contract.sign('owner', this.node.spartacus.privateKey);
+          contract.save((err) => {
+            /* istanbul ignore if */
+            if (err) {
+              return callback(err);
+            }
+
+            this.node.requestContractRenewal(shard.service,
+                                             contract.toObject(), callback);
+          });
+        });
+      }).on('error', callback);
+    });
   }
 
 }

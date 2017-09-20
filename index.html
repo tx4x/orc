@@ -55,7 +55,7 @@
 			<li class="dropdown">
 				<a href="tutorials.list.html" class="dropdown-toggle" data-toggle="dropdown">Tutorials<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="tutorial-config.html">Configuration Guide</a></li><li><a href="tutorial-directory_.html">Running a Directory</a></li><li><a href="tutorial-farming.html">Setting Up Farming</a></li><li><a href="tutorial-install.html">Manual Installation</a></li><li><a href="tutorial-transfers.html">Uploading and Downloading</a></li><li><a href="tutorial-usage.html">Basic Usage Guide</a></li>
+					<li><a href="tutorial-config.html">Configuration Guide</a></li><li><a href="tutorial-directory_.html">Running a Directory</a></li><li><a href="tutorial-install.html">Manual Installation</a></li><li><a href="tutorial-providing.html">Providing Capacity</a></li><li><a href="tutorial-transfers.html">Uploading and Downloading</a></li><li><a href="tutorial-usage.html">Basic Usage Guide</a></li>
 				</ul>
 			</li>
 			
@@ -121,12 +121,19 @@ the discussion in <code>#orc</code> on our <a href="https://matrix.counterpointh
 <a href="https://www.npmjs.com/package/@orcproject/orc"><img src="https://img.shields.io/npm/v/@orcproject/orc.svg?style=flat-square" alt="Node Package"></a> | 
 <a href="https://hub.docker.com/r/orcproject/orc"><img src="https://img.shields.io/docker/pulls/orcproject/orc.svg?style=flat-square" alt="Docker Hub"></a> | 
 <a href="https://raw.githubusercontent.com/orcproject/orc/master/LICENSE"><img src="https://img.shields.io/badge/license-AGPL3.0-blue.svg?style=flat-square" alt="License (AGPL-3.0)"></a></p>
-<h3>Quick Start</h3><p>Pull the <a href="https://hub.docker.com/r/orcproject/orc/">image from Docker Hub</a>.</p>
+<h3>Desktop Installation (Recommended)</h3><p>Simply <a href="https://github.com/orcproject/orc/releases/latest">download a pre-built package</a> 
+for your platform from the releases page!</p>
+<blockquote>
+<p>Note! ORC uses the system Tor package on GNU/Linux, so you must install it 
+yourself using your distribution's package manager.</p>
+</blockquote>
+<h3>Server Installation (Advanced)</h3><p>Pull the <a href="https://hub.docker.com/r/orcproject/orc/">image from Docker Hub</a>.</p>
 <pre class="prettyprint source"><code>docker pull orcproject/orc</code></pre><p>Create a data directory on the host.</p>
 <pre class="prettyprint source"><code>mkdir ~/.config/orc</code></pre><p>Run the ORC container and mount the data directory.</p>
 <pre class="prettyprint source"><code>docker run -v ~/.config/orc:/root/.config/orc -t orcproject/orc:latest</code></pre><p>Modify the created configuration at <code>~/.config/orc/config</code> as desired (see 
 the <a href="tutorial-config.html">Configuration Guide</a>) and restart the container for the changes to take 
-effect. Be sure to expose <code>BridgePort</code> and map it to the host.</p>
+effect. Be sure to expose <code>BridgePort</code> and map it to the host if you want to 
+use the API.</p>
 <pre class="prettyprint source"><code>docker run \
   --publish 127.0.0.1:4445:4445 \
   --volume ~/.config/orc:/root/.config/orc \
@@ -142,10 +149,16 @@ disable <code>BridgeAuthenticationEnabled</code>, you will be asked for supply t
 credentials in your configuration file.</strong></p>
 <h3>Development</h3><p>To hack on the ORC project, clone this repository and use 
 <a href="https://docs.docker.com/compose/">Docker Compose</a>:</p>
-<pre class="prettyprint source"><code>git clone https://github.com/orcproject/orc && cd orc
+<pre class="prettyprint source"><code>git clone https://github.com/orcproject/orc
+cd orc
 docker-compose up</code></pre><p>This will volume mount the the appropriate directories for development, and 
-then boots up the ORC container. <strong>Note that stable releases are tagged and 
-the <code>master</code> branch may contain unstable or bleeding-edge code.</strong></p>
+then boots up the ORC container. Note that stable releases are tagged and 
+the <code>master</code> branch may contain unstable or bleeding-edge code.</p>
+<blockquote>
+<p>Alternatively, you can run directly on your host. Use <code>npm install</code> and 
+<code>npm link</code> to install dependencies. Start the daemon with <code>orcd</code> or the 
+desktop application with <code>orc</code>.</p>
+</blockquote>
 <p>Happy hacking!</p>
 <h3>Resources</h3><ul>
 <li><a href="https://orcproject.github.io/orc/">Documentation</a></li>

@@ -4,7 +4,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width">
-	<title>ORC Source: lib/constants.js</title>
+	<title>ORC Source: shards.js</title>
 
 	<!--[if lt IE 9]>
 	<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
@@ -55,7 +55,7 @@
 			<li class="dropdown">
 				<a href="tutorials.list.html" class="dropdown-toggle" data-toggle="dropdown">Tutorials<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="tutorial-config.html">Configuration Guide</a></li><li><a href="tutorial-directory_.html">Running a Directory</a></li><li><a href="tutorial-farming.html">Setting Up Farming</a></li><li><a href="tutorial-install.html">Manual Installation</a></li><li><a href="tutorial-transfers.html">Uploading and Downloading</a></li><li><a href="tutorial-usage.html">Basic Usage Guide</a></li>
+					<li><a href="tutorial-config.html">Configuration Guide</a></li><li><a href="tutorial-directory_.html">Running a Directory</a></li><li><a href="tutorial-install.html">Manual Installation</a></li><li><a href="tutorial-providing.html">Providing Capacity</a></li><li><a href="tutorial-transfers.html">Uploading and Downloading</a></li><li><a href="tutorial-usage.html">Basic Usage Guide</a></li>
 				</ul>
 			</li>
 			
@@ -92,50 +92,140 @@
 		<div id="main">
 			
 
-		<h1 class="page-title">Source: lib/constants.js</h1>
+		<h1 class="page-title">Source: shards.js</h1>
     
 <section>
     <article>
         <pre
-            class="sunlight-highlight-javascript ">/**
- * @module orc/constants
+            class="sunlight-highlight-javascript ">'use strict';
+
+const merge = require('merge');
+const assert = require('assert');
+const fs = require('fs');
+const du = require('du');
+const path = require('path');
+
+
+/**
+ * Convenience wrapper for storing shards scoped to a directory
  */
+class Shards {
 
-'use strict';
-
-module.exports = {
-
-  /**
-   * @constant {Number} AUDIT_BYTES - Number of bytes for audit challenge
-   */
-  AUDIT_BYTES: 32,
+  static get DEFAULTS() {
+    return {
+      maxSpaceAllocated: 0
+    };
+  }
 
   /**
-   * @constant {Number} CLEAN_INTERVAL - Interval for reaping stale shards
+   * @constructor
+   * @param {string} directory - Directory path to shard storage
    */
-  CLEAN_INTERVAL: 86400000,
+  constructor(directory, options) {
+    assert.ok(directory, 'Invalid directory supplied');
+    assert(fs.existsSync(directory), 'Supplied directory does not exist');
+    this.directory = directory;
+    this.options = merge(Shards.DEFAULTS, options);
+  }
 
   /**
-   * @constant {Number} CONSIGN_THRESHOLD - Threshold for consign time
+   * Wraps read stream with error handling/callback
+   * @param {string} key - The file key or hash
+   * @param {Shards~createReadStreamCallback} callback
    */
-  CONSIGN_THRESHOLD: 86400000,
+  createReadStream(key, callback) {
+    let rs = null;
+
+    try {
+      rs = fs.createReadStream(path.join(this.directory, key));
+    } catch (err) {
+      return callback(err);
+    }
+
+    callback(null, rs);
+  }
+  /**
+   * @callback Shards~createReadStreamCallback
+   * @param {error|null} error
+   * @param {object} stream
+   */
 
   /**
-   * @constant {Number} TOKEN_EXPIRE - Reject data token after time
+   * Wraps write stream with error handling/callback
+   * @param {string} key - The file key or hash
+   * @param {Shards~createWriteStreamCallback} callback
    */
-  TOKEN_EXPIRE: 1800000,
+  createWriteStream(key, callback) {
+    let ws = null;
+
+    try {
+      ws = fs.createWriteStream(path.join(this.directory, key));
+    } catch (err) {
+      return callback(err);
+    }
+
+    callback(null, ws);
+  }
+  /**
+   * @callback Shards~createWriteStreamCallback
+   * @param {error|null} error
+   * @param {object} stream
+   */
 
   /**
-   * @constant MAX_NODE_INDEX - Maximum node index
+   * Unlink the shard from the file system
+   * @param {string} key
+   * @param {Shards~unlinkCallback} callback
    */
-  MAX_NODE_INDEX: 0x7fffffff,
+  unlink(key, callback) {
+    fs.unlink(path.join(this.directory, key), callback);
+  }
+  /**
+   * @callback Shards~unlinkCallback
+   * @param {error|null} error
+   */
 
   /**
-   * @constant HD_KEY_DERIVATION_PATH - Key derivation path for HD keys
+   * Check if the shard exists
+   * @param {string} key
+   * @param {Shards~existsCallback} callback
    */
-  HD_KEY_DERIVATION_PATH: 'm/3000\'/0\''
+  exists(key, callback) {
+    callback(null, fs.existsSync(path.join(this.directory, key)));
+  }
+  /**
+   * @callback Shards~existsCallback
+   * @param {error|null} error
+   * @param {boolean} exists
+   */
 
-};
+  /**
+   * Get used space and remaining allocation
+   * @param {Shards~sizeCallback} callback
+   */
+  size(callback) {
+    du(this.directory, (err, used) => {
+      if (err) {
+        return callback(err);
+      }
+
+      const allocated = this.options.maxSpaceAllocated;
+
+      callback(null, {
+        allocated,
+        available: used >= allocated ? 0 : allocated - used
+      });
+    });
+  }
+  /**
+   * @callback Shards~sizeCallback
+   * @param {error|null} error
+   * @param {object} size
+   */
+
+}
+
+module.exports = Shards;
 </pre>
     </article>
 </section>

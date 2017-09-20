@@ -4,7 +4,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width">
-	<title>ORC Source: lib/shards.js</title>
+	<title>ORC Source: transport.js</title>
 
 	<!--[if lt IE 9]>
 	<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
@@ -55,7 +55,7 @@
 			<li class="dropdown">
 				<a href="tutorials.list.html" class="dropdown-toggle" data-toggle="dropdown">Tutorials<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="tutorial-config.html">Configuration Guide</a></li><li><a href="tutorial-directory_.html">Running a Directory</a></li><li><a href="tutorial-farming.html">Setting Up Farming</a></li><li><a href="tutorial-install.html">Manual Installation</a></li><li><a href="tutorial-transfers.html">Uploading and Downloading</a></li><li><a href="tutorial-usage.html">Basic Usage Guide</a></li>
+					<li><a href="tutorial-config.html">Configuration Guide</a></li><li><a href="tutorial-directory_.html">Running a Directory</a></li><li><a href="tutorial-install.html">Manual Installation</a></li><li><a href="tutorial-providing.html">Providing Capacity</a></li><li><a href="tutorial-transfers.html">Uploading and Downloading</a></li><li><a href="tutorial-usage.html">Basic Usage Guide</a></li>
 				</ul>
 			</li>
 			
@@ -92,140 +92,133 @@
 		<div id="main">
 			
 
-		<h1 class="page-title">Source: lib/shards.js</h1>
+		<h1 class="page-title">Source: transport.js</h1>
     
 <section>
     <article>
         <pre
             class="sunlight-highlight-javascript ">'use strict';
 
+const url = require('url');
 const merge = require('merge');
-const assert = require('assert');
-const fs = require('fs');
-const du = require('du');
-const path = require('path');
+const connect = require('connect');
+const { HTTPSTransport } = require('kad');
+const { Agent } = require('https');
 
 
 /**
- * Convenience wrapper for storing shards scoped to a directory
+ * Represents the Orc-specific HTTP(S) transport
  */
-class Shards {
-
-  static get DEFAULTS() {
-    return {
-      maxSpaceAllocated: 0
-    };
-  }
+class Transport extends HTTPSTransport {
 
   /**
+   * Emitted when a download request is received
+   * @event Transport#download
+   * @param {object} request
+   * @param {object} response
+   */
+
+  /**
+   * Emitted when a upload request is received
+   * @event Transport#upload
+   * @param {object} request
+   * @param {object} response
+   */
+
+  /**
+   * Contructs a Orc transport adapter
    * @constructor
-   * @param {string} directory - Directory path to shard storage
+   * @param {object} options
+   * @see https://nodejs.org/api/tls.html#tls_tls_createsecurecontext_options
    */
-  constructor(directory, options) {
-    assert.ok(directory, 'Invalid directory supplied');
-    assert(fs.existsSync(directory), 'Supplied directory does not exist');
-    this.directory = directory;
-    this.options = merge(Shards.DEFAULTS, options);
+  constructor(options) {
+    super(options);
   }
 
   /**
-   * Wraps read stream with error handling/callback
-   * @param {string} key - The file key or hash
-   * @param {Shards~createReadStreamCallback} callback
+   * Make sure we explicity set the keepAlive options on requests
+   * @private
    */
-  createReadStream(key, callback) {
-    let rs = null;
-
-    try {
-      rs = fs.createReadStream(path.join(this.directory, key));
-    } catch (err) {
-      return callback(err);
-    }
-
-    callback(null, rs);
+  _createRequest(options) {
+    const request = super._createRequest(merge({
+      agent: new Agent({ keepAlive: true, keepAliveMsecs: 25000 }),
+      path: '/rpc/',
+      rejectUnauthorized: false
+    }, options));
+    request.setNoDelay(true);
+    return request;
   }
-  /**
-   * @callback Shards~createReadStreamCallback
-   * @param {error|null} error
-   * @param {object} stream
-   */
 
   /**
-   * Wraps write stream with error handling/callback
-   * @param {string} key - The file key or hash
-   * @param {Shards~createWriteStreamCallback} callback
+   * Disable nagle algorithm on connections
+   * @private
    */
-  createWriteStream(key, callback) {
-    let ws = null;
-
-    try {
-      ws = fs.createWriteStream(path.join(this.directory, key));
-    } catch (err) {
-      return callback(err);
-    }
-
-    callback(null, ws);
+  _createServer(options) {
+    const server = super._createServer(options);
+    server.on('connection', (sock) => sock.setNoDelay(true));
+    return server;
   }
-  /**
-   * @callback Shards~createWriteStreamCallback
-   * @param {error|null} error
-   * @param {object} stream
-   */
 
   /**
-   * Unlink the shard from the file system
-   * @param {string} key
-   * @param {Shards~unlinkCallback} callback
+   * Handles requests by sending through middleware stack
+   * @private
    */
-  unlink(key, callback) {
-    fs.unlink(path.join(this.directory, key), callback);
-  }
-  /**
-   * @callback Shards~unlinkCallback
-   * @param {error|null} error
-   */
-
-  /**
-   * Check if the shard exists
-   * @param {string} key
-   * @param {Shards~existsCallback} callback
-   */
-  exists(key, callback) {
-    callback(null, fs.existsSync(path.join(this.directory, key)));
-  }
-  /**
-   * @callback Shards~existsCallback
-   * @param {error|null} error
-   * @param {boolean} exists
-   */
-
-  /**
-   * Get used space and remaining allocation
-   * @param {Shards~sizeCallback} callback
-   */
-  size(callback) {
-    du(this.directory, (err, used) => {
-      if (err) {
-        return callback(err);
-      }
-
-      const allocated = this.options.maxSpaceAllocated;
-
-      callback(null, {
-        allocated,
-        available: used >= allocated ? 0 : allocated - used
-      });
+  _handle() {
+    const middleware = connect();
+    middleware.use(Transport.CORS);
+    middleware.use('/', (req, res, next) => {
+      return req.url !== '/' ? next() : this.emit('identify', req, res);
     });
+    middleware.use('/rpc/', super._handle.bind(this));
+    middleware.use('/shards/', this._shards.bind(this));
+    middleware(...arguments);
   }
+
   /**
-   * @callback Shards~sizeCallback
-   * @param {error|null} error
-   * @param {object} size
+   * Handle routing request to shard server
+   * @private
    */
+  _shards(req, res) {
+    const urlobj = url.parse(req.originalUrl, true);
+    const [, hash] = urlobj.pathname.split('/shards/');
+
+    req.query = urlobj.query;
+    req.params = { hash };
+
+    if (req.method === 'POST') {
+      this.emit('upload', req, res);
+    } else if (req.method === 'GET') {
+      this.emit('download', req, res);
+    } else {
+      res.statusCode = 405;
+      res.end();
+    }
+  }
+
+  /**
+   * Applies cross origin headers to responses
+   * @static
+   * @memberof Transport
+   * @private
+   */
+  static get CORS() {
+    return function(req, res, next) {
+      res.setHeader('access-control-allow-origin', '*');
+      res.setHeader('access-control-allow-methods', '*');
+      res.setHeader('access-control-allow-headers', '*');
+
+      if (req.method === 'OPTIONS') {
+        res.statusCode = 200;
+        res.end();
+      } else {
+        next();
+      }
+    }
+  }
 
 }
 
-module.exports = Shards;
+module.exports = Transport;
 </pre>
     </article>
 </section>
