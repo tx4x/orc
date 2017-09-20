@@ -1,5 +1,7 @@
 import boscar from 'boscar';
-const config = require('rc')('orc', require('../bin/config'));
+import Connection from './connection'
+
+const config = require('rc')('orc', require('../../bin/config'));
 
 export default class ControlConnection extends Connection {
   constructor() {
@@ -29,7 +31,7 @@ export default class ControlConnection extends Connection {
   // Queries the daemon for what the user has configured to allocate
   // and how much space is still available
   populateCapacityAllocation() {
-    return new Promise(resolve, reject) => {
+    return new Promise((resolve, reject) => {
       controlClient.invoke('shards.size', [], (err, data) => {
         if (err) return reject(err);
         if (data) return resolve(data);

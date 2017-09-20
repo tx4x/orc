@@ -1,4 +1,4 @@
-import assert from assert;
+import assert from 'assert';
 
 export default class State {
 
@@ -9,7 +9,7 @@ export default class State {
     })
     .catch(err => [err]);
   }
-//TODO map multiple connections to state
+
   constructor() {
     //state never needs to inherit from Object, it's props are only replaced
     this.state = Object.create(null);

@@ -1,3 +1,4 @@
+import Connection from './connection'
 import boscar from 'boscar';
 import https from 'https';
 import FormData from 'form-data';
@@ -6,16 +7,13 @@ import mimeTypes from 'mime-types';
 import path from 'path';
 import ipcRenderer from 'electron';
 
-const config = require('rc')('orc', require('../bin/config'));
-
+const config = require('rc')('orc', require('../../bin/config'));
 
 export default class DaemonConnection extends Connection {
   constructor() {
     super();
     this.state.isInitializing = true;
     this.state.logStack = [{ time: Date.now(), msg: 'starting orc daemon' }];
-
-    ipcRenderer.on('log', this.handleLogEvent);
   }
 
   connectToDaemon() {
@@ -29,6 +27,14 @@ export default class DaemonConnection extends Connection {
         })
 
     });
+  }
+
+  startLogs() {
+    ipcRenderer.on('log', this.handleLogEvent);
+  }
+
+  stopLogs() {
+    ipcRenderer.removeListener('log', this.handleLogEvent)
   }
 
   handleLogEvent(e, data) {
@@ -211,7 +217,7 @@ export default class DaemonConnection extends Connection {
   }
 
   loadCapacityDirectory() {
-    return new Promise(resolve, reject) => {
+    return new Promise((resolve, reject) => {
       https.request({
         method: 'GET',
         path: '/',
@@ -240,7 +246,7 @@ export default class DaemonConnection extends Connection {
         return resolve(null, { isInitializing: false });
       });
 
-      sock.once('error', () => return reject());
+      sock.once('error', () => { return reject() });
     });
   }
 

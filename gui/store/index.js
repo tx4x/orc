@@ -1,15 +1,7 @@
-import ControlConnection from 'control-connection'
-import DaemonConnection from 'daemon-connection'
-import ObjectList from 'object-list'
-import Profile from 'profile'
+export { default as State } from './state'
+export { default as Connection } from './connection'
 
-import { State, Connection } from 'state'
-
-export {
-  ControlConnection,
-  DaemonConnection,
-  ObjectList,
-  Profile,
-  State,
-  Connection
-}
+export { default as ControlConnection } from './control-connection'
+export { default as DaemonConnection} from './daemon-connection'
+export { default as ObjectList }  from './object-list'
+export { default as Profile }  from './profile'

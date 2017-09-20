@@ -1,8 +1,6 @@
-import State from 'state';
+import State from './state';
 import ipcRenderer from 'electron';
 import https from 'https';
-
-const config = require('rc')('orc', require('../bin/config'));
 
 export default class Profile extends State {
   constructor(controlconn, dconn) {
@@ -14,7 +12,6 @@ export default class Profile extends State {
 
     this.state.localCapacity = { allocated: '?', available: '?' };
     this.state.capacityDirectory = [];
-    this.controlClient = controlClient;
   }
 
   async getCapacity() {

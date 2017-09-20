@@ -1,29 +1,21 @@
-//Application Store Instance
-import * from './store';
+import * as Store from './store';
 
-const class AppStore extends State{
+const AppStore = class extends Store.State {
   constructor() {
-    //connections could be passed in and pooled with minor changes
-    this.dconn = new DaemonConnection();
-    this.contconn = new ControlConnection();
+    super();
+    //connections could be passed in and pooled as WeakMap with minor changes
+    this.daemonConnection = new Store.DaemonConnection();
+    this.controlConnection = new Store.ControlConnection();
+    this.objectList = new Store.ObjectList(this.daemonConnection);
+    this.profile = new Store.Profile(this.daemonConnection, this.controlConnection);
   }
 
   async connect() {
-    await this.dconn.connect(this.dconn.connectToDaemon())
-      .then(this.contconn.connectToControlPort())
-      .then(() => {
-        this._createStateTree();
-      })
+    await this.daemonConnection.connect(this.daemonConnection.connectToDaemon())
+      .then(this.controlConnection.connectToControlPort())
   }
-
-  _createStateTree() {
-    return {
-      objectList: new ObjectList(this.dconn),
-      profile: new Profile(this.dconn, this.contconn)
-    }
-  }
-}
+};
 
 
-const appStore = new AppStore();
-export AppStore;
+const app = new AppStore();
+export default app;

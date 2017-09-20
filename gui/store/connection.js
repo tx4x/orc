@@ -1,5 +1,5 @@
-import State from 'state'
-import assert from assert;
+import State from './state'
+import assert from 'assert'
 
 export default class Connection extends State {
 
