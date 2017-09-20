@@ -10,7 +10,7 @@ the discussion in `#orc` on our [community chat](https://matrix.counterpointhack
 
 ### Desktop Installation (Recommended)
 
-Simply [download a pre-built package](https://github.com/orcproject/orc/releaes/latest) 
+Simply [download a pre-built package](https://github.com/orcproject/orc/releases/latest) 
 for your platform from the releases page!
 
 > Note! ORC uses the system Tor package on GNU/Linux, so you must install it 
