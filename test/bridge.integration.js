@@ -96,7 +96,7 @@ describe('@class Bridge (integration)', function() {
       });
       node.iterativeFindValue = function(key, callback) {
         database.NetworkBlob.findOne({ key }, (err, obj) => {
-          callback(err, obj ? [obj.toObject()] : []);
+          callback(err, obj ? obj.toObject() : []);
         });
       };
       let profile = new database.PeerProfile({

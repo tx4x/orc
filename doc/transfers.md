@@ -159,7 +159,7 @@ and get back an object pointer with an ID you can use in the download example:
 Example:
 
 ```
-curl -X PUT -T "magnet:?xt=..." http://127.0.0.1:4445
+curl -X PUT --data "magnet:?xt=..." http://127.0.0.1:4445
 ```
 
 ### Destroy Objects
