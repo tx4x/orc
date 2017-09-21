@@ -5,36 +5,45 @@ import FormData from 'form-data';
 import fs from 'fs';
 import mimeTypes from 'mime-types';
 import path from 'path';
-import ipcRenderer from 'electron';
-
-const config = require('rc')('orc', require('../../bin/config'));
+import { ipcRenderer } from 'electron';
+import EventEmitter from 'events';
 
 export default class DaemonConnection extends Connection {
-  constructor() {
+  constructor({ ...config }) {
     super();
-    this.state.isInitializing = true;
+    this.config = config;
     this.state.logStack = [{ time: Date.now(), msg: 'starting orc daemon' }];
   }
 
-  connectToDaemon() {
-    return new Promise((resolve, reject) => {
-      this._checkAlreadyRunning()
-        .then(resolve)
-        .catch(() => {
-          this._initConnection()
-            .then(resolve)
-            .catch(reject);
-        })
+  connect() {
+    var eventEmitter = new EventEmitter();
+    const handleInitEvent = (data) => {
+      if (data.msg.includes('establishing local bridge')) {
+        ipcRenderer.removeListener('log', handleInitEvent)
+        eventEmitter.emit('connected');
+      }
+    };
+    const handleErrorEvent = (err) => {
+      this.commit(err.message)
+    };
 
+    ipcRenderer.on('log', this.handleLogEvent.bind(this));
+
+    this._checkAlreadyRunning().then(() => {
+      eventEmitter.emit('connected');
+    }).catch(() => {
+      ipcRenderer.on('log', handleInitEvent);
+    })
+
+    ipcRenderer.on('err', handleErrorEvent);
+
+    eventEmitter.once('removeListener', () => {
+//TODO ensure this works
+      ipcRenderer.removeListener('log', this.handleLogEvent.bind(this));
+      ipcRenderer.removeListener('err', handleErrorEvent);
     });
-  }
 
-  startLogs() {
-    ipcRenderer.on('log', this.handleLogEvent);
-  }
-
-  stopLogs() {
-    ipcRenderer.removeListener('log', this.handleLogEvent)
+    return eventEmitter;
   }
 
   handleLogEvent(e, data) {
@@ -51,10 +60,10 @@ export default class DaemonConnection extends Connection {
     return new Promise((resolve, reject) => {
       https.request({
         method: 'GET',
-        auth: config.BridgeAuthenticationUser + ':' +
-          config.BridgeAuthenticationPassword,
-        hostname: config.BridgeHostname,
-        port: parseInt(config.BridgePort),
+        auth: this.config.BridgeAuthenticationUser + ':' +
+          this.config.BridgeAuthenticationPassword,
+        hostname: this.config.BridgeHostname,
+        port: parseInt(this.config.BridgePort),
         path: '/',
         rejectUnauthorized: false
       }, (res) => {
@@ -76,11 +85,11 @@ export default class DaemonConnection extends Connection {
     return new Promise((resolve, reject) => {
       https.request({
         method: 'GET',
-        hostname: config.BridgeHostname,
-        port: parseInt(config.BridgePort),
+        hostname: this.config.BridgeHostname,
+        port: parseInt(this.config.BridgePort),
         path: '/',
-        auth: config.BridgeAuthenticationUser + ':' +
-          config.BridgeAuthenticationPassword,
+        auth: this.config.BridgeAuthenticationUser + ':' +
+          this.config.BridgeAuthenticationPassword,
         rejectUnauthorized: false
       }, (res) => {
         if (res.statusCode === 200) {
@@ -118,12 +127,12 @@ export default class DaemonConnection extends Connection {
     return new Promise((resolve, reject) => {
       form.submit({
         protocol: 'https:',
-        hostname: config.BridgeHostname,
-        port: parseInt(config.BridgePort),
+        hostname: this.config.BridgeHostname,
+        port: parseInt(this.config.BridgePort),
         method: 'POST',
         path: '/',
-        auth: config.BridgeAuthenticationUser + ':' +
-          config.BridgeAuthenticationPassword,
+        auth: this.config.BridgeAuthenticationUser + ':' +
+          this.config.BridgeAuthenticationPassword,
         rejectUnauthorized: false
       }, (err, res) => {
         if (err) {
@@ -152,10 +161,10 @@ export default class DaemonConnection extends Connection {
     return new Promise((resolve, reject) => {
       https.request({
         method: 'DELETE',
-        auth: config.BridgeAuthenticationUser + ':' +
-          config.BridgeAuthenticationPassword,
-          hostname: config.BridgeHostname,
-          port: parseInt(config.BridgePort),
+        auth: this.config.BridgeAuthenticationUser + ':' +
+          this.config.BridgeAuthenticationPassword,
+          hostname: this.config.BridgeHostname,
+          port: parseInt(this.config.BridgePort),
           path: `/${id}`,
           rejectUnauthorized: false
         }, (res) => {
@@ -170,10 +179,10 @@ export default class DaemonConnection extends Connection {
     return new Promise((resolve, reject) => {
       https.request({
         method: 'PUT',
-        auth: config.BridgeAuthenticationUser + ':' +
-          config.BridgeAuthenticationPassword,
-          hostname: config.BridgeHostname,
-          port: parseInt(config.BridgePort),
+        auth: this.config.BridgeAuthenticationUser + ':' +
+          this.config.BridgeAuthenticationPassword,
+          hostname: this.config.BridgeHostname,
+          port: parseInt(this.config.BridgePort),
           path: '/',
           rejectUnauthorized: false
         }, (res) => {
@@ -200,10 +209,10 @@ export default class DaemonConnection extends Connection {
     return new Promise((resolve, reject) => {
       https.request({
         method: 'GET',
-        auth: config.BridgeAuthenticationUser + ':' +
-          config.BridgeAuthenticationPassword,
-          hostname: config.BridgeHostname,
-          port: parseInt(config.BridgePort),
+        auth: this.config.BridgeAuthenticationUser + ':' +
+          this.config.BridgeAuthenticationPassword,
+          hostname: this.config.BridgeHostname,
+          port: parseInt(this.config.BridgePort),
           path: `/${id}/magnet`,
           rejectUnauthorized: false
         }, (res) => {
@@ -221,8 +230,8 @@ export default class DaemonConnection extends Connection {
       https.request({
         method: 'GET',
         path: '/',
-        hostname: config.DirectoryHostname,
-        port: parseInt(config.DirectoryPort),
+        hostname: this.config.DirectoryHostname,
+        port: parseInt(this.config.DirectoryPort),
         rejectUnauthorized: false
       }, (res) => {
         let body = '';
@@ -239,31 +248,14 @@ export default class DaemonConnection extends Connection {
 
   _checkAlreadyRunning() {
     return new Promise((resolve, reject) => {
-      let sock = net.connect(parseInt(config.BridgePort), '127.0.0.1');
+      var sock = net.connect(parseInt(this.config.BridgePort), '127.0.0.1');
       // First check if the bridge is running already (the page was reloaded)
       sock.once('connect', () => {
         sock.end();
-        return resolve(null, { isInitializing: false });
+        return resolve(null, this.config);
       });
 
       sock.once('error', () => { return reject() });
     });
   }
-
-  _initConnection() {
-    return new Promise((resolve, reject) => {
-      const handleInitEvent = (e, data) => {
-        if (e) return reject(e);
-        if (data.msg.includes('establishing local bridge')) {
-          ipcRenderer
-            .removeListener('log', handleInitEvent)
-            .removeListener('err', handleInitEvent);
-          return resolve(null, { isInitializing: false });
-        }
-      };
-
-      ipcRenderer.on('log', handleInitEvent).on('err', handleInitEvent);
-    });
-  }
-
 };

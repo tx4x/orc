@@ -1,30 +1,23 @@
 import boscar from 'boscar';
 import Connection from './connection'
 
-const config = require('rc')('orc', require('../../bin/config'));
-
 export default class ControlConnection extends Connection {
-  constructor() {
+  constructor({ ...config }) {
     super();
+    this.config = config;
   }
 
   connectToControlPort() {
-    let controlClient = new boscar.Client();
-    let con;
-
     return new Promise((resolve, reject) => {
-      try {
-        con = controlClient.connect(parseInt(config.ControlPort));
-      } catch(e) {
-        return reject(new Error('Could not connect to controller'));
-      }
+      var controlClient = new boscar.Client();
+      controlClient.connect(parseInt(this.config.ControlPort));
 
-      con.on('error', (err) => {
-        this.commit(err);
+      controlClient.on('error', (err) => {
+        this.commit(err.message);
         console.error(err);
       });
 
-      resolve(con);
+      return resolve(controlClient);
     });
   }
 

@@ -1,8 +1,11 @@
 <template>
   <div>
-  <div v-if="isInitializing" id="main-loader">
+  <div id="main-loader">
     <div class="spinner"></div>
-    <div id="loader-status">{{logStack[0].msg}}</div>
+    <div id="loader-status">
+      <div v-for="log in logStack">{{log.msg}}</div>
+      <div v-for="err in errStack">{{err.message}}</div>
+    </div>
   </div>
   </div>
 </template>
@@ -14,19 +17,25 @@ export default {
   name: 'bootstrap',
   data: () => {
     return appStore.daemonConnection.state;
+  },
+  created: () => {
+    const navigateToApp = () => {
+      this.$router.push('orc');
+    };
+    const onDaemonConnect = () => {
+      appStore.controlConnection.connect(appStore.connectToControlPort())
+      .then(navigateToApp);
+    };
+
+    appStore.daemonConnection.connect().on('connected', onDaemonConnect);
+  },
+  destroyed: () => {
+    appStore.daemonConnection.connect().removeAllListeners();
   }
 };
 </script>
 
 <style scoped>
-
-body {
-  background: #2b2d2c;
-  color: #fff;
-  margin: 0;
-  padding: 0
-}
-
 #main-loader {
   position: fixed;
   top: 0;
@@ -41,8 +50,8 @@ body {
   position: absolute;
   top: 50%;
   left: 50%;
-  height: 120px;
-  width: 120px;
+  height: 144px;
+  width: 144px;
   margin: -72px 0 0 -72px;
   border-radius: 100px;
   border-left: 12px double white;

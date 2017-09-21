@@ -12,6 +12,8 @@ export default class Connection extends State {
     assert(connectionPromise instanceof Promise);
 
     let [err, conn] = await State.resolveTo(connectionPromise);
+    console.log(err)
+    console.log(con)
     return this.commit(err, {connection: conn});
   }
 }
