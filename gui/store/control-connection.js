@@ -1,7 +1,7 @@
 import boscar from 'boscar';
-import Connection from './connection'
+import State from './state'
 
-export default class ControlConnection extends Connection {
+export default class ControlConnection extends State {
   constructor({ ...config }) {
     super();
     this.config = config;
@@ -17,8 +17,13 @@ export default class ControlConnection extends Connection {
         console.error(err);
       });
 
-      return resolve(controlClient);
+      return resolve();
     });
+  }
+
+  async connect(connectionPromise) {
+    let [err] = await State.resolveTo(connectionPromise);
+    return this.commit(err);
   }
 
   // Queries the daemon for what the user has configured to allocate

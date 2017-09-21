@@ -18,18 +18,20 @@ export default {
   data: () => {
     return appStore.daemonConnection.state;
   },
-  created: () => {
+  created: function() {
     const navigateToApp = () => {
       this.$router.push('orc');
     };
     const onDaemonConnect = () => {
-      appStore.controlConnection.connect(appStore.connectToControlPort())
+      appStore.controlConnection.connect(
+        appStore.controlConnection.connectToControlPort()
+      )
       .then(navigateToApp);
     };
 
     appStore.daemonConnection.connect().on('connected', onDaemonConnect);
   },
-  destroyed: () => {
+  destroyed: function() {
     appStore.daemonConnection.connect().removeAllListeners();
   }
 };

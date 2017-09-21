@@ -1,4 +1,4 @@
-import Connection from './connection'
+import State from './state'
 import boscar from 'boscar';
 import https from 'https';
 import FormData from 'form-data';
@@ -8,7 +8,7 @@ import path from 'path';
 import { ipcRenderer } from 'electron';
 import EventEmitter from 'events';
 
-export default class DaemonConnection extends Connection {
+export default class DaemonConnection extends State {
   constructor({ ...config }) {
     super();
     this.config = config;
@@ -17,13 +17,13 @@ export default class DaemonConnection extends Connection {
 
   connect() {
     var eventEmitter = new EventEmitter();
-    const handleInitEvent = (data) => {
+    const handleInitEvent = (ev, data) => {
       if (data.msg.includes('establishing local bridge')) {
         ipcRenderer.removeListener('log', handleInitEvent)
         eventEmitter.emit('connected');
       }
     };
-    const handleErrorEvent = (err) => {
+    const handleErrorEvent = (ev, err) => {
       this.commit(err.message)
     };
 
@@ -38,7 +38,6 @@ export default class DaemonConnection extends Connection {
     ipcRenderer.on('err', handleErrorEvent);
 
     eventEmitter.once('removeListener', () => {
-//TODO ensure this works
       ipcRenderer.removeListener('log', this.handleLogEvent.bind(this));
       ipcRenderer.removeListener('err', handleErrorEvent);
     });
