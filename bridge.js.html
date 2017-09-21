@@ -537,7 +537,7 @@ class Bridge extends EventEmitter {
           object.save(() => callback(err));
         } else {
           object.status = 'finished';
-          this.node.logger.info(`successfully uploaded ${object._key}`);
+          this.node.logger.info(`successfully uploaded ${object.hash}`);
           this.node.logger.info(`removing stage ${path.dirname(filepath)}`);
           rimraf(path.dirname(filepath), (err) => {
             /* istanbul ignore if */
@@ -553,9 +553,10 @@ class Bridge extends EventEmitter {
 
     const distributePointer = (object, callback) => {
       const { blob, hash } = object.toEncryptedBlob();
+      const key = hash.toString('hex');
       const encoded = blob.toString('base64');
 
-      this.node.iterativeStore(hash, encoded, (err, stored) => {
+      this.node.iterativeStore(key, encoded, (err, stored) => {
         if (stored &lt; 3) {
           this.node.logger.warn(
             `failed to fully distribute pointer (${stored} of 3)`
@@ -824,22 +825,29 @@ class Bridge extends EventEmitter {
       }
 
       this.node.iterativeFindValue(
-        Buffer.from(parsed.xt.substr(8), 'hex'),
+        Buffer.from(parsed.xt.substr(8), 'hex').toString('hex'),
         (err, result) => {
           /* istanbul ignore if */
-          if (err || result.length === 0) {
+          if (err || result.length >= 0) {
             return next(err || new Error('Failed to resolve magnet'));
           }
 
-          let [item] = result;
+          let item = result;
           let decipher = crypto.createDecipher(
             'aes256',
             Buffer.from(parsed['x.pword'], 'hex')
           );
-          let cleartext = Buffer.concat([
-            decipher.update(item.value, 'base64'),
-            decipher.final()
-          ]).toString('utf8');
+          let cleartext = null;
+
+          try {
+            cleartext = Buffer.concat([
+              decipher.update(Buffer.from(item.value, 'base64')),
+              decipher.final()
+            ]).toString('utf8');
+          } catch (err) {
+            return next(new Error('Failed to decrypt pointer'));
+          }
+
           let object = new this.database.ObjectPointer(merge(
             JSON.parse(cleartext),
             { ecprv: parsed['x.ecprv'], _isOwner: false }

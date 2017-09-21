@@ -108,6 +108,7 @@ const utils = require('./utils');
 const secp256k1 = require('secp256k1');
 const { utils: keyutils } = require('kad-spartacus');
 const crypto = require('crypto');
+const stringify = require('json-stable-stringify');
 
 
 mongoose.Promise = Promise;
@@ -594,11 +595,11 @@ ObjectPointer.virtual('percentDecayed').get(function() {
 });
 
 ObjectPointer.methods.toEncryptedBlob = function() {
-  const password = utils.rmd160sha256(JSON.stringify(this.toObject()));
+  const password = utils.rmd160sha256(stringify(this.toObject()));
   const cipher = crypto.createCipher('aes256', password);
 
   let blob = Buffer.concat([
-    cipher.update(JSON.stringify(this.toObject()), 'utf8'),
+    cipher.update(stringify(this.toObject()), 'utf8'),
     cipher.final()
   ]);
 

@@ -212,7 +212,7 @@ magnet link with others to fetch the object pointer.</p>
 <pre class="prettyprint source"><code>$ curl http://127.0.0.1:4445/d049bff2-21b5-4f2f-bac3-efb3832a5afb/magnet | xclip -selection clipboard</code></pre><p>To fetch an object pointer shared by someone else, you can send the magnet link
 and get back an object pointer with an ID you can use in the download example:</p>
 <p>Example:</p>
-<pre class="prettyprint source"><code>curl -X PUT -T &quot;magnet:?xt=...&quot; http://127.0.0.1:4445</code></pre><h3>Destroy Objects</h3><p>You can destroy an object, nullifying associated contracts, and issuing any 
+<pre class="prettyprint source"><code>curl -X PUT --data &quot;magnet:?xt=...&quot; http://127.0.0.1:4445</code></pre><h3>Destroy Objects</h3><p>You can destroy an object, nullifying associated contracts, and issuing any 
 final payment to farmers by sending a <code>DELETE /{uuid}</code> request.</p>
 <p>Example:</p>
 <pre class="prettyprint source"><code>$ curl -X &quot;DELETE&quot; http://127.0.0.1:4445/d049bff2-21b5-4f2f-bac3-efb3832a5afb</code></pre>
