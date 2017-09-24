@@ -202,6 +202,10 @@ function init() {
       transform: (data, enc, callback) => {
         let [rpc, ident] = data;
 
+        if (!ident.payload.params[0] || !ident.payload.params[1]) {
+          return callback();
+        }
+
         if (rpc.payload.method) {
           logger.info(
             `received ${rpc.payload.method} (${rpc.payload.id}) from ` +
@@ -223,6 +227,10 @@ function init() {
     node.rpc.serializer.prepend(new Transform({
       transform: (data, enc, callback) => {
         let [rpc, sender, recv] = data;
+
+        if (!recv[0] || !recv[1]) {
+          return callback();
+        }
 
         if (rpc.method) {
           logger.info(
