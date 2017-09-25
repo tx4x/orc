@@ -108,4 +108,9 @@ $theme = {
  * ORC Styles
  */
 
+.aria-visible
+  opacity: 0
+  width: 0px
+  height: 0px
+
 </style>

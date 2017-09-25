@@ -45,6 +45,7 @@ export default {
   bottom: 0;
   right: 0;
   background: url('assets/logo-white.svg') center center no-repeat #591859;
+  color: #fff;
   background-size: 100px;
 }
 

@@ -1,5 +1,21 @@
 <template>
   <div>
+    <v-btn
+      absolute
+      top
+      right
+      fab
+      @click.native="addObject"
+    >
+      <v-icon>add</v-icon>
+      <input
+        v-on:change="handleFileInput"
+        ref="invisFileInput"
+        type="file"
+        class="aria-visible"
+        multiple
+      />
+    </v-btn>
     <v-data-table
       v-bind:headers="headers"
       v-bind:items="objectList"
@@ -43,8 +59,15 @@ export default {
       // update state & total-items
     }
   },
-  mounted () {
-    console.log(appStore)
+  methods: {
+    addObject() {
+      this.$refs.invisFileInput.click();
+    },
+    handleFileInput(ev) {
+      Array.prototype.forEach.call(ev.target.files, (file) => {
+        appStore.ObjectManager.upload(file.path);
+      })
+    }
   }
 };
 </script>
