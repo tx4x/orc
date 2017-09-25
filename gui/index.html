@@ -6,6 +6,8 @@
     <script>
       //Makes a few things work, namely here global Promise objects
       import "babel-polyfill";
+      //Make relative paths work everywhere else
+      document.write('<base href="file://' + __dirname + '/"/>');
     </script>
   </head>
   <body>
