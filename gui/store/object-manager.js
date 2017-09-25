@@ -1,6 +1,6 @@
 import State from './state';
 
-export default class ObjectList extends State{
+export default class ObjectManager extends State{
   constructor(connection) {
     super(connection);
     this.connection = connection;
@@ -8,7 +8,7 @@ export default class ObjectList extends State{
 
   async getList() {
     let [err, state] = await State.resolveTo(this.connection.loadObjectList());
-    return this.commit(err, { ObjectList: state });
+    return this.commit(err, { list: state, listTotal: state.length });
   }
 
   async download(id) {

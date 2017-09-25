@@ -2,10 +2,10 @@
   <div>
     <v-data-table
       v-bind:headers="headers"
-      v-bind:items="items"
+      v-bind:items="objectList"
       v-bind:search="search"
       v-bind:pagination.sync="pagination"
-      :total-items="totalItems"
+      :total-items="listTotal"
       :loading="loading"
       class="elevation-1"
     >
@@ -29,10 +29,13 @@
 </template>
 
 <script>
-export default {
-  name: 'use',
-  data: () => ({
+import appStore from '../app-store'
 
+export default {
+  name: 'object-manager',
+  data: () => ({
+    objectList: appStore.objectManager.state.list,
+    totalItems: appStore.objectManager.state.listTotal
   }),
   watch: {
     pagination: {
@@ -41,7 +44,7 @@ export default {
     }
   },
   mounted () {
-
+    console.log(appStore)
   }
 };
 </script>

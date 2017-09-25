@@ -7,7 +7,7 @@ const AppStore = class extends Store.State {
     //connections could be passed in and pooled as WeakMap with minor changes
     this.daemonConnection = new Store.DaemonConnection(config);
     this.controlConnection = new Store.ControlConnection(config);
-    this.objectList = new Store.ObjectList(this.daemonConnection);
+    this.objectManager = new Store.ObjectManager(this.daemonConnection);
     this.profile = new Store.Profile(this.daemonConnection, this.controlConnection);
   }
 };

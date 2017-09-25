@@ -26,6 +26,6 @@ export default class State {
         return;
     }
 
-    this.state = Object.create(null, {...this.state, ...data});
+    this.state = Object.assign(this.state, data);
   }
 }
