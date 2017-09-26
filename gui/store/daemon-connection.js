@@ -4,7 +4,7 @@ import https from 'https';
 import FormData from 'form-data';
 import fs from 'fs';
 import mimeTypes from 'mime-types';
-import path from 'path';
+import Path from 'path';
 import { ipcRenderer } from 'electron';
 import EventEmitter from 'events';
 
@@ -13,6 +13,7 @@ export default class DaemonConnection extends State {
     super();
     this.config = config;
     this.state.logStack = [{ time: Date.now(), msg: 'starting orc daemon' }];
+    this.state.uploadStack = Object.create(null);
   }
 
   connect() {
@@ -110,7 +111,7 @@ export default class DaemonConnection extends State {
     const form = new FormData();
     const file = fs.createReadStream(path);
     const size = fs.statSync(path).size;
-    const type = mimeType.contentType(path);
+    const type = mimeTypes.contentType(Path.extname(path));
 
     // NB: Public data should have a '::RETRIEVE' policy
     if (opts.policies.length) {
@@ -118,7 +119,7 @@ export default class DaemonConnection extends State {
     }
 
     form.append('file', file, {
-      filename: path.basename(path),
+      filename: Path.basename(path),
       contentType: type,
       knownLength: size
     });
@@ -142,7 +143,9 @@ export default class DaemonConnection extends State {
 
         res
           .on('error', reject)
-          .on('data', (d) => body += d.toString())
+          .on('data', (d) => {
+            body += d.toString()
+          })
           .on('end', () => {
             if (res.statusCode !== 201) {
               reject(new Error(body));

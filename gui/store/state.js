@@ -1,4 +1,5 @@
-import assert from 'assert';
+import assert from 'assert'
+import Vue from 'vue'
 
 export default class State {
 
@@ -16,7 +17,7 @@ export default class State {
     this.state.errStack = [];
   }
 
-  commit(err = null, data = Object.create(null)) {
+  commit( err = null, data = Object.create(null) ) {
     if(err) {
         if (this.state.errStack.length > 50) {
           this.state.errStack.pop();

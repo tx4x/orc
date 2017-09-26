@@ -18,7 +18,7 @@
     </v-btn>
     <v-data-table
       v-bind:headers="headers"
-      v-bind:items="objectList"
+      v-bind:items="list"
       v-bind:search="search"
       v-bind:pagination.sync="pagination"
       :total-items="listTotal"
@@ -26,19 +26,28 @@
       class="elevation-1"
     >
       <template slot="headerCell" scope="props">
+        <input type="text"></input>
         <span v-tooltip:bottom="{ 'html': props.header.text }">
           {{ props.header.text }}
         </span>
       </template>
       <template slot="items" scope="props">
         <td>{{ props.item.name }}</td>
-        <td  class="text-xs-right">{{ props.item.calories }}</td>
-        <td  class="text-xs-right">{{ props.item.fat }}</td>
-        <td  class="text-xs-right">{{ props.item.carbs }}</td>
-        <td  class="text-xs-right">{{ props.item.protein }}</td>
-        <td  class="text-xs-right">{{ props.item.sodium }}</td>
-        <td  class="text-xs-right">{{ props.item.calcium }}</td>
-        <td  class="text-xs-right">{{ props.item.iron }}</td>
+        <td class="text-xs-right">{{ props.item.mimetype }}</td>
+        <td class="text-xs-right">{{ props.item.size }}</td>
+        <td class="text-xs-right">{{ props.item.status }}</td>
+        <td class="text-xs-right">
+          <v-btn icon @click="deleteItem(props.item.id)"><v-icon>delete</v-icon></v-btn>
+        </td>
+        <td class="text-xs-right">
+          <v-btn icon @click="dlItem(props.item.id)"><v-icon>file_download</v-icon></v-btn>
+        </td>
+        <td class="text-xs-right">
+          <v-btn icon @click="shareItem(props.item.id)"><v-icon>share</v-icon></v-btn>
+        </td>
+        <td class="text-xs-right">
+          <v-btn icon @click="playItem(props.item.id)"><v-icon>play</v-icon></v-btn>
+        </td>
       </template>
     </v-data-table>
   </div>
@@ -49,10 +58,7 @@ import appStore from '../app-store'
 
 export default {
   name: 'object-manager',
-  data: () => ({
-    objectList: appStore.objectManager.state.list,
-    totalItems: appStore.objectManager.state.listTotal
-  }),
+  data: () => appStore.objectManager.state,
   watch: {
     pagination: {
       //fetch files
@@ -64,9 +70,24 @@ export default {
       this.$refs.invisFileInput.click();
     },
     handleFileInput(ev) {
-      Array.prototype.forEach.call(ev.target.files, (file) => {
-        appStore.ObjectManager.upload(file.path);
-      })
+      Array.prototype.map.call(ev.target.files, (file) => {
+        return appStore.objectManager.upload(file.path);
+      });
+    },
+    deleteItem(id) {
+      return appStore.objectManager.destroy(id);
+    },
+    dlItem(id) {
+      return appStore.objectManager.download(id);
+    },
+    shareItem(id) {
+      return appStore.objectManager.exportMagnet(id);
+    },
+    importItem(link) {
+      return appStore.objectManager.importMagnet(link);
+    },
+    playItem(id) {
+
     }
   }
 };
