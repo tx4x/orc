@@ -109,8 +109,11 @@ $theme = {
  */
 
 .aria-visible
-  opacity: 0
-  width: 0px
-  height: 0px
+  opacity 0
+  width 0px
+  height 0px
+  position absolute
+  top 0px
+  left 0px
 
 </style>

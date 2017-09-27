@@ -11,7 +11,14 @@
     </script>
   </head>
   <body>
-
+    <style>
+      /* This is a workaround for a stylus-loader bug*/
+      .ripple__container,
+      .btn__content:before,
+      .btn__content {
+        border-radius: inherit;
+      }
+    </style>
     <div id="app"></div>
 
     <script src="app.js"></script>
