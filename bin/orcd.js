@@ -404,6 +404,7 @@ function init() {
       `${config.BridgeHostname}:${config.BridgePort}`
     );
     bridge.listen(parseInt(config.BridgePort), config.BridgeHostname);
+    bridge.audit();
 
     if (parseInt(config.BridgeOnionServiceEnabled)) {
       node.onion.tor.createHiddenService(
@@ -485,6 +486,15 @@ function init() {
         } else {
           node.logger.info('finished bootstrapping directory');
         }
+
+        node.logger.info('scoring orphaned audit reports');
+        directory.scoreAndPublishAuditReports((err) => {
+          if (err) {
+            node.logger.warn(`failed to score reports, ${err.message}`);
+          } else {
+            node.logger.info('peer scoring routine completed successfully');
+          }
+        });
       });
     }
 

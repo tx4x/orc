@@ -95,7 +95,7 @@ describe('@class Rules', function() {
       const response = {
         send: (params) => {
           expect(params[0].hash).to.equal('datahash');
-          expect(params[0].proof).to.equal(null);
+          expect(params[0].proof).to.have.lengthOf(0);
           done();
         }
       };
@@ -132,7 +132,7 @@ describe('@class Rules', function() {
       const response = {
         send: (params) => {
           expect(params[0].hash).to.equal('datahash');
-          expect(params[0].proof).to.equal(null);
+          expect(params[0].proof).to.have.lengthOf(0);
           done();
         }
       };

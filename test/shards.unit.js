@@ -4,6 +4,7 @@ const { expect } = require('chai');
 const proxyquire = require('proxyquire');
 const sinon = require('sinon');
 const { tmpdir } = require('os');
+const { EventEmitter} = require('events');
 
 
 describe('@class Shards', function() {
@@ -39,7 +40,7 @@ describe('@class Shards', function() {
     });
 
     it('should callback with created stream', function(done) {
-      const stream = {};
+      const stream = new EventEmitter();
       const Shards = proxyquire('../lib/shards', {
         fs: {
           existsSync: sinon.stub().returns(true),
@@ -51,6 +52,7 @@ describe('@class Shards', function() {
         expect(rs).to.equal(stream);
         done();
       });
+      setImmediate(() => stream.emit('readable'));
     });
 
   });
