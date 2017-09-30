@@ -5,15 +5,19 @@ const path = require('path');
 const { homedir } = require('os');
 const orc = require('../lib');
 const { app, BrowserWindow, ipcMain, Menu, Tray } = require('electron');
+const enableLiveReload = require('electron-compile').enableLiveReload;
 const { MongodHelper } = require('mongodb-prebuilt');
 const mongodArgs = [
   '--port', config.MongoDBPort,
   '--dbpath', config.MongoDBDataDirectory
 ];
 const mongod = new MongodHelper(mongodArgs);
-
+const isDevMode = process.execPath.match(/[\\/]electron/);
 
 let mainWindow, tray, mongodProcess;
+
+// This crashes for unknown reasons
+//if(isDevMode) enableLiveReload();
 
 function createWindow() {
   mainWindow = new BrowserWindow({

@@ -64,7 +64,7 @@
     "connect": "^3.6.1",
     "cors": "^2.8.4",
     "du": "^0.1.0",
-    "electron-compile": "^6.4.1",
+    "electron-compile": "^6.4.2",
     "electron-squirrel-startup": "^1.0.0",
     "express": "^4.15.4",
     "finalhandler": "^1.0.4",
@@ -98,7 +98,7 @@
     "vue": "^2.4.2",
     "vue-router": "^2.7.0",
     "vueify": "^9.4.1",
-    "vuetify": "0.15.7",
+    "vuetify": "github:MrFancyMonocle/vuetify",
     "ws": "^3.0.0"
   },
   "devDependencies": {

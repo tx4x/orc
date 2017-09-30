@@ -108,6 +108,9 @@ $theme = {
  * ORC Styles
  */
 
+html
+  overflow hidden
+
 .aria-visible
   opacity 0
   width 0px
@@ -116,4 +119,6 @@ $theme = {
   top 0px
   left 0px
 
+.speed-dial--top.speed-dial--absolute
+  top 0%
 </style>

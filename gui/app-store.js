@@ -9,6 +9,8 @@ const AppStore = class extends Store.State {
     this.controlConnection = new Store.ControlConnection(config);
     this.objectManager = new Store.ObjectManager(this.daemonConnection);
     this.profile = new Store.Profile(this.daemonConnection, this.controlConnection);
+    //is modified freely by responsive directives
+    this.drawer = true; //the app side door, boolean global state,
   }
 };
 

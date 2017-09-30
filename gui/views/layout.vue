@@ -1,15 +1,16 @@
 <template>
   <v-app
     dark
-    id="e3"
+    id="Orc"
     toolbar
   >
 <!--Left App Drawer -->
     <v-navigation-drawer
       dark
-      class="pb-0"
-      persistent
       height="100%"
+      persistent
+      hide-overlay
+      disable-route-watcher
       clipped
       absolute
       enable-resize-watcher
@@ -62,14 +63,8 @@
 
 <!--Main Interface -->
     <main>
-      <v-container fill-height>
-        <v-layout>
-          <v-flex xs12>
-            <v-card height="300px">
-               <router-view></router-view>
-            </v-card>
-          </v-flex>
-        </v-layout>
+      <v-container fluid mt-4>
+        <router-view></router-view>
       </v-container>
     </main>
 
@@ -78,8 +73,13 @@
 
 
 <script>
+import appStore from '../app-store'
+
 export default {
-  name: 'layout'
+  name: 'layout',
+  data: () => ({
+    drawer: appStore.drawer
+  })
 };
 
 </script>
