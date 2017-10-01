@@ -17,8 +17,8 @@ addons:
       - clang
 node_js:
   - "6.9.1"
-before_install:
-  - export CXX="g++-4.8" CC="gcc-4.8"
+    #before_install:
+    #  - export CXX="g++-4.8" CC="gcc-4.8"
 after_script:
   - npm run coverage
   - cat ./coverage/lcov.info | ./node_modules/.bin/coveralls
