@@ -1,9 +1,9 @@
-This guide will show you how to get started with running `orc`! An Orc 
+This guide will show you how to get started with running `orcd`! An ORC 
 node requires a configuration file to get up and running. The path to this 
-file is given to `orc` when starting a node.
+file is given to `orcd` when starting a node.
 
 ```
-orc --config path/to/orc.config
+orcd --config path/to/orc.config
 ```
 
 If a configuration file is not supplied, a minimal default configuration is 
@@ -14,13 +14,15 @@ information. All of this data will be created and stored in
 
 ```
 +- ~/.config/orc
-  + - x_private_key
-  + - onion_key
-  + - config
-  + - service_key.pem
-  + - certificate.pem
-  + - /shards
-    + - ...
+  + - x_private_key    (Root/Parent HD identity key)
+  + - onion_key        (RSA1024 private key for RPC onion service)
+  + - bridge_key       (RSA1024 private key for bridge onion service)
+  + - directory_key    (RSA1024 private key for directory onion service)
+  + - config           (INI configuration file)
+  + - service_key.pem  (SSL private key used for all services)
+  + - certificate.pem  (SSL certificate used for all services)
+  + - /shards          (Directory containing encrypted shards named by hash)
+  + - /data            (MongoDB data directory)
 ```
 
 The locations of all of these files is defined in your configuration file. 
@@ -31,7 +33,7 @@ supported). Comments are inline to describe each property.
 
 ```ini
 ;
-; Orc Sample Configuration
+; ORC Sample Configuration
 ;
 
 ; Path to private extended key file to use for master identity.
@@ -57,6 +59,13 @@ MongoDBPort = 37017
 ; this to where you intend to store farmed shards.
 ShardStorageBaseDir = /home/bookchin/.config/orc
 
+; How often we should scan contract database to reap expired shards it is 
+; storing.
+ShardReaperInterval = 24HR
+
+; How often we should publish a capacity announcement to neighboring nodes.
+ShardCapacityAnnounceInterval = 15M
+
 ; Define the maximum size you wish to allocate for farming shards. This can be 
 ; increased later, but decreasing it will not delete existing data.
 ShardStorageMaxAllocation = 0GB
@@ -70,10 +79,12 @@ ShardStorageMaxAllocation = 0GB
 DirectoryEnabled = 1
 DirectoryPort = 4446
 DirectoryHostname = 127.0.0.1
-DirectoryUseSSL = 0
+DirectoryUseSSL = 1
 DirectoryServiceKeyPath: /home/bookchin/.config/orc/directory_key.pem
 DirectoryCertificatePath: /home/bookchin/.config/orc/directory_cert.pem
 ;DirectoryAuthorityChains[] = /home/bookchin/.config/fullchain.pem
+DirectoryOnionServiceEnabled=1
+DirectoryOnionServicePrivateKeyPath=/home/bookchin/.config/orc/directory_key
 DirectoryBootstrapService = https://orcucqxc54fkhupb.onion:443
 
 ; Paths to this node's SSL key and certificat. If you don't have one, you can 
@@ -147,11 +158,6 @@ BridgeAuthenticationEnabled = 0
 BridgeAuthenticationUser = orc
 BridgeAuthenticationPassword = 1b5d3daa16b3343560bcf0377547b1c0
 BridgeTempStagingBaseDir = /home/bookchin/.config/orc/__bridge.staging
-
-; How often we should scan contract database to reap expired shards it is 
-; storing.
-ShardReaperInterval = 24HR
-
-; How often we should publish a capacity announcement to neighboring nodes.
-CapacityAnnounceInterval = 15M
+BridgeOnionServiceEnabled=1
+BridgeOnionServicePrivateKeyPath=/home/bookchin/.config/orc/bridge_key
 ```
