@@ -78,7 +78,6 @@
     "kad-onion": "^1.6.4",
     "kad-quasar": "^2.1.0",
     "kad-spartacus": "^2.4.1",
-    "kad-traverse": "^1.1.1",
     "knuth-shuffle": "^1.0.1",
     "merge": "^1.2.0",
     "mime-types": "^2.1.16",
@@ -137,9 +136,7 @@
         "overwrite": true,
         "name": "ORC",
         "icon": "gui/assets/logo-app-icon",
-        "extraResource": [
-        
-        ]
+        "extraResource": []
       },
       "electronInstallerDMG": {
         "icon": "gui/assets/logo-app-icon.icns",

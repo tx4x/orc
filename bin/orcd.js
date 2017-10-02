@@ -8,7 +8,6 @@ const assert = require('assert');
 const bytes = require('bytes');
 const hdkey = require('hdkey');
 const hibernate = require('kad-hibernate');
-const traverse = require('kad-traverse');
 const spartacus = require('kad-spartacus');
 const onion = require('kad-onion');
 const ms = require('ms');
