@@ -1,173 +1,160 @@
-Managing your objects (files) on the ORC network is easy! This guide will show 
-you how to configure your node to expose a simple REST API that applications 
-can use to upload, download, delete, and list objects you have stored in the 
-network.
+This guide will show you how to configure your node to expose a simple REST 
+API that applications can use to upload, download, delete, and list objects 
+you have stored in the network.
 
-#### `BridgeEnabled`
+> Make sure you've read over the {@tutorial config} and understand the 
+> the security implications for various settings related the the local bridge.
 
-Set this property to `1` to enable the local API.
+For the purposes of brevity for this guide, we are going to assume the 
+following configuration scheme and will use `curl` for the examples:
 
-#### `BridgeHostname`
+```
+BridgeEnabled = 1
+BridgeHostname = 127.0.0.1
+BridgePort = 4445
+BridgeUseSSL = 0
+BridgeAuthenticationEnabled = 0
+```
 
-Set this property to bind the service to an hostname or IP address. **It's 
-important to use a loopback interface or LAN IP** otherwise an attacker may be 
-able to upload and download your objects! Best to use `127.0.0.1` which is the 
-default.
+### `GET /`
 
-#### `BridgePort`
-
-Set this property to instruct the local bridge service to bind to the given 
-port. Defaults to `4445`.
-
-#### `BridgeTempStagingBaseDir`
-
-Set this property to instruct the local bridge service where to hold temporary 
-data while objects are being uploaded to the network. Safe to leave as the 
-default, which is `~/.config/orc/__bridge.staging`.
-
-### List Objects Stored
-
-You can get a JSON list of your objects stored in the network by sending a 
-request to `GET /`.
-
-Example:
+Retreive a JSON list of your objects stored in the network and managed by this 
+node. Each item returned in the list contains metadata regarding the type, 
+size, name, hash, location of shards, and more.
 
 ```
 $ curl http://127.0.0.1:4445 | jq
 [
   {
-    "id": "d049bff2-21b5-4f2f-bac3-efb3832a5afb",
-    "name": "README.md",
     "encoding": "7bit",
-    "mimetype": "application/octet-stream",
-    "hash": "877167565af0376f2fddb170ad0483f91e9b932d72052720ae15efeb8ec2b010",
-    "size": 3229,
+    "size": 43472,
+    "ecpub": "02dc3937fd97fc26a54ad976c4cda37eb513d9a86debca18dd6f2e83717c9227d3",
+    "hash": "24081ee6fd4a5395a44597e36c5314b1308a197137db45e08d6d86aa070fbe84",
     "status": "finished",
+    "policies": [
+      "::RETRIEVE"
+    ],
     "shards": [
       {
-        "index": 0,
-        "size": 1616,
-        "audits": {...},
+        "size": 21744,
+        "hash": "e1eede74c9512f1994b18eac6465a0b471201548",
         "service": [
-          "6ee50b070fb8ce1fcd42814d18ee10f0615c235c",
-          {...}
-        ],
-        "contract": {...}
+          "ccfbab389c9c547badb708021c0eaad4d9ec87ed",
+          {
+            "agent": "orc-8.1.1-beta5/linux",
+            "index": 2,
+            "xpub": "xpub6BRiU17o5vnTq8sGX2DgjBoU1ozBZnBDiW4avCwoFUzcYtrHMKxs8BjdS3qt6AAv42KDE2B4D2q3Fj3cYuzuCFoDijnQKJYvoMLJV2rEGVL",
+            "port": 443,
+            "protocol": "https:",
+            "hostname": "orcwfkilxjxo63mr.onion"
+          }
+        ]
       },
       {
-        "index": 1,
-        "size": 1616,
-        "audits": {...},
+        "size": 21744,
+        "hash": "0a2f5a2a47ffe851403bfb4dc56be9b09392d182",
         "service": [
-          "e34d507bf40171f1471dd1d7f41323439e36fe37",
-          {...}
-        ],
-        "contract": {...}
+          "681069cc9dc643999be1031a8740d2a341939262",
+          {
+            "agent": "orc-8.1.1-beta6/linux",
+            "index": 0,
+            "xpub": "xpub6ARoW5DJo4xBbob8Gr3HReVU3qqJQpBRqBR2SDJkaYq5eJGL17yhGijXzkmobJe3f5nPHyZrohWR5txhCUjiXvhfCR3v2vmc7MuAYCcrTbt",
+            "port": 443,
+            "protocol": "https:",
+            "hostname": "puiq7u4bw6lroev5.onion"
+          }
+        ]
       },
       {
-        "index": 2,
-        "size": 1616,
-        "audits": {...},
+        "size": 21744,
+        "hash": "4c38ad2a132b8d683abcc73f2eddf9d2700ad5d7",
         "service": [
-          "cc31602c67a35a26d23d93d62bef0d6d09c89e0d",
-          {...}
-        ],
-        "contract": {...}
-    ]
+          "1723b631252fc5f50ba43a8cfd2f38cba0daf44c",
+          {
+            "agent": "orc-8.1.1-beta1/linux",
+            "index": 0,
+            "xpub": "xpub6AxEbAJY7bV33paGh9wbGgDh7q6T67LQKBEbo93vxez4zPF4sQQnNHK55suXWk4ViZYsjy1jwdUtuuWosUWAyEQMeqXmJKhbbuZnAcGLQRF",
+            "port": 443,
+            "protocol": "https:",
+            "hostname": "wifniq3h3gqm2b2w.onion"
+          }
+        ]
+      }
+    ],
+    "mimetype": "image/png",
+    "name": "avatar.png",
+    "id": "59d2627ebb28977b0e6ab841"
   }
 ]
 ```
 
-### Upload Objects
+### `POST /`
 
 You can upload a file to the network my sending a multipart/form-upload request 
 to `POST /`. This works the same as if using a `<input type="file"/>` on a web
 page. You can also add `policy` fields to specify access policies as defined in 
 [IMP-0010](https://github.com/orcproject/imps/blob/master/imp-0010.md).
 
-Example:
-
 ```
-$ curl -F "file=@README.md;filename=README.md" http://127.0.0.1:4445 | jq
-{
-  "id": "d049bff2-21b5-4f2f-bac3-efb3832a5afb",
-  "name": "README.md",
-  "encoding": "7bit",
-  "mimetype": "application/octet-stream",
-  "hash": "877167565af0376f2fddb170ad0483f91e9b932d72052720ae15efeb8ec2b010",
-  "size": 3229,
-  "status": "finished",
-  "shards": [
-    {
-      "index": 0,
-      "size": 1616,
-      "audits": {...},
-      "service": [
-        "6ee50b070fb8ce1fcd42814d18ee10f0615c235c",
-        {...}
-      ],
-      "contract": {...}
-    },
-    {
-      "index": 1,
-      "size": 1616,
-      "audits": {...},
-      "service": [
-        "e34d507bf40171f1471dd1d7f41323439e36fe37",
-        {...}
-      ],
-      "contract": {...}
-    },
-    {
-      "index": 2,
-      "size": 1616,
-      "audits": {...},
-      "service": [
-        "cc31602c67a35a26d23d93d62bef0d6d09c89e0d",
-        {...}
-      ],
-      "contract": {...}
-  ]
-}
+$ curl -F "file=@avatar.png;type=image/png;" -F "policy=::RETRIEVE" http://127.0.0.1:5445 | jq
 ```
 
-### Download Objects
+Once the object is completely distributed, the metadata will be returned. You 
+can check on the status of an object while the request is pending by listing 
+the objects using `GET /`. Statuses may be *finished*, *queued*, or *failed*.
 
-You can download a file from the network knowing only the UUID generated by the 
-local bridge service, by sending a `GET /{uuid}` request.
+### `GET /{id}`
 
-Example:
+You can download a file from the network knowing only the object's ID in the 
+local bridge service. The appropriate headers for content type are sent to 
+enable browsers and other applications to display the downloaded object.
 
 ```
-$ curl http://127.0.0.1:4445/d049bff2-21b5-4f2f-bac3-efb3832a5afb >> README.md
+$ curl http://127.0.0.1:4445/59d2627ebb28977b0e6ab841 >> avatar.png
 ```
 
-### Sharing Objects
+> Note that decryption is performed by the local bridge service, so it is very 
+> important to configure your bridge to use authentication if exposing 
+> as an onion service and SSL if exposing over the clearnet.
+
+### `GET /{id}/magnet`
 
 If you supplied an appropriate access `policy` field on upload, you can share a 
 magnet link with others to fetch the object pointer.
 
-Example:
+```
+$ curl http://127.0.0.1:4445/59d2627ebb28977b0e6ab841/magnet | jq
+{
+  "href": "magnet:?xt=urn:orc:a3cd254243fc02579384d75cba2588a6c9e850d1&xs=43472&dn=avatar.png&x.ecprv=2daade3b5a4af3641e22cb0317cadf3115bc4b800e0eceaa1a4568c53e60911b&x.pword=17300e194a57251388e98b104411b2004223fe7a"
+}
+```
 
-```
-$ curl http://127.0.0.1:4445/d049bff2-21b5-4f2f-bac3-efb3832a5afb/magnet | xclip -selection clipboard
-```
+This will return a magnet link that contains the hash of the encrypted pointer 
+so it can be looked up in the DHT, the name and size of the object referenced 
+for interfaces to use, the key used to encrypt the pointer, and the key used 
+to encrypt the object. 
+
+> Note that this link can be used by anyone to download the pointer, which 
+> allows anyone who is included in the object's access policy to download 
+> and decrypt the object itself. 
+
+### `PUT /`
 
 To fetch an object pointer shared by someone else, you can send the magnet link
-and get back an object pointer with an ID you can use in the download example:
-
-Example:
+and get back an object pointer with an ID you can use in the download example.
 
 ```
 curl -X PUT --data "magnet:?xt=..." http://127.0.0.1:4445
 ```
 
-### Destroy Objects
+> Protip! Pipe the output of the example above through 
+> `jq -r .href | xclip -selection clipboard` to copy the magnet link directly 
+> to your clipboard. ;)
 
-You can destroy an object, nullifying associated contracts, and issuing any 
-final payment to farmers by sending a `DELETE /{uuid}` request.
+### `DELETE /{id}`
 
-Example:
+You can destroy an object, nullifying associated contracts by sending a 
+`DELETE /{id}` request.
 
 ```
 $ curl -X "DELETE" http://127.0.0.1:4445/d049bff2-21b5-4f2f-bac3-efb3832a5afb
