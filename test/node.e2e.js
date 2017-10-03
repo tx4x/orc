@@ -93,7 +93,7 @@ describe('@module orc (end-to-end)', function() {
       auditLeaves: audit.getPublicRecord()
     });
     contract.sign('owner', renter.spartacus.privateKey);
-    renter.claimFarmerCapacity(farmer, contract.toObject(), (err, result) => {
+    renter.claimProviderCapacity(farmer, contract.toObject(), (err, result) => {
       expect(err).to.equal(null);
       contract = new renter.database.ShardContract(result[0]);
       const t = result[1];

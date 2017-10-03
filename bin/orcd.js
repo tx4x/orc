@@ -183,8 +183,42 @@ function init() {
     serviceHealthCheckInterval: ms(config.ServiceAvailabilityCheckInterval)
   }));
 
-  // Intialize control server
-  const control = new boscar.Server(node);
+  // Intialize control server with explicity api permissions
+  const methods = [
+    'ping',
+    'iterativeStore',
+    'iterativeFindNode',
+    'iterativeFindValue',
+    'quasarPublish',
+    'quasarSubscribe',
+    'auditRemoteShards',
+    'authorizeConsignment',
+    'authorizeRetrieval',
+    'claimProviderCapacity',
+    'createShardMirror',
+    'identifyService',
+    'publishCapacityAnnouncement',
+    'reportAuditResults',
+    'requestContractRenewal',
+    'subscribeCapacityAnnouncement'
+  ];
+
+  const intface = {
+    getMethods: function(callback) {
+      callback(null, methods.concat(Object.keys(intface)));
+    },
+    getNodeInfo: function(callback) {
+      node.database.PeerProfile.findOne({
+        identity: identity.toString('hex')
+      }, (err, peer) => callback(err, peer ? peer.toObject() : null));
+    }
+  };
+
+  methods.forEach((method) => {
+    intface[method] = node[method].bind(node)
+  });
+
+  const control = new boscar.Server(intface);
 
   // Plugin bandwidth metering if enabled
   if (!!parseInt(config.BandwidthAccountingEnabled)) {
