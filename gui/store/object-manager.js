@@ -4,10 +4,12 @@ export default class ObjectManager extends State{
   constructor(connection) {
     super(connection);
     this.connection = connection;
+//TODO: better partial upload/dl state management here & api
     //cause sets & weak maps don't work with Vue reactivity yet
     this.state.downloadPending = {};
     this.state.uploadPending = {};
-    this.state.magnetList = [];
+    this.state.importPending = {};
+    this.state.exportPending = {};
   }
 
   async getList() {
@@ -25,7 +27,7 @@ export default class ObjectManager extends State{
     idArr.map((id) => this.download(id));
   }
 
-  clearDownloadList() {
+  clearDownloads() {
     this.commit(null, { downloadPending: {} });
   }
 
@@ -42,7 +44,7 @@ export default class ObjectManager extends State{
     });
   }
 
-  clearDownloadList() {
+  clearUploads() {
     this.commit(null, { uploadPending: {} });
   }
 
@@ -56,22 +58,30 @@ export default class ObjectManager extends State{
   }
 
   async importMagnet(href) {
+    this.commit(null, { importPending: { [href]: false } });
     let [err, state] = await State.resolveTo(this.connection.insertObjectFromLink(href));
-    if(err) return this.commit(err);
+    return this.commit(err, { importPending: { [href]: true } });
   }
 
   importMagnetList(hrefArr) {
-    idArr.map((hrefArr) => this.importMagnet(href));
+    hrefArr.map((hrefArr) => this.importMagnet(href));
+  }
+
+  clearMagnetImports() {
+    return this.commit(null, { importPending: {} });
   }
 
   async exportMagnet(id) {
+    this.commit(null, { exportPending: { [id]: false } });
     let [err, state] = await State.resolveTo(this.connection.getObjectMagnet(id));
-    if(err) return this.commit(err);
-    this.state.magnetList.push(state);
+    this.commit(err, { exportPending: { [id]: true } });
   }
 
   exportMagnetList(idArr) {
-    this.state.commit(null, { magnetList: [] });
     idArr.map((id) => this.exportMagnet(id));
+  }
+
+  clearMagnetExports() {
+    this.commit(null, { exportPending: {} });
   }
 };

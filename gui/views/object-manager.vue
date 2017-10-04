@@ -23,7 +23,8 @@
         <v-btn
           slot="activator"
           fab
-          @click.native="importMagnetList"
+          ref="magnetButton"
+          @click.native.stop="handleMagnetImportClick()"
         >
           <v-icon>add</v-icon>
         </v-btn>
@@ -113,6 +114,24 @@
     class="aria-visible"
     multiple
   />
+  <v-dialog v-model="addMagnetDialogOpen" :origin="magnetImportOrigin" width="50%">
+    <v-card>
+      <v-card-title>
+        <div class="headline">Import Magnet Links</div>
+      </v-card-title>
+      <v-card-text>Import files from the Orc network using comma-separated URLs</v-card-text>
+        <v-text-field
+          v-model="rawImportList"
+          full-width
+          multi-line
+          single-line
+        ></v-text-field>
+      <v-card-actions>
+        <v-spacer></v-spacer>
+        <v-btn class="green--text darken-1" flat="flat" @click="handleImportSubmit">Import</v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
 </v-layout>
 
 </template>
@@ -128,7 +147,10 @@ export default {
       sortBy: 'name',
       descending: false
     },
+    rawImportList: '',
     isMenuOpen: false,
+    addMagnetDialogOpen: false,
+    magnetImportOrigin: 'center center',
     selected: [],
     headers: [
       { text: 'Status', value: 'status' },
@@ -181,12 +203,30 @@ export default {
         this.pagination.descending ? 'desc' : 'asc',
         header.value === this.pagination.sortBy ? 'active' : ''
       ];
+    },
+    handleMagnetImportClick() {
+      let getButtonOrigin = () => {
+        let box = this.$refs.magnetButton.$el.getBoundingClientRect();
+        let x = box.left + ( ( box.left + box.right) / 2 );
+        let y = box.top + ( ( box.top + box.bottom) / 2 );
+        return x + ' ' + y;
+      }
+
+      this.magnetImportOrigin = getButtonOrigin();
+      this.addMagnetDialogOpen = true;
+    },
+    handleImportSubmit() {
+      let imports = this.rawImportList.split(',');
+      this.importMagnetList(imports);
     }
   }
 };
 </script>
 
-<style lang="stylus">
+<style lang="stylus" scoped>
 #moveoverhack
   left: 68px;
+
+textarea
+  resize: none;
 </style>
