@@ -139,7 +139,7 @@ the directory service.
 
 #### DirectoryOnionServiceEnabled
 
-##### Default: `1`
+##### Default: `0`
 
 Establish a Tor Hidden Service for the directory service's HTTP API.
 
@@ -339,10 +339,10 @@ for queued uploads.
 
 #### BridgeOnionServiceEnabled
 
-##### Default: `1`
+##### Default: `0`
 
 Establish a Tor Hidden Service for the bridge service's HTTP API. Make sure 
-that authentication is enabled if using this option. Set to `0` to disable.
+that authentication is enabled if using this option. Set to `1` to enable.
 
 #### BridgeOnionServicePrivateKeyPath
 
