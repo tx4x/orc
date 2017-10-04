@@ -4,7 +4,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width">
-	<title>ORC Class: Transport</title>
+	<title>ORC Tutorial: Using the Control Port</title>
 
 	<!--[if lt IE 9]>
 	<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
@@ -80,527 +80,71 @@
 <div class="row">
 
 	
-	<div class="col-md-8">
+	<div class="col-md-12">
 	
 		<div id="main">
-			
-
-	<h1 class="page-title">Class: Transport</h1>
-<section>
+			<section class="tutorial-section">
 
 <header>
     
-        <h2>
-        Transport
-        </h2>
-        
-            <div class="class-description">Represents the ORC-specific HTTPS transport</div>
-        
-    
+
+    <h2>Using the Control Port</h2>
 </header>
 
-
 <article>
-    <div class="container-overview">
-    
-        
-<hr>
-<dt>
-    <h4 class="name" id="Transport"><span class="type-signature"></span>new Transport(options)</h4>
-    
-    
-</dt>
-<dd>
-
-    
-    <div class="description">
-        Contructs a Orc transport adapter
-    </div>
-    
-
-    
-
-    
-
-    
-    
-        <h5>Parameters:</h5>
-        
-
-<table class="params table table-striped">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>options</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">object</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">https://nodejs.org/api/tls.html</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-    
-
-    
-<dl class="details">
-    
-
-	
-
-	
-
-	
-
-    
-
-    
-
-    
-
-    
-
-	
-
-	
-
-	
-
-	
-
-	
-
-
-
-	
-	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
-	<dd class="tag-source">
-		<ul class="dummy">
-			<li>
-				<a href="transport.js.html">transport.js</a>
-			</li>
-		</ul>
-	</dd>
-	
-
-	
-
-	
-
-	
-</dl>
-
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dd>
-
-    
-    </div>
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-        <h3 class="subsection-title">Events</h3>
-
-        <dl>
-            
-<hr>
-<dt>
-    <h4 class="name" id="event:download">download</h4>
-    
-    
-</dt>
-<dd>
-
-    
-    <div class="description">
-        Emitted when a download request is received
-    </div>
-    
-
-    
-
-    
-
-    
-    
-        <h5>Parameters:</h5>
-        
-
-<table class="params table table-striped">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>request</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">object</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>response</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">object</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-    
-
-    
-<dl class="details">
-    
-
-	
-
-	
-
-	
-
-    
-
-    
-
-    
-
-    
-
-	
-
-	
-
-	
-
-	
-
-	
-
-
-
-	
-	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
-	<dd class="tag-source">
-		<ul class="dummy">
-			<li>
-				<a href="transport.js.html">transport.js</a>
-			</li>
-		</ul>
-	</dd>
-	
-
-	
-
-	
-
-	
-</dl>
-
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dd>
-
-        
-            
-<hr>
-<dt>
-    <h4 class="name" id="event:upload">upload</h4>
-    
-    
-</dt>
-<dd>
-
-    
-    <div class="description">
-        Emitted when a upload request is received
-    </div>
-    
-
-    
-
-    
-
-    
-    
-        <h5>Parameters:</h5>
-        
-
-<table class="params table table-striped">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>request</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">object</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>response</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">object</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-    
-
-    
-<dl class="details">
-    
-
-	
-
-	
-
-	
-
-    
-
-    
-
-    
-
-    
-
-	
-
-	
-
-	
-
-	
-
-	
-
-
-
-	
-	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
-	<dd class="tag-source">
-		<ul class="dummy">
-			<li>
-				<a href="transport.js.html">transport.js</a>
-			</li>
-		</ul>
-	</dd>
-	
-
-	
-
-	
-
-	
-</dl>
-
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dd>
-
-        </dl>
-    
+    <p>You can run <code>orcd</code> standalone and control it from any other application over 
+its TCP control interface. The control interface understands JSON-RPC 2.0 
+messages terminated by a carriage return and a newline (<code>\r\n</code>).</p>
+<p>For the purpose of this guide, we assume you have the following configuration
+properties set:</p>
+<pre class="prettyprint source"><code>ControlPort = 5444
+ControlHostname = 127.0.0.1</code></pre><blockquote>
+<p>Using the control port, you can get a very low level control over your ORC 
+node. It is very important to keep <code>ControlHostname</code> set to a loopback 
+interface unless you have taken measures to otherwise secure access to the 
+host. See the <a href="tutorial-config.html">Configuration Guide</a> guide for more information.</p>
+</blockquote>
+<p>The interface accepts all methods exposed by the <a href="Node.html">Node</a> class. Parameters 
+are expected to be in an array format, in order of the corresponding function 
+signature and sans any callback functions. Results are written back in the same 
+format. If an error occurs, the control server will send back a JSON-RPC 2.0 
+error message with the same <code>id</code> as the original request. Otherwise, parameters 
+passed that would be passed to the callback function are included in the 
+<code>results</code> property.</p>
+<p>When starting <code>orcd</code>, you will see a log message like this:</p>
+<pre class="prettyprint source"><code>{
+  &quot;name&quot;: &quot;b95d3b65cee77810589fe21a542a5a206ad024e5&quot;,
+  &quot;hostname&quot;: &quot;librem&quot;,
+  &quot;pid&quot;: 19604,
+  &quot;level&quot;: 30,
+  &quot;msg&quot;: &quot;control server bound to 127.0.0.1:5444&quot;,
+  &quot;time&quot;: &quot;2017-10-03T18:01:36.357Z&quot;,
+  &quot;v&quot;: 0
+}</code></pre><p>This means that the control interface is ready to use. You can query it for the 
+methods it supports using telnet.</p>
+<pre class="prettyprint source"><code>$ telnet 127.0.0.1 5444
+Trying 127.0.0.1...
+Connected to 127.0.0.1.
+Escape character is '^]'.
+{&quot;jsonrpc&quot;:&quot;2.0&quot;,&quot;id&quot;:&quot;1234567890&quot;,&quot;method&quot;:&quot;getMethods&quot;,&quot;params&quot;:[]}
+{&quot;jsonrpc&quot;:&quot;2.0&quot;,&quot;id&quot;:&quot;1234567890&quot;,&quot;result&quot;:[[&quot;ping&quot;,&quot;iterativeStore&quot;,&quot;iterativeFindNode&quot;,&quot;iterativeFindValue&quot;,&quot;quasarPublish&quot;,&quot;quasarSubscribe&quot;,&quot;auditRemoteShards&quot;,&quot;authorizeConsignment&quot;,&quot;authorizeRetrieval&quot;,&quot;claimProviderCapacity&quot;,&quot;createShardMirror&quot;,&quot;identifyService&quot;,&quot;publishCapacityAnnouncement&quot;,&quot;reportAuditResults&quot;,&quot;requestContractRenewal&quot;,&quot;subscribeCapacityAnnouncement&quot;,&quot;getMethods&quot;,&quot;getNodeInfo&quot;,&quot;ping&quot;,&quot;iterativeStore&quot;,&quot;iterativeFindNode&quot;,&quot;iterativeFindValue&quot;,&quot;quasarPublish&quot;,&quot;quasarSubscribe&quot;,&quot;auditRemoteShards&quot;,&quot;authorizeConsignment&quot;,&quot;authorizeRetrieval&quot;,&quot;claimProviderCapacity&quot;,&quot;createShardMirror&quot;,&quot;identifyService&quot;,&quot;publishCapacityAnnouncement&quot;,&quot;reportAuditResults&quot;,&quot;requestContractRenewal&quot;,&quot;subscribeCapacityAnnouncement&quot;]]}</code></pre><p>You may also like to get information about your node's status.</p>
+<pre class="prettyprint source"><code>$ telnet 127.0.0.1 5444
+Trying 127.0.0.1...
+Connected to 127.0.0.1.
+Escape character is '^]'.
+{&quot;jsonrpc&quot;:&quot;2.0&quot;,&quot;id&quot;:&quot;1234567890&quot;,&quot;method&quot;:&quot;getNodeInfo&quot;,&quot;params&quot;:[]}
+{&quot;jsonrpc&quot;:&quot;2.0&quot;,&quot;id&quot;:&quot;1234567890&quot;,&quot;result&quot;:[{&quot;identity&quot;:&quot;b95d3b65cee77810589fe21a542a5a206ad024e5&quot;,&quot;updated&quot;:&quot;2017-10-03T18:01:49.344Z&quot;,&quot;reputation&quot;:{&quot;timestamp&quot;:&quot;2017-10-03T18:01:49.344Z&quot;,&quot;score&quot;:0},&quot;capacity&quot;:{&quot;timestamp&quot;:&quot;2017-10-03T18:01:10.294Z&quot;,&quot;available&quot;:5316683150,&quot;allocated&quot;:5368709120},&quot;contact&quot;:{&quot;hostname&quot;:&quot;dbmsjonrk2bucr4c.onion&quot;,&quot;port&quot;:443,&quot;xpub&quot;:&quot;xpub6AYRYZsSnqBSj2cysHtCswKXpmVmwFTcYbihx77CbrYeKBGxwaMJDeMcD6E41nzzi282KsaGvGW7URswXntbbsGVYxwqRbmFm2niWrgR9xD&quot;,&quot;agent&quot;:&quot;orc-8.1.1-beta6/linux&quot;,&quot;index&quot;:0,&quot;protocol&quot;:&quot;https:&quot;}}]}</code></pre><p>All of the other supported methods are documented in the <a href="Node.html">Node</a> class. 
+The primary objective for the control interface is to provide a simple way to 
+control an ORC node from any programming language that support TCP sockets.</p>
 </article>
 
 </section>
-
-
-
 
 		</div>
 	</div>
 
 	<div class="clearfix"></div>
 
-	
-		<div class="col-md-3">
-			<div id="toc" class="col-md-3 hidden-xs hidden-sm hidden-md"></div>
-		</div>
 	
 
 </div>

@@ -41,7 +41,7 @@
 			<li class="dropdown">
 				<a href="classes.list.html" class="dropdown-toggle" data-toggle="dropdown">Classes<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="Audit.html">Audit</a></li><li><a href="Bridge.html">Bridge</a></li><li><a href="Database.html">Database</a></li><li><a href="Directory.html">Directory</a></li><li><a href="KadStorageAdapter.html">KadStorageAdapter</a></li><li><a href="Node.html">Node</a></li><li><a href="Proof.html">Proof</a></li><li><a href="Rules.html">Rules</a></li><li><a href="Server.html">Server</a></li><li><a href="Shards.html">Shards</a></li><li><a href="Transport.html">Transport</a></li>
+					<li><a href="Audit.html">Audit</a></li><li><a href="Bridge.html">Bridge</a></li><li><a href="Database.html">Database</a></li><li><a href="Database.AuditReport.html">Database.AuditReport</a></li><li><a href="Database.NetworkBlob.html">Database.NetworkBlob</a></li><li><a href="Database.ObjectPointer.html">Database.ObjectPointer</a></li><li><a href="Database.PeerProfile.html">Database.PeerProfile</a></li><li><a href="Database.ShardContract.html">Database.ShardContract</a></li><li><a href="Directory.html">Directory</a></li><li><a href="KadStorageAdapter.html">KadStorageAdapter</a></li><li><a href="Node.html">Node</a></li><li><a href="Proof.html">Proof</a></li><li><a href="Rules.html">Rules</a></li><li><a href="Server.html">Server</a></li><li><a href="Shards.html">Shards</a></li><li><a href="Transport.html">Transport</a></li>
 				</ul>
 			</li>
 			
@@ -55,14 +55,7 @@
 			<li class="dropdown">
 				<a href="tutorials.list.html" class="dropdown-toggle" data-toggle="dropdown">Tutorials<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="tutorial-config.html">Configuration Guide</a></li><li><a href="tutorial-directory_.html">Running a Directory</a></li><li><a href="tutorial-install.html">Manual Installation</a></li><li><a href="tutorial-providing.html">Providing Capacity</a></li><li><a href="tutorial-transfers.html">Uploading and Downloading</a></li><li><a href="tutorial-usage.html">Basic Usage Guide</a></li>
-				</ul>
-			</li>
-			
-			<li class="dropdown">
-				<a href="global.html" class="dropdown-toggle" data-toggle="dropdown">Global<b class="caret"></b></a>
-				<ul class="dropdown-menu ">
-					<li><a href="global.html#AuditReport">AuditReport</a></li><li><a href="global.html#NetworkBlob">NetworkBlob</a></li><li><a href="global.html#ObjectPointer">ObjectPointer</a></li><li><a href="global.html#PeerProfile">PeerProfile</a></li><li><a href="global.html#ShardContract">ShardContract</a></li>
+					<li><a href="tutorial-config.html">Configuration Guide</a></li><li><a href="tutorial-control.html">Using the Control Port</a></li><li><a href="tutorial-directory_.html">Using the Local Directory</a></li><li><a href="tutorial-install.html">Manual Installation</a></li><li><a href="tutorial-transfers.html">Using the Local Bridge</a></li><li><a href="tutorial-usage.html">Using the Node.js Library</a></li>
 				</ul>
 			</li>
 			
@@ -115,7 +108,25 @@ mongoose.Promise = Promise;
 
 /**
  * Describes a known network peer
- * @type {object}
+ * @constructor
+ * @param {object} properties
+ * @param {string} properties.identity - Hexidecimal identity key
+ * @param {object} properties.contact
+ * @param {string} properties.contact.hostname - Onion service address
+ * @param {number} properties.contact.port - Onion service virtual port
+ * @param {string} [properties.contact.protocol=https:] - Transport protocol
+ * @param {string} properties.contact.xpub - HD public extended key
+ * @param {number} properties.contact.index - Indentity key derivation index
+ * @param {string} [properties.contact.agent] - User agent identifier
+ * @param {object} properties.capacity
+ * @param {number} properties.capacity.timestamp - Last capacity publication
+ * @param {number} properties.capacity.available - Bytes available at host
+ * @param {number} properties.capacity.allocated - Bytes allocated by host
+ * @param {object} properties.reputation
+ * @param {number} properties.reputation.score - Audit based reputation score
+ * @param {number} properties.reputation.timestamp - Last scoring time
+ * @param {number} properties.updated - Timestamp of last profile update
+ * @memberof Database
  */
 const PeerProfile = new Schema({
   identity: {
@@ -202,6 +213,10 @@ PeerProfile.set('toObject', {
   }
 });
 
+/**
+ * Returns a human readable string URI for the peer
+ * @returns {string}
+ */
 PeerProfile.methods.toString = function() {
   return [
     this.contact.protocol, '//', this.contact.hostname, ':', this.contact.port
@@ -210,7 +225,14 @@ PeerProfile.methods.toString = function() {
 
 /**
  * Describes the result of an audit as a report to directories
- * @type {object}
+ * @constructor
+ * @param {object} properties
+ * @param {string} properties.reporter - Identity key of the reporter
+ * @param {string} properties.provider - Identity key of the provider
+ * @param {string} properties.challenge - Challenge key given to provider
+ * @param {string} properties.expected - Expected challenge response
+ * @param {string} properties.actual - Actual challenge response
+ * @memberof Database
  */
 const AuditReport = new Schema({
   reporter: {
@@ -243,6 +265,11 @@ AuditReport.virtual('outcome').get(function() {
   return this.expected === this.actual ? 1 : 0;
 });
 
+/**
+ * Returns a serialized and cryptographically signed version of this report
+ * @param {buffer} privateKey - SECP256K1 private key
+ * @returns {string[]}
+ */
 AuditReport.methods.toCompressedAuthenticated = function(privateKey) {
   let compressed, { signature, recovery } = secp256k1.sign(
     utils.sha256(Buffer.from(this.getSigningArray().join(''), 'hex')),
@@ -257,12 +284,21 @@ AuditReport.methods.toCompressedAuthenticated = function(privateKey) {
   return compressed;
 };
 
+/**
+ * Returns the array of keys needed to sign the report
+ * @returns {string[]}
+ */
 AuditReport.methods.getSigningArray = function() {
   return [
     this.reporter, this.provider, this.challenge, this.expected, this.actual
   ];
 };
 
+/**
+ * Verifies the signature of a compressed and authenticated report
+ * @param {string[]} compressed - The compressed report
+ * @returns {boolean}
+ */
 AuditReport.statics.verifyCompressedAuthenticated = function(compressed) {
   const report = new this({
     reporter: compressed[0],
@@ -292,7 +328,24 @@ AuditReport.statics.verifyCompressedAuthenticated = function(compressed) {
 
 /**
  * Describes a contract between two peers for shard storage
- * @type {object}
+ * @constructor
+ * @param {object} properties
+ * @param {number} [properties.version=2] - Version of the contract type
+ * @param {string} properties.ownerParentKey - HD key for the shard owner
+ * @param {number} [properties.ownerIndex=0] - HD index for the shard owner
+ * @param {string} properties.ownerIdentity - Identity key of the shard owner
+ * @param {string} properties.ownerSignature - Valid signature from owner
+ * @param {string} properties.providerParentKey - HD key for the shard owner
+ * @param {number} [properties.providerIndex=0] - HD index for the shard owner
+ * @param {string} properties.providerIdentity - Identity key of the shard owner
+ * @param {string} properties.providerSignature - Valid signature from provider
+ * @param {number} properties.shardSize - Number of bytes in the shard
+ * @param {string} properties.shardHash - RMD160 SHA256 hash of shard
+ * @param {string[]} properties.auditLeaves - Lower leaves of audit merkle tree
+ * @param {number} properties.auditInterval - Expect a challenge every N ms
+ * @param {string[]} properties.accessPolicies - IMP-10 access policy strings
+ * @param {string} [properties.fundingDestination=none] - Reserved for future
+ * @memberof Database
  */
 const ShardContract = new Schema({
   version: {
@@ -393,6 +446,10 @@ ShardContract.set('toObject', {
   }
 });
 
+/**
+ * Returns the stringified version of the contract for signing
+ * @returns {string}
+ */
 ShardContract.methods.getSigningString = function() {
   const obj = this.toObject();
 
@@ -402,6 +459,10 @@ ShardContract.methods.getSigningString = function() {
   return JSON.stringify(obj);
 };
 
+/**
+ * Creates a signature of the contract given the SECP256K1 key
+ * @returns {string}
+ */
 ShardContract.methods.signExternal = function(secret) {
   const { signature, recovery } = secp256k1.sign(
     utils.sha256(Buffer.from(this.getSigningString())),
@@ -411,6 +472,10 @@ ShardContract.methods.signExternal = function(secret) {
   return Buffer.concat([Buffer.from([recovery]), signature]);
 };
 
+/**
+ * Verifies the signature against a given public key
+ * @returns {boolean}
+ */
 ShardContract.methods.verifyExternal = function(signature, pubkey) {
   return secp256k1.verify(
     utils.sha256(Buffer.from(this.getSigningString())),
@@ -419,6 +484,11 @@ ShardContract.methods.verifyExternal = function(signature, pubkey) {
   );
 };
 
+/**
+ * Verifies that the given actor signature is valid
+ * @param {string} actor - One of provider|owner
+ * @returns {boolean}
+ */
 ShardContract.methods.verify = function(actor) {
   const compactSig = Buffer.from(this[`${actor}Signature`], 'base64');
   const recovery = compactSig[0];
@@ -431,11 +501,21 @@ ShardContract.methods.verify = function(actor) {
     keyutils.toPublicKeyHash(pubkey).toString('hex') === pubkeyhash;
 };
 
+/**
+ * Applies signature to contract as the given actor
+ * @param {string} actor - One of provider|owner
+ * @param {buffer} secret - SECP256K1 private key
+ * @returns {string}
+ */
 ShardContract.methods.sign = function(actor, secret) {
   return this[`${actor}Signature`] = this.signExternal(secret)
     .toString('base64');
 };
 
+/**
+ * Returns the property names that are different between two contracts
+ * @returns {string[]}
+ */
 ShardContract.statics.diff = function(c1, c2) {
   const differs = [];
 
@@ -458,6 +538,14 @@ ShardContract.statics.diff = function(c1, c2) {
 ShardContract.TYPE_GROUP = 'G';
 ShardContract.TYPE_USER = 'U';
 
+/**
+ * Returns which, if any, methods are allowed by the access policy for the
+ * given contact
+ * @param {object} contact
+ * @param {string} contact.0 - Identity key
+ * @param {object} contact.1 - Contact information
+ * @returns {string[]}
+ */
 ShardContract.methods.checkAccessPolicy = function(contact) {
   let [identity, info] = contact;
   let allowed = [];
@@ -488,7 +576,29 @@ ShardContract.methods.checkAccessPolicy = function(contact) {
 
 /**
  * Keeps references to the location of shards that compose an object
- * @type {object}
+ * @constructor
+ * @memberof Database
+ * @param {object} properties
+ * @param {string} [properties.name=untitled.blob] - Human readable object name
+ * @param {string} [properties.encoding] - File encoding type
+ * @param {string} [properties.mimetype=application/octet] - MIME type
+ * @param {string} properties.hash - SHA-256 hash of the object
+ * @param {number} properties.size - Number of bytes in the object
+ * @param {string} properties.status - One of finished|queued|failed
+ * @param {object[]} properties.shards
+ * @param {number} properties.shards.size - Number of bytes in shard
+ * @param {string} properties.shards.hash - RMD160 hash of shard
+ * @param {object} properties.shards.service
+ * @param {string} properties.shards.service.0 - Identity key of provider
+ * @param {object} properties.shards.service.1 - Contact info of provider
+ * @param {boolean} properties.shards.decayed - Flag if this shard is lost
+ * @param {object} properties.audits
+ * @param {string} properties.audits.root - Merkle root for audit tree
+ * @param {string[]} properties.audit.challenges - Audit challenges for shard
+ * @param {number} properties.audit.depth - Depth of audit merkle tree
+ * @param {string} properties.ecpub - SECP256K1 public key object is encrypted
+ * @param {string} properties.ecprv - SECP256K1 private key object is encrypted
+ * @param {string[]} properties.policies - List of IMP-10 access policies
  */
 const ObjectPointer = new Schema({
   name: {
@@ -594,6 +704,10 @@ ObjectPointer.virtual('percentDecayed').get(function() {
   return decayed / total;
 });
 
+/**
+ * Returns a self encrypted blob version of the pointer
+ * @returns {object}
+ */
 ObjectPointer.methods.toEncryptedBlob = function() {
   const password = utils.rmd160sha256(stringify(this.toObject()));
   const cipher = crypto.createCipher('aes256', password);
@@ -615,7 +729,13 @@ ObjectPointer.methods.toEncryptedBlob = function() {
 
 /**
  * Some arbitrary blob of data stored in the DHT
- * @type {object}
+ * @constructor
+ * @memberof Database
+ * @param {object} properties
+ * @param {string} properties.key - 160 bit hexidecimal key (hash of value)
+ * @param {string} properties.value - Arbitrary value to store (base64)
+ * @param {string} properties.publisher - Identity key of the author of entry
+ * @param {number} properties.timestamp - Time the item was stored
  */
 const NetworkBlob = new Schema({
   key: {
@@ -665,8 +785,7 @@ class Database extends EventEmitter {
 
   /**
    * @constructor
-   * @param {string} connectionUri
-   * @param {object} options
+   * @param {string} connectionUri - Valid MongoDB URI string for connecting
    */
   constructor(uri) {
     super();
@@ -701,8 +820,8 @@ class KadStorageAdapter {
 
   /**
    * Get item by key
-   * @param {string} key
-   * @param {object} [options]
+   * @param {string} key - 160 hex key
+   * @param {object} [options] - Stubbed for levelup compatibility
    * @param {function} callback
    */
   get(key, options, callback) {
@@ -729,9 +848,9 @@ class KadStorageAdapter {
 
   /**
    * Put item by key
-   * @param {string} key
-   * @param {object} value
-   * @param {object} [options]
+   * @param {string} key - 160 bit hex key (hash of value)
+   * @param {object} value - Arbitrary base64 string
+   * @param {object} [options] - Stubbed for levelup compatibility
    * @param {function} callback
    */
   put(key, value, options, callback) {
@@ -748,7 +867,7 @@ class KadStorageAdapter {
 
   /**
    * Delete item by key
-   * @param {string} key
+   * @param {string} key - 160 bit hex key
    * @param {function} callback
    */
   del(key, callback) {
@@ -817,11 +936,11 @@ module.exports.KadStorageAdapter = KadStorageAdapter;
 
 
 	<span class="copyright">
-	Copyright 2016 Gordon Hall
+	Copyright 2017 Counterpoint Hackerspace
 	</span>
 
 <span class="jsdoc-message">
-	Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.4</a>
+	Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a>
 	
 	using the <a href="https://github.com/docstrap/docstrap">DocStrap template</a>.
 </span>

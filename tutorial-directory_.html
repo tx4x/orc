@@ -4,7 +4,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width">
-	<title>ORC Tutorial: Running a Directory</title>
+	<title>ORC Tutorial: Using the Local Directory</title>
 
 	<!--[if lt IE 9]>
 	<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
@@ -41,7 +41,7 @@
 			<li class="dropdown">
 				<a href="classes.list.html" class="dropdown-toggle" data-toggle="dropdown">Classes<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="Audit.html">Audit</a></li><li><a href="Bridge.html">Bridge</a></li><li><a href="Database.html">Database</a></li><li><a href="Directory.html">Directory</a></li><li><a href="KadStorageAdapter.html">KadStorageAdapter</a></li><li><a href="Node.html">Node</a></li><li><a href="Proof.html">Proof</a></li><li><a href="Rules.html">Rules</a></li><li><a href="Server.html">Server</a></li><li><a href="Shards.html">Shards</a></li><li><a href="Transport.html">Transport</a></li>
+					<li><a href="Audit.html">Audit</a></li><li><a href="Bridge.html">Bridge</a></li><li><a href="Database.html">Database</a></li><li><a href="Database.AuditReport.html">Database.AuditReport</a></li><li><a href="Database.NetworkBlob.html">Database.NetworkBlob</a></li><li><a href="Database.ObjectPointer.html">Database.ObjectPointer</a></li><li><a href="Database.PeerProfile.html">Database.PeerProfile</a></li><li><a href="Database.ShardContract.html">Database.ShardContract</a></li><li><a href="Directory.html">Directory</a></li><li><a href="KadStorageAdapter.html">KadStorageAdapter</a></li><li><a href="Node.html">Node</a></li><li><a href="Proof.html">Proof</a></li><li><a href="Rules.html">Rules</a></li><li><a href="Server.html">Server</a></li><li><a href="Shards.html">Shards</a></li><li><a href="Transport.html">Transport</a></li>
 				</ul>
 			</li>
 			
@@ -55,14 +55,7 @@
 			<li class="dropdown">
 				<a href="tutorials.list.html" class="dropdown-toggle" data-toggle="dropdown">Tutorials<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="tutorial-config.html">Configuration Guide</a></li><li><a href="tutorial-directory_.html">Running a Directory</a></li><li><a href="tutorial-install.html">Manual Installation</a></li><li><a href="tutorial-providing.html">Providing Capacity</a></li><li><a href="tutorial-transfers.html">Uploading and Downloading</a></li><li><a href="tutorial-usage.html">Basic Usage Guide</a></li>
-				</ul>
-			</li>
-			
-			<li class="dropdown">
-				<a href="global.html" class="dropdown-toggle" data-toggle="dropdown">Global<b class="caret"></b></a>
-				<ul class="dropdown-menu ">
-					<li><a href="global.html#AuditReport">AuditReport</a></li><li><a href="global.html#NetworkBlob">NetworkBlob</a></li><li><a href="global.html#ObjectPointer">ObjectPointer</a></li><li><a href="global.html#PeerProfile">PeerProfile</a></li><li><a href="global.html#ShardContract">ShardContract</a></li>
+					<li><a href="tutorial-config.html">Configuration Guide</a></li><li><a href="tutorial-control.html">Using the Control Port</a></li><li><a href="tutorial-directory_.html">Using the Local Directory</a></li><li><a href="tutorial-install.html">Manual Installation</a></li><li><a href="tutorial-transfers.html">Using the Local Bridge</a></li><li><a href="tutorial-usage.html">Using the Node.js Library</a></li>
 				</ul>
 			</li>
 			
@@ -95,30 +88,81 @@
 <header>
     
 
-    <h2>Running a Directory</h2>
+    <h2>Using the Local Directory</h2>
 </header>
 
 <article>
-    <p>Directories are &quot;passive&quot; ORC nodes that hang around the network and relay 
-publications for farmers and renters. During this process, directories maintain 
-a cache of all the farmers it has seen, their service contact information and 
-the available and allocated capacity they have. Using this cache, directories 
-expose an API (optionally over the clearnet) to aid applications in gaining 
-valuable insight into the state of the network.</p>
-<p>The ORC Project maintains a public directory node with an API exposed at 
+    <p>ORC nodes, by default, run a &quot;directory service&quot;, which is disctinct from the 
+core RPC service used for P2P communications and the &quot;bridge service&quot; used 
+by applications. During the normal operation of the network, nodes maintain 
+a persistent record of the identities it has encountered along with various 
+metadata.</p>
+<p>This metadata includes the last time we interacted with an identity, how much 
+storage capacity they have allocated and available, and the last time we 
+received a capacity announcement on their behalf. When a node also runs a 
+directory service, it leverages this information along with audit reports 
+created by the local bridge service to periodically apply a reputation score to 
+each identity it knows. This is how each individual node establishes a view of 
+reliable nodes in the network and how the bridge service makes selections for 
+providers when objects are uploaded.</p>
+<p>The directory service, by default, is enabled and public (meaning it does 
+require not authentication to be accessed). By default, ORC will also establish 
+a distinct hidden service for it. The ORC Project maintains a public directory 
+with an API exposed on the clearnet at 
 <a href="https://directory.orc.network">https://directory.orc.network</a>. Feel free to 
 use it or run your own!</p>
-<p>If you wish to run your own, this guide will show you how to properly configure 
-your node. This will only cover configuration specific to running a directory, 
-so for more information be sure to check out the <a href="tutorial-config.html">Configuration Guide</a>.</p>
-<h3>Configure Directory API</h3><p>When the directory profile is enabled, use the supplied hostname, port, and 
-optional SSL configuration to serve a public (clearnet) statistics API.</p>
+<p>For the purpose of this guide and examples, we will assume the following 
+configuration properties are set:</p>
 <pre class="prettyprint source"><code>DirectoryPort = 4446
 DirectoryHostname = 127.0.0.1
-DirectoryUseSSL = 0
-DirectoryServiceKeyPath: /home/bookchin/.config/orc/directory_key.pem
-DirectoryCertificatePath: /home/bookchin/.config/orc/directory_cert.pem
-DirectoryAuthorityChains[] = /home/bookchin/.config/fullchain.pem</code></pre>
+DirectoryUseSSL = 0</code></pre><h3><code>GET /</code></h3><p>Fetches a JSON array of all identities and their associated profiles for which 
+the node has interacted with in the past 24 hours.</p>
+<pre class="prettyprint source"><code>$ curl http://127.0.0.1:4446 | jq
+[
+  {
+    &quot;identity&quot;: &quot;13989612ba437a43ff1ef186019e12da1c66b7f3&quot;,
+    &quot;updated&quot;: &quot;2017-09-30T17:19:49.230Z&quot;,
+    &quot;reputation&quot;: {
+      &quot;timestamp&quot;: &quot;2017-09-30T17:19:49.230Z&quot;,
+      &quot;score&quot;: 0
+    },
+    &quot;capacity&quot;: {
+      &quot;timestamp&quot;: &quot;2017-10-03T15:53:40.353Z&quot;,
+      &quot;available&quot;: 1099511623680,
+      &quot;allocated&quot;: 1099511627776
+    },
+    &quot;contact&quot;: {
+      &quot;xpub&quot;: &quot;xpub69p5JPnPnhW3a6Yh4HsUMa6wjUBZA8Vqzy3YGvLUrndK3ZdP6thfU3Uez8evMEBDBDTtyHzaJg2JUYtP3kuATWTcU1bQbzsRcbZm5mBpDeT&quot;,
+      &quot;port&quot;: 443,
+      &quot;hostname&quot;: &quot;rm4mbpdzhtemijlt.onion&quot;,
+      &quot;agent&quot;: &quot;orc-8.1.1-beta6/linux&quot;,
+      &quot;index&quot;: 0,
+      &quot;protocol&quot;: &quot;https:&quot;
+    }
+  }
+]</code></pre><h3><code>GET /{identity}</code></h3><p>Given a known identity key, fetch the specific profile associated.</p>
+<pre class="prettyprint source"><code>$ curl http://127.0.0.1:4446/501e820f0ec3eb0350a239f57062abce1f55da09 | jq
+{
+  &quot;identity&quot;: &quot;501e820f0ec3eb0350a239f57062abce1f55da09&quot;,
+  &quot;updated&quot;: &quot;2017-09-30T17:19:49.226Z&quot;,
+  &quot;reputation&quot;: {
+    &quot;timestamp&quot;: &quot;2017-09-30T17:19:49.226Z&quot;,
+    &quot;score&quot;: 0
+  },
+  &quot;capacity&quot;: {
+    &quot;timestamp&quot;: &quot;2017-10-03T15:52:15.148Z&quot;,
+    &quot;available&quot;: 128834753620,
+    &quot;allocated&quot;: 128849018880
+  },
+  &quot;contact&quot;: {
+    &quot;xpub&quot;: &quot;xpub69nnJmWgmvSqmkfZMfmsrMby1LSZsZv9HNEFPqfku9Pc9YS4RdcAkqBWjTrrJkgscnLrBg3CwAeZqtfnVV6y419KBUfHpBJf5c8kDXpusxN&quot;,
+    &quot;port&quot;: 443,
+    &quot;hostname&quot;: &quot;dcqbajwkawiidnwo.onion&quot;,
+    &quot;agent&quot;: &quot;orc-8.1.1-beta6/linux&quot;,
+    &quot;index&quot;: 0,
+    &quot;protocol&quot;: &quot;https:&quot;
+  }
+}</code></pre>
 </article>
 
 </section>
@@ -152,11 +196,11 @@ DirectoryAuthorityChains[] = /home/bookchin/.config/fullchain.pem</code></pre>
 
 
 	<span class="copyright">
-	Copyright 2016 Gordon Hall
+	Copyright 2017 Counterpoint Hackerspace
 	</span>
 
 <span class="jsdoc-message">
-	Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.4</a>
+	Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a>
 	
 	using the <a href="https://github.com/docstrap/docstrap">DocStrap template</a>.
 </span>

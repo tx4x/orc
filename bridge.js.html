@@ -41,7 +41,7 @@
 			<li class="dropdown">
 				<a href="classes.list.html" class="dropdown-toggle" data-toggle="dropdown">Classes<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="Audit.html">Audit</a></li><li><a href="Bridge.html">Bridge</a></li><li><a href="Database.html">Database</a></li><li><a href="Directory.html">Directory</a></li><li><a href="KadStorageAdapter.html">KadStorageAdapter</a></li><li><a href="Node.html">Node</a></li><li><a href="Proof.html">Proof</a></li><li><a href="Rules.html">Rules</a></li><li><a href="Server.html">Server</a></li><li><a href="Shards.html">Shards</a></li><li><a href="Transport.html">Transport</a></li>
+					<li><a href="Audit.html">Audit</a></li><li><a href="Bridge.html">Bridge</a></li><li><a href="Database.html">Database</a></li><li><a href="Database.AuditReport.html">Database.AuditReport</a></li><li><a href="Database.NetworkBlob.html">Database.NetworkBlob</a></li><li><a href="Database.ObjectPointer.html">Database.ObjectPointer</a></li><li><a href="Database.PeerProfile.html">Database.PeerProfile</a></li><li><a href="Database.ShardContract.html">Database.ShardContract</a></li><li><a href="Directory.html">Directory</a></li><li><a href="KadStorageAdapter.html">KadStorageAdapter</a></li><li><a href="Node.html">Node</a></li><li><a href="Proof.html">Proof</a></li><li><a href="Rules.html">Rules</a></li><li><a href="Server.html">Server</a></li><li><a href="Shards.html">Shards</a></li><li><a href="Transport.html">Transport</a></li>
 				</ul>
 			</li>
 			
@@ -55,14 +55,7 @@
 			<li class="dropdown">
 				<a href="tutorials.list.html" class="dropdown-toggle" data-toggle="dropdown">Tutorials<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="tutorial-config.html">Configuration Guide</a></li><li><a href="tutorial-directory_.html">Running a Directory</a></li><li><a href="tutorial-install.html">Manual Installation</a></li><li><a href="tutorial-providing.html">Providing Capacity</a></li><li><a href="tutorial-transfers.html">Uploading and Downloading</a></li><li><a href="tutorial-usage.html">Basic Usage Guide</a></li>
-				</ul>
-			</li>
-			
-			<li class="dropdown">
-				<a href="global.html" class="dropdown-toggle" data-toggle="dropdown">Global<b class="caret"></b></a>
-				<ul class="dropdown-menu ">
-					<li><a href="global.html#AuditReport">AuditReport</a></li><li><a href="global.html#NetworkBlob">NetworkBlob</a></li><li><a href="global.html#ObjectPointer">ObjectPointer</a></li><li><a href="global.html#PeerProfile">PeerProfile</a></li><li><a href="global.html#ShardContract">ShardContract</a></li>
+					<li><a href="tutorial-config.html">Configuration Guide</a></li><li><a href="tutorial-control.html">Using the Control Port</a></li><li><a href="tutorial-directory_.html">Using the Local Directory</a></li><li><a href="tutorial-install.html">Manual Installation</a></li><li><a href="tutorial-transfers.html">Using the Local Bridge</a></li><li><a href="tutorial-usage.html">Using the Node.js Library</a></li>
 				</ul>
 			</li>
 			
@@ -570,9 +563,17 @@ class Bridge extends EventEmitter {
     async.waterfall([
       (next) => encodeErasure(next),
       (file, rs, obj, next) => prepareShards(file, rs, obj, next),
-      (shards, obj, next) => uploadShards(shards, obj, next),
-      (object, next) => distributePointer(object, next)
-    ], callback);
+      (shards, obj, next) => uploadShards(shards, obj, next)
+    ], (err, object) => {
+      if (err) {
+        return callback(err);
+      }
+
+      distributePointer(object, () => {
+        this.node.logger.info('finished pointer distribution');
+      });
+      callback(null, object);
+    });
   }
 
   /**
@@ -879,6 +880,7 @@ class Bridge extends EventEmitter {
       _isOwner: true
     };
 
+    this.node.logger.info('starting audit routine');
     this.database.ObjectPointer.find(query, (err, objects) => {
       /* istanbul ignore if */
       if (err) {
@@ -892,6 +894,7 @@ class Bridge extends EventEmitter {
         candidates.push(knuthShuffle(objects).pop());
       }
 
+      this.node.logger.info(`preparing ${candidates.length} objects for audit`);
       async.eachSeries(
         candidates,
         (obj, next) => this._auditObject(obj, next),
@@ -913,7 +916,7 @@ class Bridge extends EventEmitter {
    * @private
    */
   _createUploadChannel({ stream, target, proposal, shard }, done) {
-    this.node.claimFarmerCapacity(target, proposal, (err, data) => {
+    this.node.claimProviderCapacity(target, proposal, (err, data) => {
       if (err) {
         this.node.logger.warn(
           `failed to claim capacity, reason: ${err.message}`
@@ -972,6 +975,7 @@ class Bridge extends EventEmitter {
    * @private
    */
   _auditObject(object, callback) {
+    this.node.logger.info(`auditing object ${object.hash}`);
     async.mapLimit(object.shards, 3, (shard, done) => {
       this.database.ShardContract.findOne({
         shardHash: shard.hash
@@ -1015,7 +1019,7 @@ class Bridge extends EventEmitter {
           };
 
           let { proof } = proofs.pop() || { proof: [] };
-          let [expected, actual] = Proof.verify(
+          let [actual, expected] = Proof.verify(
             proof,
             Buffer.from(shard.audits.root, 'hex'),
             shard.audits.depth
@@ -1049,7 +1053,11 @@ class Bridge extends EventEmitter {
 
           /* istanbul ignore else */
           if (object.percentDecayed >= 0.25) {
-            this.node.logger.info('object decay more than 25%, will rebuild');
+            let threshold = Math.ceil(constants.MAX_DECAY * 100).toFixed();
+            let decay = Math.ceil(object.percentDecayed * 100).toFixed();
+            this.node.logger.info(
+              `object decay more than ${threshold}% (${decay}%), will rebuild`
+            );
             this._rebuildObject(object, callback);
           } else {
             callback();
@@ -1260,11 +1268,11 @@ module.exports = Bridge;
 
 
 	<span class="copyright">
-	Copyright 2016 Gordon Hall
+	Copyright 2017 Counterpoint Hackerspace
 	</span>
 
 <span class="jsdoc-message">
-	Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.4</a>
+	Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a>
 	
 	using the <a href="https://github.com/docstrap/docstrap">DocStrap template</a>.
 </span>

@@ -4,7 +4,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width">
-	<title>ORC Tutorial: Uploading and Downloading</title>
+	<title>ORC Tutorial: Using the Local Bridge</title>
 
 	<!--[if lt IE 9]>
 	<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
@@ -41,7 +41,7 @@
 			<li class="dropdown">
 				<a href="classes.list.html" class="dropdown-toggle" data-toggle="dropdown">Classes<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="Audit.html">Audit</a></li><li><a href="Bridge.html">Bridge</a></li><li><a href="Database.html">Database</a></li><li><a href="Directory.html">Directory</a></li><li><a href="KadStorageAdapter.html">KadStorageAdapter</a></li><li><a href="Node.html">Node</a></li><li><a href="Proof.html">Proof</a></li><li><a href="Rules.html">Rules</a></li><li><a href="Server.html">Server</a></li><li><a href="Shards.html">Shards</a></li><li><a href="Transport.html">Transport</a></li>
+					<li><a href="Audit.html">Audit</a></li><li><a href="Bridge.html">Bridge</a></li><li><a href="Database.html">Database</a></li><li><a href="Database.AuditReport.html">Database.AuditReport</a></li><li><a href="Database.NetworkBlob.html">Database.NetworkBlob</a></li><li><a href="Database.ObjectPointer.html">Database.ObjectPointer</a></li><li><a href="Database.PeerProfile.html">Database.PeerProfile</a></li><li><a href="Database.ShardContract.html">Database.ShardContract</a></li><li><a href="Directory.html">Directory</a></li><li><a href="KadStorageAdapter.html">KadStorageAdapter</a></li><li><a href="Node.html">Node</a></li><li><a href="Proof.html">Proof</a></li><li><a href="Rules.html">Rules</a></li><li><a href="Server.html">Server</a></li><li><a href="Shards.html">Shards</a></li><li><a href="Transport.html">Transport</a></li>
 				</ul>
 			</li>
 			
@@ -55,14 +55,7 @@
 			<li class="dropdown">
 				<a href="tutorials.list.html" class="dropdown-toggle" data-toggle="dropdown">Tutorials<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="tutorial-config.html">Configuration Guide</a></li><li><a href="tutorial-directory_.html">Running a Directory</a></li><li><a href="tutorial-install.html">Manual Installation</a></li><li><a href="tutorial-providing.html">Providing Capacity</a></li><li><a href="tutorial-transfers.html">Uploading and Downloading</a></li><li><a href="tutorial-usage.html">Basic Usage Guide</a></li>
-				</ul>
-			</li>
-			
-			<li class="dropdown">
-				<a href="global.html" class="dropdown-toggle" data-toggle="dropdown">Global<b class="caret"></b></a>
-				<ul class="dropdown-menu ">
-					<li><a href="global.html#AuditReport">AuditReport</a></li><li><a href="global.html#NetworkBlob">NetworkBlob</a></li><li><a href="global.html#ObjectPointer">ObjectPointer</a></li><li><a href="global.html#PeerProfile">PeerProfile</a></li><li><a href="global.html#ShardContract">ShardContract</a></li>
+					<li><a href="tutorial-config.html">Configuration Guide</a></li><li><a href="tutorial-control.html">Using the Control Port</a></li><li><a href="tutorial-directory_.html">Using the Local Directory</a></li><li><a href="tutorial-install.html">Manual Installation</a></li><li><a href="tutorial-transfers.html">Using the Local Bridge</a></li><li><a href="tutorial-usage.html">Using the Node.js Library</a></li>
 				</ul>
 			</li>
 			
@@ -95,126 +88,126 @@
 <header>
     
 
-    <h2>Uploading and Downloading</h2>
+    <h2>Using the Local Bridge</h2>
 </header>
 
 <article>
-    <p>Managing your objects (files) on the ORC network is easy! This guide will show 
-you how to configure your node to expose a simple REST API that applications 
-can use to upload, download, delete, and list objects you have stored in the 
-network.</p>
-<h4><code>BridgeEnabled</code></h4><p>Set this property to <code>1</code> to enable the local API.</p>
-<h4><code>BridgeHostname</code></h4><p>Set this property to bind the service to an hostname or IP address. <strong>It's 
-important to use a loopback interface or LAN IP</strong> otherwise an attacker may be 
-able to upload and download your objects! Best to use <code>127.0.0.1</code> which is the 
-default.</p>
-<h4><code>BridgePort</code></h4><p>Set this property to instruct the local bridge service to bind to the given 
-port. Defaults to <code>4445</code>.</p>
-<h4><code>BridgeTempStagingBaseDir</code></h4><p>Set this property to instruct the local bridge service where to hold temporary 
-data while objects are being uploaded to the network. Safe to leave as the 
-default, which is <code>~/.config/orc/__bridge.staging</code>.</p>
-<h3>List Objects Stored</h3><p>You can get a JSON list of your objects stored in the network by sending a 
-request to <code>GET /</code>.</p>
-<p>Example:</p>
+    <p>This guide will show you how to configure your node to expose a simple REST 
+API that applications can use to upload, download, delete, and list objects 
+you have stored in the network.</p>
+<blockquote>
+<p>Make sure you've read over the <a href="tutorial-config.html">Configuration Guide</a> and understand the 
+the security implications for various settings related the the local bridge.</p>
+</blockquote>
+<p>For the purposes of brevity for this guide, we are going to assume the 
+following configuration scheme and will use <code>curl</code> for the examples:</p>
+<pre class="prettyprint source"><code>BridgeEnabled = 1
+BridgeHostname = 127.0.0.1
+BridgePort = 4445
+BridgeUseSSL = 0
+BridgeAuthenticationEnabled = 0</code></pre><h3><code>GET /</code></h3><p>Retreive a JSON list of your objects stored in the network and managed by this 
+node. Each item returned in the list contains metadata regarding the type, 
+size, name, hash, location of shards, and more.</p>
 <pre class="prettyprint source"><code>$ curl http://127.0.0.1:4445 | jq
 [
   {
-    &quot;id&quot;: &quot;d049bff2-21b5-4f2f-bac3-efb3832a5afb&quot;,
-    &quot;name&quot;: &quot;README.md&quot;,
     &quot;encoding&quot;: &quot;7bit&quot;,
-    &quot;mimetype&quot;: &quot;application/octet-stream&quot;,
-    &quot;hash&quot;: &quot;877167565af0376f2fddb170ad0483f91e9b932d72052720ae15efeb8ec2b010&quot;,
-    &quot;size&quot;: 3229,
+    &quot;size&quot;: 43472,
+    &quot;ecpub&quot;: &quot;02dc3937fd97fc26a54ad976c4cda37eb513d9a86debca18dd6f2e83717c9227d3&quot;,
+    &quot;hash&quot;: &quot;24081ee6fd4a5395a44597e36c5314b1308a197137db45e08d6d86aa070fbe84&quot;,
     &quot;status&quot;: &quot;finished&quot;,
+    &quot;policies&quot;: [
+      &quot;::RETRIEVE&quot;
+    ],
     &quot;shards&quot;: [
       {
-        &quot;index&quot;: 0,
-        &quot;size&quot;: 1616,
-        &quot;audits&quot;: {...},
+        &quot;size&quot;: 21744,
+        &quot;hash&quot;: &quot;e1eede74c9512f1994b18eac6465a0b471201548&quot;,
         &quot;service&quot;: [
-          &quot;6ee50b070fb8ce1fcd42814d18ee10f0615c235c&quot;,
-          {...}
-        ],
-        &quot;contract&quot;: {...}
+          &quot;ccfbab389c9c547badb708021c0eaad4d9ec87ed&quot;,
+          {
+            &quot;agent&quot;: &quot;orc-8.1.1-beta5/linux&quot;,
+            &quot;index&quot;: 2,
+            &quot;xpub&quot;: &quot;xpub6BRiU17o5vnTq8sGX2DgjBoU1ozBZnBDiW4avCwoFUzcYtrHMKxs8BjdS3qt6AAv42KDE2B4D2q3Fj3cYuzuCFoDijnQKJYvoMLJV2rEGVL&quot;,
+            &quot;port&quot;: 443,
+            &quot;protocol&quot;: &quot;https:&quot;,
+            &quot;hostname&quot;: &quot;orcwfkilxjxo63mr.onion&quot;
+          }
+        ]
       },
       {
-        &quot;index&quot;: 1,
-        &quot;size&quot;: 1616,
-        &quot;audits&quot;: {...},
+        &quot;size&quot;: 21744,
+        &quot;hash&quot;: &quot;0a2f5a2a47ffe851403bfb4dc56be9b09392d182&quot;,
         &quot;service&quot;: [
-          &quot;e34d507bf40171f1471dd1d7f41323439e36fe37&quot;,
-          {...}
-        ],
-        &quot;contract&quot;: {...}
+          &quot;681069cc9dc643999be1031a8740d2a341939262&quot;,
+          {
+            &quot;agent&quot;: &quot;orc-8.1.1-beta6/linux&quot;,
+            &quot;index&quot;: 0,
+            &quot;xpub&quot;: &quot;xpub6ARoW5DJo4xBbob8Gr3HReVU3qqJQpBRqBR2SDJkaYq5eJGL17yhGijXzkmobJe3f5nPHyZrohWR5txhCUjiXvhfCR3v2vmc7MuAYCcrTbt&quot;,
+            &quot;port&quot;: 443,
+            &quot;protocol&quot;: &quot;https:&quot;,
+            &quot;hostname&quot;: &quot;puiq7u4bw6lroev5.onion&quot;
+          }
+        ]
       },
       {
-        &quot;index&quot;: 2,
-        &quot;size&quot;: 1616,
-        &quot;audits&quot;: {...},
+        &quot;size&quot;: 21744,
+        &quot;hash&quot;: &quot;4c38ad2a132b8d683abcc73f2eddf9d2700ad5d7&quot;,
         &quot;service&quot;: [
-          &quot;cc31602c67a35a26d23d93d62bef0d6d09c89e0d&quot;,
-          {...}
-        ],
-        &quot;contract&quot;: {...}
-    ]
+          &quot;1723b631252fc5f50ba43a8cfd2f38cba0daf44c&quot;,
+          {
+            &quot;agent&quot;: &quot;orc-8.1.1-beta1/linux&quot;,
+            &quot;index&quot;: 0,
+            &quot;xpub&quot;: &quot;xpub6AxEbAJY7bV33paGh9wbGgDh7q6T67LQKBEbo93vxez4zPF4sQQnNHK55suXWk4ViZYsjy1jwdUtuuWosUWAyEQMeqXmJKhbbuZnAcGLQRF&quot;,
+            &quot;port&quot;: 443,
+            &quot;protocol&quot;: &quot;https:&quot;,
+            &quot;hostname&quot;: &quot;wifniq3h3gqm2b2w.onion&quot;
+          }
+        ]
+      }
+    ],
+    &quot;mimetype&quot;: &quot;image/png&quot;,
+    &quot;name&quot;: &quot;avatar.png&quot;,
+    &quot;id&quot;: &quot;59d2627ebb28977b0e6ab841&quot;
   }
-]</code></pre><h3>Upload Objects</h3><p>You can upload a file to the network my sending a multipart/form-upload request 
+]</code></pre><h3><code>POST /</code></h3><p>You can upload a file to the network my sending a multipart/form-upload request 
 to <code>POST /</code>. This works the same as if using a <code>&lt;input type=&quot;file&quot;/&gt;</code> on a web
 page. You can also add <code>policy</code> fields to specify access policies as defined in 
 <a href="https://github.com/orcproject/imps/blob/master/imp-0010.md">IMP-0010</a>.</p>
-<p>Example:</p>
-<pre class="prettyprint source"><code>$ curl -F &quot;file=@README.md;filename=README.md&quot; http://127.0.0.1:4445 | jq
-{
-  &quot;id&quot;: &quot;d049bff2-21b5-4f2f-bac3-efb3832a5afb&quot;,
-  &quot;name&quot;: &quot;README.md&quot;,
-  &quot;encoding&quot;: &quot;7bit&quot;,
-  &quot;mimetype&quot;: &quot;application/octet-stream&quot;,
-  &quot;hash&quot;: &quot;877167565af0376f2fddb170ad0483f91e9b932d72052720ae15efeb8ec2b010&quot;,
-  &quot;size&quot;: 3229,
-  &quot;status&quot;: &quot;finished&quot;,
-  &quot;shards&quot;: [
-    {
-      &quot;index&quot;: 0,
-      &quot;size&quot;: 1616,
-      &quot;audits&quot;: {...},
-      &quot;service&quot;: [
-        &quot;6ee50b070fb8ce1fcd42814d18ee10f0615c235c&quot;,
-        {...}
-      ],
-      &quot;contract&quot;: {...}
-    },
-    {
-      &quot;index&quot;: 1,
-      &quot;size&quot;: 1616,
-      &quot;audits&quot;: {...},
-      &quot;service&quot;: [
-        &quot;e34d507bf40171f1471dd1d7f41323439e36fe37&quot;,
-        {...}
-      ],
-      &quot;contract&quot;: {...}
-    },
-    {
-      &quot;index&quot;: 2,
-      &quot;size&quot;: 1616,
-      &quot;audits&quot;: {...},
-      &quot;service&quot;: [
-        &quot;cc31602c67a35a26d23d93d62bef0d6d09c89e0d&quot;,
-        {...}
-      ],
-      &quot;contract&quot;: {...}
-  ]
-}</code></pre><h3>Download Objects</h3><p>You can download a file from the network knowing only the UUID generated by the 
-local bridge service, by sending a <code>GET /{uuid}</code> request.</p>
-<p>Example:</p>
-<pre class="prettyprint source"><code>$ curl http://127.0.0.1:4445/d049bff2-21b5-4f2f-bac3-efb3832a5afb >> README.md</code></pre><h3>Sharing Objects</h3><p>If you supplied an appropriate access <code>policy</code> field on upload, you can share a 
+<pre class="prettyprint source"><code>$ curl -F &quot;file=@avatar.png;type=image/png;&quot; -F &quot;policy=::RETRIEVE&quot; http://127.0.0.1:5445 | jq</code></pre><p>Once the object is completely distributed, the metadata will be returned. You 
+can check on the status of an object while the request is pending by listing 
+the objects using <code>GET /</code>. Statuses may be <em>finished</em>, <em>queued</em>, or <em>failed</em>.</p>
+<h3><code>GET /{id}</code></h3><p>You can download a file from the network knowing only the object's ID in the 
+local bridge service. The appropriate headers for content type are sent to 
+enable browsers and other applications to display the downloaded object.</p>
+<pre class="prettyprint source"><code>$ curl http://127.0.0.1:4445/59d2627ebb28977b0e6ab841 >> avatar.png</code></pre><blockquote>
+<p>Note that decryption is performed by the local bridge service, so it is very 
+important to configure your bridge to use authentication if exposing 
+as an onion service and SSL if exposing over the clearnet.</p>
+</blockquote>
+<h3><code>GET /{id}/magnet</code></h3><p>If you supplied an appropriate access <code>policy</code> field on upload, you can share a 
 magnet link with others to fetch the object pointer.</p>
-<p>Example:</p>
-<pre class="prettyprint source"><code>$ curl http://127.0.0.1:4445/d049bff2-21b5-4f2f-bac3-efb3832a5afb/magnet | xclip -selection clipboard</code></pre><p>To fetch an object pointer shared by someone else, you can send the magnet link
-and get back an object pointer with an ID you can use in the download example:</p>
-<p>Example:</p>
-<pre class="prettyprint source"><code>curl -X PUT --data &quot;magnet:?xt=...&quot; http://127.0.0.1:4445</code></pre><h3>Destroy Objects</h3><p>You can destroy an object, nullifying associated contracts, and issuing any 
-final payment to farmers by sending a <code>DELETE /{uuid}</code> request.</p>
-<p>Example:</p>
+<pre class="prettyprint source"><code>$ curl http://127.0.0.1:4445/59d2627ebb28977b0e6ab841/magnet | jq
+{
+  &quot;href&quot;: &quot;magnet:?xt=urn:orc:a3cd254243fc02579384d75cba2588a6c9e850d1&xs=43472&dn=avatar.png&x.ecprv=2daade3b5a4af3641e22cb0317cadf3115bc4b800e0eceaa1a4568c53e60911b&x.pword=17300e194a57251388e98b104411b2004223fe7a&quot;
+}</code></pre><p>This will return a magnet link that contains the hash of the encrypted pointer 
+so it can be looked up in the DHT, the name and size of the object referenced 
+for interfaces to use, the key used to encrypt the pointer, and the key used 
+to encrypt the object. </p>
+<blockquote>
+<p>Note that this link can be used by anyone to download the pointer, which 
+allows anyone who is included in the object's access policy to download 
+and decrypt the object itself. </p>
+</blockquote>
+<h3><code>PUT /</code></h3><p>To fetch an object pointer shared by someone else, you can send the magnet link
+and get back an object pointer with an ID you can use in the download example.</p>
+<pre class="prettyprint source"><code>curl -X PUT --data &quot;magnet:?xt=...&quot; http://127.0.0.1:4445</code></pre><blockquote>
+<p>Protip! Pipe the output of the example above through 
+<code>jq -r .href | xclip -selection clipboard</code> to copy the magnet link directly 
+to your clipboard. ;)</p>
+</blockquote>
+<h3><code>DELETE /{id}</code></h3><p>You can destroy an object, nullifying associated contracts by sending a 
+<code>DELETE /{id}</code> request.</p>
 <pre class="prettyprint source"><code>$ curl -X &quot;DELETE&quot; http://127.0.0.1:4445/d049bff2-21b5-4f2f-bac3-efb3832a5afb</code></pre>
 </article>
 
@@ -249,11 +242,11 @@ final payment to farmers by sending a <code>DELETE /{uuid}</code> request.</p>
 
 
 	<span class="copyright">
-	Copyright 2016 Gordon Hall
+	Copyright 2017 Counterpoint Hackerspace
 	</span>
 
 <span class="jsdoc-message">
-	Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.4</a>
+	Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a>
 	
 	using the <a href="https://github.com/docstrap/docstrap">DocStrap template</a>.
 </span>

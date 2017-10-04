@@ -4,7 +4,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width">
-	<title>ORC Class: Server</title>
+	<title>ORC Class: ShardContract</title>
 
 	<!--[if lt IE 9]>
 	<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
@@ -85,16 +85,16 @@
 		<div id="main">
 			
 
-	<h1 class="page-title">Class: Server</h1>
+	<h1 class="page-title">Class: ShardContract</h1>
 <section>
 
 <header>
     
         <h2>
-        Server
-        </h2>
+            <span class="ancestors"><a href="Database.html">Database</a>.</span>
         
-            <div class="class-description">Creates a shard server for sending and receiving consigned file shards</div>
+        ShardContract
+        </h2>
         
     
 </header>
@@ -106,12 +106,16 @@
         
 <hr>
 <dt>
-    <h4 class="name" id="Server"><span class="type-signature"></span>new Server(options)</h4>
+    <h4 class="name" id="ShardContract"><span class="type-signature"></span>new ShardContract(properties)</h4>
     
     
 </dt>
 <dd>
 
+    
+    <div class="description">
+        Describes a contract between two peers for shard storage
+    </div>
     
 
     
@@ -145,7 +149,7 @@
 
         <tr>
             
-                <td class="name"><code>options</code></td>
+                <td class="name"><code>properties</code></td>
             
 
             <td class="type">
@@ -192,7 +196,47 @@
 
         <tr>
             
-                <td class="name"><code>identity</code></td>
+                <td class="name"><code>version</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    2
+                
+                </td>
+            
+
+            <td class="description last">Version of the contract type</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>ownerParentKey</code></td>
             
 
             <td class="type">
@@ -221,86 +265,14 @@
                 </td>
             
 
-            <td class="description last">Node identity key</td>
+            <td class="description last">HD key for the shard owner</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>database</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="Database.html">Database</a></span>
-
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                </td>
-            
-
-            <td class="description last"></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>shards</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="Shards.html">Shards</a></span>
-
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                </td>
-            
-
-            <td class="description last"></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>tokenTtl</code></td>
+                <td class="name"><code>ownerIndex</code></td>
             
 
             <td class="type">
@@ -328,12 +300,452 @@
             
                 <td class="default">
                 
-                    1800000
+                    0
                 
                 </td>
             
 
-            <td class="description last">Expire unused token</td>
+            <td class="description last">HD index for the shard owner</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>ownerIdentity</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">Identity key of the shard owner</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>ownerSignature</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">Valid signature from owner</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>providerParentKey</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">HD key for the shard owner</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>providerIndex</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    0
+                
+                </td>
+            
+
+            <td class="description last">HD index for the shard owner</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>providerIdentity</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">Identity key of the shard owner</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>providerSignature</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">Valid signature from provider</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>shardSize</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">Number of bytes in the shard</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>shardHash</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">RMD160 SHA256 hash of shard</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>auditLeaves</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;string></span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">Lower leaves of audit merkle tree</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>auditInterval</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">Expect a challenge every N ms</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>accessPolicies</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;string></span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">IMP-10 access policy strings</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>fundingDestination</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    none
+                
+                </td>
+            
+
+            <td class="description last">Reserved for future</td>
         </tr>
 
     
@@ -384,7 +796,7 @@
 	<dd class="tag-source">
 		<ul class="dummy">
 			<li>
-				<a href="server.js.html">server.js</a>
+				<a href="database.js.html">database.js</a>
 			</li>
 		</ul>
 	</dd>
@@ -435,7 +847,7 @@
             
 <hr>
 <dt>
-    <h4 class="name" id="accept"><span class="type-signature"></span>accept(token, filehash, contact)</h4>
+    <h4 class="name" id=".methods.checkAccessPolicy"><span class="type-signature">&lt;static> </span>methods.checkAccessPolicy(contact)</h4>
     
     
 </dt>
@@ -443,7 +855,8 @@
 
     
     <div class="description">
-        Begin accepting data for the given file hash and token
+        Returns which, if any, methods are allowed by the access policy for the
+given contact
     </div>
     
 
@@ -474,54 +887,6 @@
     </thead>
 
     <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>token</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">The authorization token created for transfer</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>filehash</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">The shard hash to allow for the token</td>
-        </tr>
-
     
 
         <tr>
@@ -532,7 +897,7 @@
             <td class="type">
             
                 
-<span class="param-type">array</span>
+<span class="param-type">object</span>
 
 
 
@@ -543,103 +908,9 @@
 
             
 
-            <td class="description last">Contact that negotiated the token</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-    
-
-    
-<dl class="details">
-    
-
-	
-
-	
-
-	
-
-    
-
-    
-
-    
-
-    
-
-	
-
-	
-
-	
-
-	
-
-	
-
-
-
-	
-	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
-	<dd class="tag-source">
-		<ul class="dummy">
-			<li>
-				<a href="server.js.html">server.js</a>
-			</li>
-		</ul>
-	</dd>
-	
-
-	
-
-	
-
-	
-</dl>
-
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dd>
-
-        
-            
-<hr>
-<dt>
-    <h4 class="name" id="authorize"><span class="type-signature"></span>authorize(token, hash)</h4>
-    
-    
-</dt>
-<dd>
-
-    
-    <div class="description">
-        Validates the given token
-    </div>
-    
-
-    
-
-    
-
-    
-    
-        <h5>Parameters:</h5>
-        
+            <td class="description last">
+                <h6 class="method-params-label method-subparams-label">Properties</h6>
+                
 
 <table class="params table table-striped">
     <thead>
@@ -663,7 +934,7 @@
 
         <tr>
             
-                <td class="name"><code>token</code></td>
+                <td class="name"><code>0</code></td>
             
 
             <td class="type">
@@ -680,20 +951,20 @@
 
             
 
-            <td class="description last"></td>
+            <td class="description last">Identity key</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>hash</code></td>
+                <td class="name"><code>1</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">string</span>
+<span class="param-type">object</span>
 
 
 
@@ -704,7 +975,14 @@
 
             
 
-            <td class="description last"></td>
+            <td class="description last">Contact information</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
         </tr>
 
     
@@ -748,7 +1026,7 @@
 	<dd class="tag-source">
 		<ul class="dummy">
 			<li>
-				<a href="server.js.html">server.js</a>
+				<a href="database.js.html">database.js</a>
 			</li>
 		</ul>
 	</dd>
@@ -784,7 +1062,7 @@
     </dt>
     <dd>
         
-<span class="param-type">object</span>
+<span class="param-type">Array.&lt;string></span>
 
 
 
@@ -801,7 +1079,7 @@
             
 <hr>
 <dt>
-    <h4 class="name" id="download"><span class="type-signature"></span>download(req, res)</h4>
+    <h4 class="name" id=".methods.getSigningString"><span class="type-signature">&lt;static> </span>methods.getSigningString()</h4>
     
     
 </dt>
@@ -809,7 +1087,7 @@
 
     
     <div class="description">
-        Pumps the data through to the client
+        Returns the stringified version of the contract for signing
     </div>
     
 
@@ -818,80 +1096,6 @@
     
 
     
-    
-        <h5>Parameters:</h5>
-        
-
-<table class="params table table-striped">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>req</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">http.IncomingMessage</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>res</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">http.ServerResponse</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
     
 
     
@@ -929,7 +1133,7 @@
 	<dd class="tag-source">
 		<ul class="dummy">
 			<li>
-				<a href="server.js.html">server.js</a>
+				<a href="database.js.html">database.js</a>
 			</li>
 		</ul>
 	</dd>
@@ -954,6 +1158,26 @@
     
 
     
+    <h5>Returns:</h5>
+    
+            
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">string</span>
+
+
+
+    </dd>
+</dl>
+
+
+        
 
     
 </dd>
@@ -962,7 +1186,7 @@
             
 <hr>
 <dt>
-    <h4 class="name" id="reject"><span class="type-signature"></span>reject(token)</h4>
+    <h4 class="name" id=".methods.sign"><span class="type-signature">&lt;static> </span>methods.sign(actor, secret)</h4>
     
     
 </dt>
@@ -970,7 +1194,7 @@
 
     
     <div class="description">
-        Stop accepting data for the given token
+        Applies signature to contract as the given actor
     </div>
     
 
@@ -1005,7 +1229,7 @@
 
         <tr>
             
-                <td class="name"><code>token</code></td>
+                <td class="name"><code>actor</code></td>
             
 
             <td class="type">
@@ -1022,7 +1246,31 @@
 
             
 
-            <td class="description last">The authorization token created for transfer</td>
+            <td class="description last">One of provider|owner</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>secret</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">buffer</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">SECP256K1 private key</td>
         </tr>
 
     
@@ -1066,7 +1314,7 @@
 	<dd class="tag-source">
 		<ul class="dummy">
 			<li>
-				<a href="server.js.html">server.js</a>
+				<a href="database.js.html">database.js</a>
 			</li>
 		</ul>
 	</dd>
@@ -1091,6 +1339,26 @@
     
 
     
+    <h5>Returns:</h5>
+    
+            
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">string</span>
+
+
+
+    </dd>
+</dl>
+
+
+        
 
     
 </dd>
@@ -1099,7 +1367,7 @@
             
 <hr>
 <dt>
-    <h4 class="name" id="upload"><span class="type-signature"></span>upload(req, req)</h4>
+    <h4 class="name" id=".methods.signExternal"><span class="type-signature">&lt;static> </span>methods.signExternal()</h4>
     
     
 </dt>
@@ -1107,7 +1375,114 @@
 
     
     <div class="description">
-        Receives the data stream and writes it to storage
+        Creates a signature of the contract given the SECP256K1 key
+    </div>
+    
+
+    
+
+    
+
+    
+    
+
+    
+<dl class="details">
+    
+
+	
+
+	
+
+	
+
+    
+
+    
+
+    
+
+    
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
+	<dd class="tag-source">
+		<ul class="dummy">
+			<li>
+				<a href="database.js.html">database.js</a>
+			</li>
+		</ul>
+	</dd>
+	
+
+	
+
+	
+
+	
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <h5>Returns:</h5>
+    
+            
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">string</span>
+
+
+
+    </dd>
+</dl>
+
+
+        
+
+    
+</dd>
+
+        
+            
+<hr>
+<dt>
+    <h4 class="name" id=".methods.verify"><span class="type-signature">&lt;static> </span>methods.verify(actor)</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        Verifies that the given actor signature is valid
     </div>
     
 
@@ -1142,13 +1517,13 @@
 
         <tr>
             
-                <td class="name"><code>req</code></td>
+                <td class="name"><code>actor</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">http.IncomingMessage</span>
+<span class="param-type">string</span>
 
 
 
@@ -1159,31 +1534,7 @@
 
             
 
-            <td class="description last"></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>req</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">http.ServerResponse</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"></td>
+            <td class="description last">One of provider|owner</td>
         </tr>
 
     
@@ -1227,7 +1578,7 @@
 	<dd class="tag-source">
 		<ul class="dummy">
 			<li>
-				<a href="server.js.html">server.js</a>
+				<a href="database.js.html">database.js</a>
 			</li>
 		</ul>
 	</dd>
@@ -1252,6 +1603,240 @@
     
 
     
+    <h5>Returns:</h5>
+    
+            
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">boolean</span>
+
+
+
+    </dd>
+</dl>
+
+
+        
+
+    
+</dd>
+
+        
+            
+<hr>
+<dt>
+    <h4 class="name" id=".methods.verifyExternal"><span class="type-signature">&lt;static> </span>methods.verifyExternal()</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        Verifies the signature against a given public key
+    </div>
+    
+
+    
+
+    
+
+    
+    
+
+    
+<dl class="details">
+    
+
+	
+
+	
+
+	
+
+    
+
+    
+
+    
+
+    
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
+	<dd class="tag-source">
+		<ul class="dummy">
+			<li>
+				<a href="database.js.html">database.js</a>
+			</li>
+		</ul>
+	</dd>
+	
+
+	
+
+	
+
+	
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <h5>Returns:</h5>
+    
+            
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">boolean</span>
+
+
+
+    </dd>
+</dl>
+
+
+        
+
+    
+</dd>
+
+        
+            
+<hr>
+<dt>
+    <h4 class="name" id=".statics.diff"><span class="type-signature">&lt;static> </span>statics.diff()</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        Returns the property names that are different between two contracts
+    </div>
+    
+
+    
+
+    
+
+    
+    
+
+    
+<dl class="details">
+    
+
+	
+
+	
+
+	
+
+    
+
+    
+
+    
+
+    
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
+	<dd class="tag-source">
+		<ul class="dummy">
+			<li>
+				<a href="database.js.html">database.js</a>
+			</li>
+		</ul>
+	</dd>
+	
+
+	
+
+	
+
+	
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <h5>Returns:</h5>
+    
+            
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Array.&lt;string></span>
+
+
+
+    </dd>
+</dl>
+
+
+        
 
     
 </dd>
@@ -1261,421 +1846,6 @@
 
     
 
-    
-        <h3 class="subsection-title">Events</h3>
-
-        <dl>
-            
-<hr>
-<dt>
-    <h4 class="name" id="event:error">error</h4>
-    
-    
-</dt>
-<dd>
-
-    
-    <div class="description">
-        Triggered when a error occurs
-    </div>
-    
-
-    
-
-    
-
-    
-    
-        <h5>Parameters:</h5>
-        
-
-<table class="params table table-striped">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>error</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">error</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-    
-
-    
-<dl class="details">
-    
-
-	
-
-	
-
-	
-
-    
-
-    
-
-    
-
-    
-
-	
-
-	
-
-	
-
-	
-
-	
-
-
-
-	
-	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
-	<dd class="tag-source">
-		<ul class="dummy">
-			<li>
-				<a href="server.js.html">server.js</a>
-			</li>
-		</ul>
-	</dd>
-	
-
-	
-
-	
-
-	
-</dl>
-
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dd>
-
-        
-            
-<hr>
-<dt>
-    <h4 class="name" id="event:shardDownloaded">shardDownloaded</h4>
-    
-    
-</dt>
-<dd>
-
-    
-    <div class="description">
-        Triggered when a shard has finished downloading from this instance
-    </div>
-    
-
-    
-
-    
-
-    
-    
-        <h5>Parameters:</h5>
-        
-
-<table class="params table table-striped">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>hash</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">The hash associated with the download</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-    
-
-    
-<dl class="details">
-    
-
-	
-
-	
-
-	
-
-    
-
-    
-
-    
-
-    
-
-	
-
-	
-
-	
-
-	
-
-	
-
-
-
-	
-	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
-	<dd class="tag-source">
-		<ul class="dummy">
-			<li>
-				<a href="server.js.html">server.js</a>
-			</li>
-		</ul>
-	</dd>
-	
-
-	
-
-	
-
-	
-</dl>
-
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dd>
-
-        
-            
-<hr>
-<dt>
-    <h4 class="name" id="event:shardUploaded">shardUploaded</h4>
-    
-    
-</dt>
-<dd>
-
-    
-    <div class="description">
-        Triggered when a shard has finished uploading to this instance
-    </div>
-    
-
-    
-
-    
-
-    
-    
-        <h5>Parameters:</h5>
-        
-
-<table class="params table table-striped">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>hash</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">The hash associated with the upload</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-    
-
-    
-<dl class="details">
-    
-
-	
-
-	
-
-	
-
-    
-
-    
-
-    
-
-    
-
-	
-
-	
-
-	
-
-	
-
-	
-
-
-
-	
-	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
-	<dd class="tag-source">
-		<ul class="dummy">
-			<li>
-				<a href="server.js.html">server.js</a>
-			</li>
-		</ul>
-	</dd>
-	
-
-	
-
-	
-
-	
-</dl>
-
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dd>
-
-        </dl>
     
 </article>
 
