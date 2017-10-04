@@ -2,7 +2,7 @@ import State from './state';
 
 export default class ObjectManager extends State{
   constructor(connection) {
-    super(connection);
+    super();
     this.connection = connection;
 //TODO: better partial upload/dl state management here & api
     //cause sets & weak maps don't work with Vue reactivity yet

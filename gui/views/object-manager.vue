@@ -141,6 +141,7 @@ import appStore from '../app-store'
 
 export default {
   name: 'object-manager',
+  mixins: [ appStore.objectManager.methods ],
   data: () => ({
     ...appStore.objectManager.state,
     pagination: {
@@ -172,11 +173,6 @@ export default {
     }
   },
   methods: {
-    ...appStore.objectManager.downloadList,
-    ...appStore.objectManager.exportMagnetList,
-    ...appStore.objectManager.importMagnetList,
-    ...appStore.objectManager.uploadList,
-    ...appStore.objectManager.destroylist,
     addObjects() {
       this.$refs.invisFileInput.click();
     },

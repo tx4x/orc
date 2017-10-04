@@ -17,6 +17,18 @@ export default class State {
     this.state.errStack = [];
   }
 
+  get methods() {
+    return Object.getOwnPropertyNames(Object.getPrototypeOf(this))
+      .reduce((prev, prop) => {
+        if(typeof this[prop] === 'function') {
+          //Vue will bind to vue instance, when mixed-in, provide a wrapper fn
+          prev.methods[prop] = () => this[prop];
+        }
+        return prev;
+      }, { methods: {} }
+    );
+  }
+
   commit( err = null, data = Object.create(null) ) {
     if(err) {
         if (this.state.errStack.length > 50) {
