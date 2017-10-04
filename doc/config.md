@@ -237,7 +237,10 @@ More detailed logging of messages sent and received. Useful for debugging.
 Sets the port to bind the control interface. Used for controlling the 
 node from other applications. Be sure that `ControlHostname` is kept set to 
 a loopback address, unless you have taken other measures to prevent others 
-from controlling your node, see {@tutorial security}.
+from controlling your node.
+
+> **Protip!** You can change this to an absolute path to a UNIX domain socket 
+> too (in which case `ControlHostname` is ignored).
 
 #### ControlHostname
 

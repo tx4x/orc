@@ -5,9 +5,6 @@
   "config": {
     "title": "Configuration Guide"
   },
-  "providing": {
-    "title": "Providing Capacity"
-  },
   "directory": {
     "title": "Using the Local Directory"
   },
@@ -19,8 +16,5 @@
   },
   "control": {
     "title": "Using the Control Port"
-  },
-  "security": {
-    "title": "Security Considerations"
   }
 }

@@ -13,7 +13,7 @@ ControlHostname = 127.0.0.1
 > Using the control port, you can get a very low level control over your ORC 
 > node. It is very important to keep `ControlHostname` set to a loopback 
 > interface unless you have taken measures to otherwise secure access to the 
-> host. See the {@tutorial security} guide for more information.
+> host. See the {@tutorial config} guide for more information.
 
 The interface accepts all methods exposed by the {@link Node} class. Parameters 
 are expected to be in an array format, in order of the corresponding function 
