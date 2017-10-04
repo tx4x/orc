@@ -3,32 +3,40 @@
   <v-flex xs12>
     <v-card>
       <div></div>
+      <v-btn
+        fab
+        top
+        left
+        absolute
+        @click.native="addObjects"
+      >
+        <v-icon>file_upload</v-icon>
+      </v-btn>
       <v-speed-dial
-        v-model="contextMenu"
         direction="right"
         absolute
         top
         left
+        id="moveoverhack"
+        :isOpen="isMenuOpen > 0"
       >
         <v-btn
           slot="activator"
-          v-model="contextMenu"
           fab
-          @click.native="addObject"
+          @click.native="importMagnetList"
         >
           <v-icon>add</v-icon>
         </v-btn>
-
-        <v-btn fab @click="dlItems(selected)"><v-icon>file_download</v-icon></v-btn>
+        <v-btn fab @click="downloadList(selected)"><v-icon>file_download</v-icon></v-btn>
         <v-btn fab @click="playItems(selected)"><v-icon>play_arrow</v-icon></v-btn>
-        <v-btn fab @click="shareItems(selected)"><v-icon>share</v-icon></v-btn>
-        <v-btn fab @click="deleteItems(selected)"><v-icon>delete</v-icon></v-btn>
+        <v-btn fab @click="exportMagnetList(selected)"><v-icon>share</v-icon></v-btn>
+        <v-btn fab @click="destroyList(selected)"><v-icon>delete</v-icon></v-btn>
       </v-speed-dial>
 
-      <v-card-title mt-1>
+      <div class="pt-5"></div>
 
-      </v-card-title>
       <v-data-table
+        id="objectupload"
         v-model="selected"
         v-bind:headers="headers"
         v-bind:items="list"
@@ -42,7 +50,7 @@
 
         <template slot="headers" scope="props">
           <tr>
-            <th>
+            <th style="width:5%;">
               <v-checkbox
                 primary
                 hide-details
@@ -51,13 +59,33 @@
                 :indeterminate="props.indeterminate"
               ></v-checkbox>
 
+              <th style="width:5%;">
+                <!--Status-->
+                <v-icon style="width:25px;">cloud upload</v-icon>
+              </th>
+
+              <th style="width:30%;">
+                Name
+              </th>
+
+              <th style="width:30%;">
+                Type
+              </th>
+
+              <th style="width:30%;">
+                Size
+              </th>
+
+
+<!-- saving for sort reference
               <th v-for="header in props.headers" :key="header.text"
-                :class="['column sortable', pagination.descending ? 'desc' : 'asc', header.value === pagination.sortBy ? 'active' : '']"
+                :class="getSortClasses(header)"
                 @click="changeSort(header.value)"
               >
                 <v-icon>arrow_upward</v-icon>
                 {{ header.text }}
               </th>
+-->
             </th>
           </tr>
         </template>
@@ -100,12 +128,10 @@ export default {
       sortBy: 'name',
       descending: false
     },
+    isMenuOpen: false,
     selected: [],
-    contextMenu: {
-      isActive: false
-    },
     headers: [
-      { text: '', value: 'status' },
+      { text: 'Status', value: 'status' },
       { text: 'Name', value: 'name' },
       { text: 'Type', value: 'mimetype' },
       { text: 'Size', value: 'size' }
@@ -118,43 +144,49 @@ export default {
     },
     selected: {
       handler: function(val) {
-        this.contextMenu.isActive = val.length > 0;
+        this.isMenuOpen = val.length > 0;
       },
       deep: true
     }
   },
   methods: {
-    deleteItem: appStore.objectManager.destroy,
-    dlItem: appStore.objectManager.download,
-    shareItem: appStore.objectManager.exportMagnet,
-    importItem: appStore.objectManager.importMagnet,
-    addObject() {
+    ...appStore.objectManager.downloadList,
+    ...appStore.objectManager.exportMagnetList,
+    ...appStore.objectManager.importMagnetList,
+    ...appStore.objectManager.uploadList,
+    ...appStore.objectManager.destroylist,
+    addObjects() {
       this.$refs.invisFileInput.click();
     },
     handleFileInput(ev) {
-      Array.prototype.map.call(ev.target.files, (file) =>
-        appStore.objectManager.upload(file.path)
-      );
+      this.uploadList(ev.target.files);
     },
     playItem(id) {
 
     },
-    toggleAll () {
+    toggleAll() {
       if (this.selected.length) this.selected = [];
       else this.selected = this.list.slice();
     },
-    changeSort (column) {
+    changeSort(column) {
       if (this.pagination.sortBy === column) {
         this.pagination.descending = !this.pagination.descending
       } else {
         this.pagination.sortBy = column
         this.pagination.descending = false
       }
+    },
+    getSortClasses(header) {
+      return ['column sortable',
+        this.pagination.descending ? 'desc' : 'asc',
+        header.value === this.pagination.sortBy ? 'active' : ''
+      ];
     }
   }
 };
 </script>
 
-<style>
-
+<style lang="stylus">
+#moveoverhack
+  left: 68px;
 </style>
