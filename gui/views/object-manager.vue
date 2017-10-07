@@ -28,10 +28,10 @@
         >
           <v-icon>add</v-icon>
         </v-btn>
-        <v-btn fab @click="downloadList(selected)"><v-icon>file_download</v-icon></v-btn>
-        <v-btn fab @click="playItems(selected)"><v-icon>play_arrow</v-icon></v-btn>
-        <v-btn fab @click="exportMagnetList(selected)"><v-icon>share</v-icon></v-btn>
-        <v-btn fab @click="destroyList(selected)"><v-icon>delete</v-icon></v-btn>
+        <v-btn fab @click.native.stop="downloadList(toIds(selected))"><v-icon>file_download</v-icon></v-btn>
+        <v-btn fab @click.native.stop="playItems(toIds(selected))"><v-icon>play_arrow</v-icon></v-btn>
+        <v-btn fab @click.native.stop="exportMagnetList(toIds(selected))"><v-icon>share</v-icon></v-btn>
+        <v-btn fab @click.native.stop="destroyList(toIds(selected))"><v-icon>delete</v-icon></v-btn>
       </v-speed-dial>
 
       <div class="pt-5"></div>
@@ -214,6 +214,11 @@ export default {
     handleImportSubmit() {
       let imports = this.rawImportList.split(',');
       this.importMagnetList(imports);
+    },
+    toIds(objArr) {
+      return objArr.map((elem) => {
+        return elem.id
+      })
     }
   }
 };
@@ -222,7 +227,4 @@ export default {
 <style lang="stylus" scoped>
 #moveoverhack
   left: 68px;
-
-textarea
-  resize: none;
 </style>

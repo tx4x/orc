@@ -22,7 +22,7 @@ export default class State {
       .reduce((prev, prop) => {
         if(typeof this[prop] === 'function') {
           //Vue will bind to vue instance, when mixed-in, provide a wrapper fn
-          prev.methods[prop] = () => this[prop];
+          prev.methods[prop] = (...args) => this[prop](...args);
         }
         return prev;
       }, { methods: {} }
