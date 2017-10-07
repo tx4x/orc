@@ -359,3 +359,9 @@ generate one yourself, you can use:
 orctool generate-onion >> bridge_key
 ```
 
+#### BridgeControlProxyEnabled
+
+##### Default: `0`
+
+If enabled, the bridge service will accept websocket connections and proxy 
+messages through to the control port.

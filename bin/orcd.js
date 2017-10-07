@@ -417,7 +417,8 @@ function init() {
       serviceKeyPath: config.BridgeServiceKeyPath,
       certificatePath: config.BridgeCertificatePath,
       authorityChains: config.BridgeAuthorityChains,
-      control
+      control,
+      enableControlProxy: parseInt(config.BridgeControlProxyEnabled)
     };
 
     if (parseInt(config.BridgeAuthenticationEnabled)) {

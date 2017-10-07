@@ -70,6 +70,7 @@ module.exports = {
   BridgeAuthenticationUser: 'orc',
   BridgeAuthenticationPassword: randomBytes(16).toString('hex'),
   BridgeTempStagingBaseDir: join(tmpdir(), 'orc.tmp'),
+  BridgeControlProxyEnabled: '0',
 
   // Directory Server
   DirectoryEnabled: '1',

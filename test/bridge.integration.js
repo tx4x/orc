@@ -92,7 +92,8 @@ describe('@class Bridge (integration)', function() {
           user: 'orctest',
           pass: 'orctest'
         },
-        control: new boscar.Server(node)
+        control: new boscar.Server(node),
+        enableControlProxy: true
       });
       node.iterativeFindValue = function(key, callback) {
         database.NetworkBlob.findOne({ key }, (err, obj) => {
