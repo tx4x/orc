@@ -147,7 +147,7 @@ function init() {
     port: parseInt(config.PublicPort),
     xpub: parentkey.publicExtendedKey,
     index: parseInt(config.ChildDerivationIndex),
-    agent: `orc-${manifest.version}/${os.platform()}`
+    agent: `orc-${manifest.version}`
   };
 
   // Initialize protocol implementation
