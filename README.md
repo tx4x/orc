@@ -10,7 +10,7 @@ the discussion in `#orc` on our [community chat](https://matrix.counterpointhack
 
 ### Desktop Installation (Recommended)
 
-Simply [download a pre-built package](https://github.com/orcproject/orc/releaes/latest) 
+Simply [download a pre-built package](https://github.com/orcproject/orc/releases/latest) 
 for your platform from the releases page!
 
 > Note! ORC uses the system Tor package on GNU/Linux, so you must install it 
@@ -48,15 +48,32 @@ docker run \
   --tty orcproject/orc:latest
 ```
 
-> See the [`docker run` documentation](https://docs.docker.com/engine/reference/commandline/run/) 
-> for more information. If you prefer to install ORC manually, see the guide for 
-> {@tutorial install}. Once installed, simply run `orc` with an optional 
-> configuration file using the `--config <path/to/config>` option.
+See the [`docker run` documentation](https://docs.docker.com/engine/reference/commandline/run/) 
+for more information. If you prefer to install ORC manually, see the guide for 
+{@tutorial install}. Once installed, simply run `orc` with an optional 
+configuration file using the `--config <path/to/config>` option.
 
 Once the container has started, you can navigate in your browser to 
-`http://127.0.0.1:4445` to access your node's dashboard! **If you did not 
-disable `BridgeAuthenticationEnabled`, you will be asked for supply the 
-credentials in your configuration file.**
+`http://127.0.0.1:4445` to access your node's dashboard! 
+
+> If you did not disable `BridgeAuthenticationEnabled`, you will be asked to supply the 
+> credentials in your configuration file.
+
+#### Automatic Security Updates
+
+When running the ORC server installation with Docker, you can configure your 
+node to periodically check for updates and automatically download the latest 
+image and restart your node to make sure you are always running the latest 
+stable release. Since you already have Docker installed, pull the 
+image for [Watchtower](https://github.com/v2tec/watchtower) and run it.
+
+```
+docker pull v2tec/watchtower
+docker run -d --name watchtower -v /var/run/docker.sock:/var/run/docker.sock v2tec/watchtower
+```
+
+Now, Watchtower will check for the latest stable images for running containers 
+and automatically update them.
 
 ### Development 
 

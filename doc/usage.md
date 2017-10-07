@@ -1,6 +1,6 @@
-The easiest way to get up and running with orc is to spawn a child process 
-from your program and connect to it over the control port. This package exposes 
-a convenience method for doing this. 
+The easiest way to get up and running with using ORC from a Node.js application 
+is to spawn a child process from your program and connect to it over the 
+control port. This package exposes a convenience method for doing this. 
 
 ```js
 const orc = require('@orcproject/orc/lib');
@@ -16,35 +16,14 @@ controller.on('ready', () => {
 });
 ```
 
-### Control Interface
+> Note that the `invoke` method on the `controller` accepts the signature 
+> `(method, [params], callback)`. See {@tutorial control} for more information 
+> on the API exposed by the control interface.
 
-You can run `orc` standalone and control it from any other application over 
-its TCP control interface. See the _Resources_ section below to read up on the 
-control protocol to implement it in the language of your choice. If using 
-Node.js, you can use the client bundled in this package.
-
-```js
-const orc = require('@orcproject/orc');
-const controller = new orc.control.Client();
-
-controller.on('ready', () => {
-  controller.invoke('ping', [contact], (err) => { /* handle result */ });
-});
-
-controller.connect(port);
-```
-
-If you wish to control your `orc` node from another language, simply connect 
-to the control port over a TCP socket and use the 
-[BOSCAR](https://github.com/bookchin/boscar) protocol to send RPC messages to 
-the node. The methods and argument signatures map directly to the `orc.Node` 
-API describe in the documentation. See *Resources* below.
-
-### Direct Implementation
-
-Since `orc` exposes all of the internals used to implement it, you can use 
-the same classes to directly implement your own ORC node within your project.
-Just import the package and construct a node instance with options.
+Since the `@orcproject/orc` package exposes all of the internals used to 
+implement `orcd`, you can use the same classes to directly implement your own 
+ORC node within your project. Just import the package and construct a 
+{@link Node} instance with options.
 
 ```js
 const orc = require('@orcproject/orc');
@@ -54,8 +33,8 @@ node.listen(8443);
 node.join(['known_node_id', { /* contact data */ }]);
 ```
 
-Consult the documentation for a complete reference of the API exposed from the 
-`Node` object. Further documentation on usage can be found by reviewing the 
+Consult the {@link Node} documentation for a complete reference of the API 
+exposed. Further documentation on usage can be found by reviewing the 
 end-to-end test suite in `test/node.e2e.js`. Note that using this package as a 
 library provides a very low level interface for the ORC protocol and is not 
 intended for casual integration with the ORC network.

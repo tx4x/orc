@@ -438,7 +438,7 @@ describe('@class Node', function() {
 
   });
 
-  describe('@method claimFarmerCapacity', function() {
+  describe('@method claimProviderCapacity', function() {
 
     const sandbox = sinon.sandbox.create();
 
@@ -449,7 +449,7 @@ describe('@class Node', function() {
       const send = sandbox.stub(node, 'send').callsArg(3);
       const peer = ['identity', { xpub: 'xpubkey' }];
       const desc = {};
-      node.claimFarmerCapacity(peer, desc, () => {
+      node.claimProviderCapacity(peer, desc, () => {
         expect(send.calledWithMatch('CLAIM', [desc], peer)).to.equal(true);
         done();
       });

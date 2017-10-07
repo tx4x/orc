@@ -92,11 +92,12 @@ describe('@class Bridge (integration)', function() {
           user: 'orctest',
           pass: 'orctest'
         },
-        control: new boscar.Server(node)
+        control: new boscar.Server(node),
+        enableControlProxy: true
       });
       node.iterativeFindValue = function(key, callback) {
         database.NetworkBlob.findOne({ key }, (err, obj) => {
-          callback(err, obj ? [obj.toObject()] : []);
+          callback(err, obj ? obj.toObject() : []);
         });
       };
       let profile = new database.PeerProfile({
@@ -160,9 +161,9 @@ describe('@class Bridge (integration)', function() {
   });
 
   it('should upload the file to the hosts', function(done) {
-    let claimFarmerCapacity = sandbox.stub(
+    let claimProviderCapacity = sandbox.stub(
       node,
-      'claimFarmerCapacity'
+      'claimProviderCapacity'
     ).callsFake(function(a, b, cb) {
       let key = keyutils.toHDKeyFromSeed().deriveChild(1);
       b.providerIdentity = keyutils.toPublicKeyHash(key.publicKey)
@@ -189,7 +190,7 @@ describe('@class Bridge (integration)', function() {
       method: 'POST',
       auth: 'orctest:orctest'
     }, (err, res) => {
-      claimFarmerCapacity.restore();
+      claimProviderCapacity.restore();
       expect(res.statusCode).to.equal(201);
       expect(node.onion.createSecureAgent.callCount).to.equal(3);
       let body = '';
@@ -296,9 +297,9 @@ describe('@class Bridge (integration)', function() {
   });
 
   it('should fail to upload cannot claim capacity', function(done) {
-    let claimFarmerCapacity = sandbox.stub(
+    let claimProviderCapacity = sandbox.stub(
       node,
-      'claimFarmerCapacity'
+      'claimProviderCapacity'
     ).callsArgWith(2, new Error('Cannot claim capacity'));
     node.onion = { createSecureAgent: sandbox.stub() };
     let form = new FormData();
@@ -315,7 +316,7 @@ describe('@class Bridge (integration)', function() {
       method: 'POST',
       auth: 'orctest:orctest'
     }, (err, res) => {
-      claimFarmerCapacity.restore();
+      claimProviderCapacity.restore();
       expect(res.statusCode).to.equal(500);
       let body = '';
       res.on('data', (data) => body += data);
@@ -439,9 +440,9 @@ describe('@class Bridge (integration)', function() {
     auditRemoteShards.onCall(1).callsFake(function(a, b, cb) {
       cb(null, []); // Bad Proof
     });
-    let claimFarmerCapacity = sandbox.stub(
+    let claimProviderCapacity = sandbox.stub(
       node,
-      'claimFarmerCapacity'
+      'claimProviderCapacity'
     ).callsFake(function(a, b, cb) {
       let key = keyutils.toHDKeyFromSeed().deriveChild(1);
       b.providerIdentity = keyutils.toPublicKeyHash(key.publicKey)
@@ -471,7 +472,7 @@ describe('@class Bridge (integration)', function() {
       obj.save(() => {
         bridge.on('auditInternalFinished', () => eventTriggered = true);
         bridge.audit((err) => {
-          claimFarmerCapacity.restore();
+          claimProviderCapacity.restore();
           authorizeRetrieval.restore();
           auditRemoteShards.restore();
           requestContractRenewal.restore();

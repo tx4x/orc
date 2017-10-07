@@ -8,7 +8,6 @@ const assert = require('assert');
 const bytes = require('bytes');
 const hdkey = require('hdkey');
 const hibernate = require('kad-hibernate');
-const traverse = require('kad-traverse');
 const spartacus = require('kad-spartacus');
 const onion = require('kad-onion');
 const ms = require('ms');
@@ -148,7 +147,7 @@ function init() {
     port: parseInt(config.PublicPort),
     xpub: parentkey.publicExtendedKey,
     index: parseInt(config.ChildDerivationIndex),
-    agent: `orc-${manifest.version}/${os.platform()}`
+    agent: `orc-${manifest.version}`
   };
 
   // Initialize protocol implementation
@@ -184,8 +183,42 @@ function init() {
     serviceHealthCheckInterval: ms(config.ServiceAvailabilityCheckInterval)
   }));
 
-  // Intialize control server
-  const control = new boscar.Server(node);
+  // Intialize control server with explicity api permissions
+  const methods = [
+    'ping',
+    'iterativeStore',
+    'iterativeFindNode',
+    'iterativeFindValue',
+    'quasarPublish',
+    'quasarSubscribe',
+    'auditRemoteShards',
+    'authorizeConsignment',
+    'authorizeRetrieval',
+    'claimProviderCapacity',
+    'createShardMirror',
+    'identifyService',
+    'publishCapacityAnnouncement',
+    'reportAuditResults',
+    'requestContractRenewal',
+    'subscribeCapacityAnnouncement'
+  ];
+
+  const intface = {
+    getMethods: function(callback) {
+      callback(null, methods.concat(Object.keys(intface)));
+    },
+    getNodeInfo: function(callback) {
+      node.database.PeerProfile.findOne({
+        identity: identity.toString('hex')
+      }, (err, peer) => callback(err, peer ? peer.toObject() : null));
+    }
+  };
+
+  methods.forEach((method) => {
+    intface[method] = node[method].bind(node)
+  });
+
+  const control = new boscar.Server(intface);
 
   // Plugin bandwidth metering if enabled
   if (!!parseInt(config.BandwidthAccountingEnabled)) {
@@ -201,6 +234,10 @@ function init() {
     node.rpc.deserializer.append(new Transform({
       transform: (data, enc, callback) => {
         let [rpc, ident] = data;
+
+        if (!ident.payload.params[0] || !ident.payload.params[1]) {
+          return callback();
+        }
 
         if (rpc.payload.method) {
           logger.info(
@@ -223,6 +260,10 @@ function init() {
     node.rpc.serializer.prepend(new Transform({
       transform: (data, enc, callback) => {
         let [rpc, sender, recv] = data;
+
+        if (!recv[0] || !recv[1]) {
+          return callback();
+        }
 
         if (rpc.method) {
           logger.info(
@@ -376,7 +417,8 @@ function init() {
       serviceKeyPath: config.BridgeServiceKeyPath,
       certificatePath: config.BridgeCertificatePath,
       authorityChains: config.BridgeAuthorityChains,
-      control
+      control,
+      enableControlProxy: parseInt(config.BridgeControlProxyEnabled)
     };
 
     if (parseInt(config.BridgeAuthenticationEnabled)) {
@@ -396,6 +438,7 @@ function init() {
       `${config.BridgeHostname}:${config.BridgePort}`
     );
     bridge.listen(parseInt(config.BridgePort), config.BridgeHostname);
+    bridge.audit();
 
     if (parseInt(config.BridgeOnionServiceEnabled)) {
       node.onion.tor.createHiddenService(
@@ -477,6 +520,15 @@ function init() {
         } else {
           node.logger.info('finished bootstrapping directory');
         }
+
+        node.logger.info('scoring orphaned audit reports');
+        directory.scoreAndPublishAuditReports((err) => {
+          if (err) {
+            node.logger.warn(`failed to score reports, ${err.message}`);
+          } else {
+            node.logger.info('peer scoring routine completed successfully');
+          }
+        });
       });
     }
 

@@ -1,20 +1,20 @@
-{
-  "config": {
-    "title": "Configuration Guide"
-  },
-  "farming": {
-    "title": "Setting Up Farming"
-  },
-  "directory": {
-    "title": "Running a Directory"
-  },
+{  
   "install": {
     "title": "Manual Installation"
   },
+  "config": {
+    "title": "Configuration Guide"
+  },
+  "directory": {
+    "title": "Using the Local Directory"
+  },
   "usage": {
-    "title": "Basic Usage Guide"
+    "title": "Using the Node.js Library"
   },
   "transfers": {
-    "title": "Uploading and Downloading"
+    "title": "Using the Local Bridge"
+  },
+  "control": {
+    "title": "Using the Control Port"
   }
 }

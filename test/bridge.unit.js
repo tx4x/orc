@@ -64,7 +64,8 @@ describe('@class Bridge', function() {
             c.on('error', () => errorBubbled = true);
             c.on('close', () => closeBubbled = true);
           }
-        }
+        },
+        enableControlProxy: true
       });
       let listen = sinon.stub(bridge.server, 'listen');
       bridge.listen(0);
