@@ -18,9 +18,13 @@ export default class ObjectManager extends State{
   }
 
   async download(id) {
-    this.commit(null, { downloadPending: { [id]: false } });
+    this.commit(null, { downloadPending: { [id]: 'pending' } });
     let [err, state] = await State.resolveTo(this.connection.downloadObject(id));
-    this.commit(err, { downloadPending: { [id]: true } });
+    if(err) {
+      return this.commit(err, { downloadPending: { [id]: 'fail' } });
+    }
+
+    return this.commit(null, { downloadPending: { [id]: 'success' } });
   }
 
   downloadList(idArr) {
@@ -38,10 +42,10 @@ export default class ObjectManager extends State{
     this.commit(err, { uploadPending: { [path]: true } });
   }
 
-  uploadList(fileArr, opts) {
-    fileArr.map((file) => {
-      this.upload(file, opts)
-    });
+  async uploadList(fileArr, opts) {
+    return Promise.resolve(Array.prototype.map.call(fileArr, (file) => {
+      return this.upload(file, opts)
+    }));
   }
 
   clearUploads() {

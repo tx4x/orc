@@ -177,7 +177,7 @@ export default {
       this.$refs.invisFileInput.click();
     },
     handleFileInput(ev) {
-      this.uploadList(ev.target.files);
+      this.uploadList(ev.target.files).then(this.getList);
     },
     playItem(id) {
 

@@ -83,11 +83,15 @@ export default class DaemonConnection extends State {
   // from the network, then returns a readable stream of the object
   downloadObject(id) {
     return new Promise((resolve, reject) => {
+      let handleError = () => {
+        reject(new Error(error));
+      };
+
       https.request({
         method: 'GET',
         hostname: this.config.BridgeHostname,
         port: parseInt(this.config.BridgePort),
-        path: '/',
+        path: '/'+id,
         auth: this.config.BridgeAuthenticationUser + ':' +
           this.config.BridgeAuthenticationPassword,
         rejectUnauthorized: false
@@ -101,7 +105,7 @@ export default class DaemonConnection extends State {
         res.on('data', (d) => error += d.toString()).on('end', () => {
           reject(new Error(error));
         });
-      }).on('error', reject);
+      }).on('error', reject).end();
     })
   }
 

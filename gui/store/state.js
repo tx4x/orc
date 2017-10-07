@@ -29,16 +29,19 @@ export default class State {
     );
   }
 
-  commit( err = null, data = Object.create(null) ) {
+  commit(err, data) {
     if(err) {
         if (this.state.errStack.length > 50) {
           this.state.errStack.pop();
         }
 
-        this.state.errStack.unshift(err);
-        return;
+        this.state.errStack.unshift(err.message);
     }
 
-    this.state = Object.assign(this.state, data);
+    if(data) {
+      this.state = Object.assign(this.state, data);
+    }
+
+    console.log(this.state);
   }
 }
