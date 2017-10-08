@@ -210,6 +210,67 @@ describe('@class Bridge (integration)', function() {
     });
   });
 
+  it('should fail to fetch the metadata for invalid id', function(done) {
+    let body = '';
+    let req = http.request({
+      auth: 'orctest:orctest',
+      hostname: 'localhost',
+      port,
+      path: '/invalid/info'
+    });
+    req.on('response', (res) => {
+      res.on('data', (data) => body += data.toString());
+      res.on('end', () => {
+        expect(res.statusCode).to.equal(500);
+        done();
+      });
+    });
+    req.end();
+  });
+
+  it('should fail to fetch the metadata for missing', function(done) {
+    let body = '';
+    let req = http.request({
+      auth: 'orctest:orctest',
+      hostname: 'localhost',
+      port,
+      path: '/59d2627ebb28977b0e6ab841/info'
+    });
+    req.on('response', (res) => {
+      res.on('data', (data) => body += data.toString());
+      res.on('end', () => {
+        expect(body).to.equal('Not found');
+        done();
+      });
+    });
+    req.end();
+  });
+
+  it('should fetch the metadata for the object', function(done) {
+    let body = '';
+    let req = http.request({
+      auth: 'orctest:orctest',
+      hostname: 'localhost',
+      port,
+      path: `/${id}/info`
+    });
+    req.on('response', (res) => {
+      res.on('data', (data) => body += data.toString());
+      res.on('end', () => {
+        body = JSON.parse(body);
+        expect(body.shards).to.have.lengthOf(3);
+        expect(body.shards[0].size).to.equal(1504);
+        expect(body.shards[1].size).to.equal(1504);
+        expect(body.shards[2].size).to.equal(1504);
+        expect(body.status).to.equal('finished');
+        expect(body.mimetype).to.equal('application/octet-stream');
+        expect(body.name).to.equal('random');
+        done();
+      });
+    });
+    req.end();
+  });
+
   it('should fetch the magnet link for the object', function(done) {
     let body = '';
     let req = http.request({
