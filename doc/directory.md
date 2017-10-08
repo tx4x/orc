@@ -88,3 +88,22 @@ $ curl http://127.0.0.1:4446/501e820f0ec3eb0350a239f57062abce1f55da09 | jq
   }
 }
 ```
+
+### `GET /{identity}/score`
+
+Given a known identity key, rank their reputation score into a percentile and 
+report their estimated utilization allowance.
+
+```
+$ curl http://127.0.0.1:4446/501e820f0ec3eb0350a239f57062abce1f55da09/score | jq
+{
+  "identity": "501e820f0ec3eb0350a239f57062abce1f55da09",
+  "percentile": 1,
+  "allowance": 289988343594,
+  "score": 0,
+  "capacity": {
+    "allocated": 11987253723136,
+    "available": 11986184868582
+  }
+}
+```

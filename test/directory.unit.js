@@ -377,4 +377,54 @@ describe('@class Directory', function() {
     });
   });
 
+  it('should place peers in percentiles and define allowances', function(done) {
+    let { port } = directory.server.address();
+    async.mapSeries([
+      identity1.toString('hex'),
+      identity2.toString('hex'),
+      identity3.toString('hex'),
+      identity4.toString('hex'),
+      identity5.toString('hex'),
+      identity6.toString('hex')
+    ], (id, next) => {
+      http.get(`http://localhost:${port}/${id}/score`, (res) => {
+        let data = '';
+        res.on('data', (d) => data += d.toString());
+        res.on('end', () => {
+          if (res.statusCode !== 200) {
+            return next(new Error(data));
+          }
+
+          try {
+            data = JSON.parse(data);
+          } catch (err) {
+            return next(new Error(data || err.message));
+          }
+
+          next(null, data);
+        });
+      });
+    }, (err, scores) => {
+      if (err) {
+        return done(err);
+      }
+
+      let expected = [
+        [1, 4500],
+        [0.44, 240],
+        [0, 300],
+        [0.44, 240],
+        [0.22, 600],
+        [0.33, 400]
+      ];
+
+      expected.forEach(([perc, avail], i) => {
+        expect(scores[i].percentile).to.equal(perc);
+        expect(scores[i].allowance).to.equal(avail);
+      });
+
+      done();
+    });
+  });
+
 });
