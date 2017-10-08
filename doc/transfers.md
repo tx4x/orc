@@ -88,6 +88,75 @@ $ curl http://127.0.0.1:4445 | jq
 ]
 ```
 
+### `GET /{id}/info`
+
+Retrieve the metadata for a specific object by it's unique ID.
+
+```
+$ curl http://127.0.0.1:4445/59d2627ebb28977b0e6ab841/info | jq
+{
+  "encoding": "7bit",
+  "size": 43472,
+  "ecpub": "02dc3937fd97fc26a54ad976c4cda37eb513d9a86debca18dd6f2e83717c9227d3",
+  "hash": "24081ee6fd4a5395a44597e36c5314b1308a197137db45e08d6d86aa070fbe84",
+  "status": "finished",
+  "policies": [
+    "::RETRIEVE"
+  ],
+  "shards": [
+    {
+      "size": 21744,
+      "hash": "e1eede74c9512f1994b18eac6465a0b471201548",
+      "service": [
+        "ccfbab389c9c547badb708021c0eaad4d9ec87ed",
+        {
+          "agent": "orc-8.1.1-beta5/linux",
+          "index": 2,
+          "xpub": "xpub6BRiU17o5vnTq8sGX2DgjBoU1ozBZnBDiW4avCwoFUzcYtrHMKxs8BjdS3qt6AAv42KDE2B4D2q3Fj3cYuzuCFoDijnQKJYvoMLJV2rEGVL",
+          "port": 443,
+          "protocol": "https:",
+          "hostname": "orcwfkilxjxo63mr.onion"
+        }
+      ]
+    },
+    {
+      "size": 21744,
+      "hash": "0a2f5a2a47ffe851403bfb4dc56be9b09392d182",
+      "service": [
+        "681069cc9dc643999be1031a8740d2a341939262",
+        {
+          "agent": "orc-8.1.1-beta6/linux",
+          "index": 0,
+          "xpub": "xpub6ARoW5DJo4xBbob8Gr3HReVU3qqJQpBRqBR2SDJkaYq5eJGL17yhGijXzkmobJe3f5nPHyZrohWR5txhCUjiXvhfCR3v2vmc7MuAYCcrTbt",
+          "port": 443,
+          "protocol": "https:",
+          "hostname": "puiq7u4bw6lroev5.onion"
+        }
+      ]
+    },
+    {
+      "size": 21744,
+      "hash": "4c38ad2a132b8d683abcc73f2eddf9d2700ad5d7",
+      "service": [
+        "1723b631252fc5f50ba43a8cfd2f38cba0daf44c",
+        {
+          "agent": "orc-8.1.1-beta1/linux",
+          "index": 0,
+          "xpub": "xpub6AxEbAJY7bV33paGh9wbGgDh7q6T67LQKBEbo93vxez4zPF4sQQnNHK55suXWk4ViZYsjy1jwdUtuuWosUWAyEQMeqXmJKhbbuZnAcGLQRF",
+          "port": 443,
+          "protocol": "https:",
+          "hostname": "wifniq3h3gqm2b2w.onion"
+        }
+      ]
+    }
+  ],
+  "mimetype": "image/png",
+  "name": "avatar.png",
+  "id": "59d2627ebb28977b0e6ab841"
+}
+```
+
+
 ### `POST /`
 
 You can upload a file to the network my sending a multipart/form-upload request 
