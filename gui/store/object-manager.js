@@ -103,7 +103,7 @@ export default class ObjectManager extends State{
   async importMagnet(href) {
     this.commit(null, { importPending: { [href]: 'pending' } });
     let [err, state] = await State.resolveTo(this.connection.insertObjectFromLink(href));
-    if(err) return this.commit(err, { importPending: { [fpath]: 'fail' } });
+    if(err) return this.commit(err, { importPending: { [href]: 'fail' } });
     return this.commit(null, { importPending: { [href]: 'success' } });
   }
 

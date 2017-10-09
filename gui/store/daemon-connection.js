@@ -192,7 +192,7 @@ export default class DaemonConnection extends State {
           path: '/',
           rejectUnauthorized: false
         }, (res) => {
-          let data = '';
+          let body = '';
 
           res
           .on('error', reject)
