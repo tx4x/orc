@@ -45,17 +45,18 @@ export default class ObjectManager extends State{
       );
     }
 
-    //retrieve a local if one doesn't exist
+    //retrieve a remote copy if one doesn't exist
     var [err, res] = await State.resolveTo(this.connection.downloadObject(id));
     if(err) return Promise.reject(this.commit(err, { downloadPending: { [id]: 'fail' } }));
+
     let pipe = new Promise((resolve, reject) => {
       let writeStream = fs.createWriteStream(local);
       res.pipe(writeStream)
         .on('finish', () => {
-          resolve(this.commit(null, { downloadPending: { [id]: 'success' } }));
+          resolve();
         })
         .on('error', (e) => {
-          reject(this.commit(e.message, { downloadPending: { [id]: 'fail' } }));
+          reject(e);
         });
     });
 
