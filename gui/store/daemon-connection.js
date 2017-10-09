@@ -1,6 +1,7 @@
 import State from './state'
 import boscar from 'boscar';
 import https from 'https';
+import http from 'http';
 import FormData from 'form-data';
 import fs from 'fs';
 import mimeTypes from 'mime-types';
@@ -12,8 +13,8 @@ export default class DaemonConnection extends State {
   constructor({ ...config }) {
     super();
     this.config = config;
+    this.conn = (Number(this.config.BridgeUseSSL)) ? https : http;
     this.state.logStack = [{ time: Date.now(), msg: 'starting orc daemon' }];
-    this.state.uploadStack = Object.create(null);
   }
 
   connect() {
@@ -58,7 +59,7 @@ export default class DaemonConnection extends State {
   // Returns a list of Stated object pointers
   loadObjectList() {
     return new Promise((resolve, reject) => {
-      https.request({
+      this.conn.request({
         method: 'GET',
         auth: this.config.BridgeAuthenticationUser + ':' +
           this.config.BridgeAuthenticationPassword,
@@ -87,7 +88,7 @@ export default class DaemonConnection extends State {
         reject(new Error(error));
       };
 
-      https.request({
+      this.conn.request({
         method: 'GET',
         hostname: this.config.BridgeHostname,
         port: parseInt(this.config.BridgePort),
@@ -165,7 +166,7 @@ export default class DaemonConnection extends State {
   // by other nodes later
   destroyObject(id) {
     return new Promise((resolve, reject) => {
-      https.request({
+      this.conn.request({
         method: 'DELETE',
         auth: this.config.BridgeAuthenticationUser + ':' +
           this.config.BridgeAuthenticationPassword,
@@ -183,7 +184,7 @@ export default class DaemonConnection extends State {
   // pointer to it's local object list
   insertObjectFromLink(href) {
     return new Promise((resolve, reject) => {
-      https.request({
+      this.conn.request({
         method: 'PUT',
         auth: this.config.BridgeAuthenticationUser + ':' +
           this.config.BridgeAuthenticationPassword,
@@ -213,7 +214,7 @@ export default class DaemonConnection extends State {
   // users to be able to access it
   getObjectMagnet(id) {
     return new Promise((resolve, reject) => {
-      https.request({
+      this.conn.request({
         method: 'GET',
         auth: this.config.BridgeAuthenticationUser + ':' +
           this.config.BridgeAuthenticationPassword,
@@ -233,7 +234,7 @@ export default class DaemonConnection extends State {
 
   loadCapacityDirectory() {
     return new Promise((resolve, reject) => {
-      https.request({
+      this.conn.request({
         method: 'GET',
         path: '/',
         hostname: this.config.DirectoryHostname,
