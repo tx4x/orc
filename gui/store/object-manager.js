@@ -1,7 +1,7 @@
 import State from './state';
 import fs from 'fs';
 import os from 'os';
-import { shell } from 'electron';
+import { shell, clipboard } from 'electron';
 import path from 'path';
 import promisify from 'util.promisify';
 
@@ -18,7 +18,7 @@ export default class ObjectManager extends State{
     this.state.downloadPending = {};
     this.state.uploadPending = {};
     this.state.importPending = {};
-    this.state.exportPending = [];
+    this.state.exportList = [];
   }
 
   async getList() {
@@ -118,12 +118,16 @@ export default class ObjectManager extends State{
   async exportMagnet(id) {
     let [err, state] = await State.resolveTo(this.connection.getObjectMagnet(id));
     if(err) return this.commit(err);
-    this.state.exportPending.push(state);
+    this.state.exportList.push(state);
   }
 
   exportMagnetList(idArr) {
-    this.state.exportPending = [];
-    return Promise.all(idArr.map(id => { return this.exportMagnet(id) }));
+    this.state.exportList.splice(0, Infinity);
+    return Promise.all(idArr.map(id => { return this.exportMagnet(id) }))
+      .then(() => {
+        console.log(this.state)
+        clipboard.writeText(this.state.exportList.join())
+      });
   }
 
   async playItem(id) {
