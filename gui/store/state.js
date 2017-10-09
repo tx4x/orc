@@ -6,9 +6,9 @@ export default class State {
   static resolveTo(promise) {
     assert(promise instanceof Promise);
     return promise.then((data) => {
-      return [null, data];
+      return [null, data || {}];
     })
-    .catch(err => [err]);
+    .catch(err => [err, {}]);
   }
 
   constructor() {
