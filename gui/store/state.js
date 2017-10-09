@@ -5,7 +5,7 @@ export default class State {
 
   static resolveTo(promise) {
     assert(promise instanceof Promise);
-    return promise.then(data => {
+    return promise.then((data) => {
       return [null, data];
     })
     .catch(err => [err]);
@@ -39,9 +39,14 @@ export default class State {
     }
 
     if(data) {
-      this.state = Object.assign(this.state, data);
+      /*
+      for (const key in data) {
+        Vue.set(this.state, key, data[key])
+      }
+      */
+      this.state = Object.assign({}, this.state, data);
     }
-
     console.log(this.state);
+    return this.state;
   }
 }

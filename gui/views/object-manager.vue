@@ -28,17 +28,35 @@
         >
           <v-icon>add</v-icon>
         </v-btn>
-        <v-btn fab @click.native.stop="downloadList(toIds(selected))"><v-icon>file_download</v-icon></v-btn>
-        <v-btn fab @click.native.stop="playItems(toIds(selected))"><v-icon>play_arrow</v-icon></v-btn>
-        <v-btn fab @click.native.stop="exportMagnetList(toIds(selected))"><v-icon>share</v-icon></v-btn>
-        <v-btn fab @click.native.stop="destroyList(toIds(selected))"><v-icon>delete</v-icon></v-btn>
+        <v-btn fab
+          @click.native.stop="downloadList(toIds(selected.stuff))
+            .then(getList)
+            .then(resetSelections)">
+          <v-icon>file_download</v-icon>
+        </v-btn>
+        <v-btn fab
+          @click.native.stop="downloadList(toIds(selected.stuff))
+            .then(playItems(toIds(selected.stuff)))
+            .then(resetSelections)">
+          <v-icon>play_arrow</v-icon>
+        </v-btn>
+        <v-btn fab
+          @click.native.stop="exportMagnetList(toIds(selected.stuff))">
+          <v-icon>share</v-icon>
+        </v-btn>
+        <v-btn fab
+          @click.native.stop="destroyList(toIds(selected.stuff))
+            .then(getList)
+            .then(resetSelections)">
+          <v-icon>delete</v-icon>
+        </v-btn>
       </v-speed-dial>
 
       <div class="pt-5"></div>
 
       <v-data-table
         id="objectupload"
-        v-model="selected"
+        v-model="selected.stuff"
         v-bind:headers="headers"
         v-bind:items="list"
         v-bind:search="search"
@@ -55,7 +73,7 @@
               <v-checkbox
                 primary
                 hide-details
-                @click.native="toggleAll"
+                @click="toggleAll"
                 :input-value="props.all"
                 :indeterminate="props.indeterminate"
               ></v-checkbox>
@@ -152,7 +170,7 @@ export default {
     isMenuOpen: false,
     addMagnetDialogOpen: false,
     magnetImportOrigin: 'center center',
-    selected: [],
+    selected: {stuff: []},
     headers: [
       { text: 'Status', value: 'status' },
       { text: 'Name', value: 'name' },
@@ -167,24 +185,26 @@ export default {
     },
     selected: {
       handler: function(val) {
-        this.isMenuOpen = val.length > 0;
+        this.isMenuOpen = val.stuff.length > 0;
       },
       deep: true
     }
   },
   methods: {
+    resetSelections() {
+      this.$set(this.selected, 'stuff', []); //.splice(0, Infinity);
+    },
     addObjects() {
       this.$refs.invisFileInput.click();
     },
     handleFileInput(ev) {
-      this.uploadList(ev.target.files).then(this.getList);
-    },
-    playItem(id) {
-
+      this.uploadList(ev.target.files)
+        .then(this.getList)
+        .then(this.resetSelections);
     },
     toggleAll() {
-      if (this.selected.length) this.selected = [];
-      else this.selected = this.list.slice();
+      if (this.selected.stuff.length) this.resetSelections();
+      else this.selected.stuff = this.$set(this.selected, 'stuff', [...this.list]);
     },
     changeSort(column) {
       if (this.pagination.sortBy === column) {
@@ -213,7 +233,9 @@ export default {
     },
     handleImportSubmit() {
       let imports = this.rawImportList.split(',');
-      this.importMagnetList(imports);
+      this.importMagnetList(imports)
+        .then(this.getList)
+        .then(this.resetSelections);
     },
     toIds(objArr) {
       return objArr.map((elem) => {

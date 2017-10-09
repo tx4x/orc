@@ -94,6 +94,7 @@
     "secp256k1": "^3.2.2",
     "semver": "^5.1.0",
     "stream-slice": "^0.1.2",
+    "util.promisify": "^1.0.0",
     "vue": "^2.4.2",
     "vue-router": "^2.7.0",
     "vueify": "^9.4.1",

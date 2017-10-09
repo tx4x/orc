@@ -49,18 +49,22 @@
 
       <v-spacer></v-spacer>
 
+      <v-btn icon>
+        <v-icon>swap_vert</v-icon>
+      </v-btn>
       <v-text-field
         label="Search..."
         single-line
         append-icon="search"
         dark
         hide-details
-      ></v-text-field>
+        >
+      </v-text-field>
+
       <v-btn icon>
         <v-icon>settings</v-icon>
       </v-btn>
     </v-toolbar dark>
-
 <!--Main Interface -->
     <main>
       <v-container fluid mt-4>

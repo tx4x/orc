@@ -4,7 +4,7 @@ import https from 'https';
 import FormData from 'form-data';
 import fs from 'fs';
 import mimeTypes from 'mime-types';
-import Path from 'path';
+import path from 'path';
 import { ipcRenderer } from 'electron';
 import EventEmitter from 'events';
 
@@ -111,11 +111,11 @@ export default class DaemonConnection extends State {
 
   // Accepts a file path and access policies and uploads the object to the
   // network, returning the newly created pointer
-  uploadObject(path, opts = { policies: [] }) {
+  uploadObject(upath, opts = { policies: [] }) {
     const form = new FormData();
-    const file = fs.createReadStream(path);
-    const size = fs.statSync(path).size;
-    const type = mimeTypes.contentType(Path.extname(path));
+    const file = fs.createReadStream(upath);
+    const size = fs.statSync(upath).size;
+    const type = mimeTypes.contentType(path.extname(upath));
 
     // NB: Public data should have a '::RETRIEVE' policy
     if (opts.policies.length) {
@@ -123,7 +123,7 @@ export default class DaemonConnection extends State {
     }
 
     form.append('file', file, {
-      filename: Path.basename(path),
+      filename: path.basename(upath),
       contentType: type,
       knownLength: size
     });

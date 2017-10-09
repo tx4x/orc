@@ -53,7 +53,7 @@ export default {
 <style lang="stylus">
 /** Vuetify **/
 
-@require '../../../../node_modules/vuetify/src/stylus/settings/_colors'
+@require '../node_modules/vuetify/src/stylus/settings/_colors'
 
 $theme = {
   primary: $purple.base,
@@ -65,7 +65,9 @@ $theme = {
   success: $light-green.accent-2
 }
 
-@require '../../../../node_modules/vuetify/src/stylus/main'
+/** $navigation-drawer-width := 100% **/
+
+@require '../node_modules/vuetify/src/stylus/main'
 
 /** Fonts **/
 
