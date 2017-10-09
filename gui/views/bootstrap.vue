@@ -3,8 +3,7 @@
   <div id="main-loader">
     <div class="spinner"></div>
     <div id="loader-status">
-      <div v-for="log in logStack">{{log.msg}}</div>
-      <div v-for="err in errStack">{{err.message}}</div>
+      <div>{{logStack[0].msg}}</div>
     </div>
   </div>
   </div>

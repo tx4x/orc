@@ -4,7 +4,7 @@
     id="Orc"
     toolbar
   >
-<!--Left App Drawer -->
+<!--Left App Drawer
     <v-navigation-drawer
       dark
       height="100%"
@@ -17,18 +17,6 @@
       v-model="drawer"
     >
       <v-list dense>
-        <!--
-        <v-list-tile v-for="item in items" :key="item.text" @click="">
-          <v-list-tile-action>
-            <v-icon>{{ item.icon }}</v-icon>
-          </v-list-tile-action>
-          <v-list-tile-content>
-            <v-list-tile-title>
-              {{ item.text }}
-            </v-list-tile-title>
-          </v-list-tile-content>
-        </v-list-tile>
-      -->
         <v-subheader class="mt-3 grey--text text--darken-1">TAGS</v-subheader>
 
         <v-list-tile class="mt-3" @click="">
@@ -39,19 +27,21 @@
         </v-list-tile>
       </v-list>
     </v-navigation-drawer>
+-->
 
 <!--Top Toolbar -->
     <v-toolbar class="purple" fixed>
       <v-toolbar-title>
-        <v-toolbar-side-icon @click.stop="drawer = !drawer"></v-toolbar-side-icon>
-        <v-icon class="ml-3">weekend</v-icon>
+      <!--  <v-toolbar-side-icon @click.stop="drawer = !drawer"></v-toolbar-side-icon> -->
+        <img src="assets/logo-white.svg" id="logo" class="ml-3"></img>
       </v-toolbar-title>
 
       <v-spacer></v-spacer>
-
+      <!--
       <v-btn icon>
         <v-icon>swap_vert</v-icon>
       </v-btn>
+
       <v-text-field
         label="Search..."
         single-line
@@ -60,10 +50,12 @@
         hide-details
         >
       </v-text-field>
-
+      -->
+      <!--
       <v-btn icon>
         <v-icon>settings</v-icon>
       </v-btn>
+    -->
     </v-toolbar dark>
 <!--Main Interface -->
     <main>
@@ -88,6 +80,8 @@ export default {
 
 </script>
 
-<style>
-
+<style lang="stylus" scoped>
+  #logo
+    width 32px
+    height 32px
 </style>
