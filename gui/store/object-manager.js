@@ -35,11 +35,16 @@ export default class ObjectManager extends State{
     let checkFileAccess = promisify(fs.access);
 
     //first check download dir for local copy
-    let [isAccessible] = await State.resolveTo(
+    let [isUnaccessible] = await State.resolveTo(
       checkFileAccess(local, fs.constants.R_OK | fs.constants.F_OK)
     );
 
-    if(!isAccessible) return Promise.resolve(this.commit(null, { downloadPending: { [id]: 'success' } }));
+    if(!isUnaccessible) {
+      return Promise.resolve(
+        this.commit(null, { downloadPending: { [id]: 'success' } })
+      );
+    }
+
     //retrieve a local if one doesn't exist
     var [err, res] = await State.resolveTo(this.connection.downloadObject(id));
     if(err) return Promise.reject(this.commit(err, { downloadPending: { [id]: 'fail' } }));
@@ -103,7 +108,7 @@ export default class ObjectManager extends State{
   async importMagnet(href) {
     this.commit(null, { importPending: { [href]: 'pending' } });
     let [err, state] = await State.resolveTo(this.connection.insertObjectFromLink(href));
-    if(err) return this.commit(err, { importPending: { [fpath]: 'fail' } });
+    if(err) return this.commit(err, { importPending: { [href]: 'fail' } });
     return this.commit(null, { importPending: { [href]: 'success' } });
   }
 
