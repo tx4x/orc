@@ -3,19 +3,23 @@
   <head>
     <meta charset="utf-8">
     <title>ORC</title>
-    <link rel="stylesheet" href="main.css">
+    <script>
+      //Makes a few things work, namely here global Promise objects
+      import "babel-polyfill";
+      //Make relative paths work everywhere else
+      document.write('<base href="file://' + __dirname + '/"/>');
+    </script>
   </head>
   <body>
-
-    <div id="app">
-
-      <!-- Main Intializing Indicator -->
-      <div v-if="isInitializing" id="main-loader">
-        <div class="spinner"></div>
-        <div id="loader-status">{{logStack[0].msg}}</div>
-      </div>
-
-    </div>
+    <style>
+      /* This is a workaround for a stylus-loader bug*/
+      .ripple__container,
+      .btn__content:before,
+      .btn__content {
+        border-radius: inherit;
+      }
+    </style>
+    <div id="app"></div>
 
     <script src="app.js"></script>
   </body>
