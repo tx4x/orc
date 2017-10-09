@@ -204,7 +204,8 @@ that authentication is enabled if using this option. Set to <code>1</code> to en
 <h4>BridgeOnionServicePrivateKeyPath</h4><h5>Default: <code>$HOME/.config/orc/bridge_key</code></h5><p>Path to this bridge's RSA1024 Tor hidden service private key. If this path does 
 not exist, it will be automatically generated for you. If you'd like to 
 generate one yourself, you can use:</p>
-<pre class="prettyprint source"><code>orctool generate-onion >> bridge_key</code></pre>
+<pre class="prettyprint source"><code>orctool generate-onion >> bridge_key</code></pre><h4>BridgeControlProxyEnabled</h4><h5>Default: <code>0</code></h5><p>If enabled, the bridge service will accept websocket connections and proxy 
+messages through to the control port.</p>
 </article>
 
 </section>

@@ -162,6 +162,18 @@ the node has interacted with in the past 24 hours.</p>
     &quot;index&quot;: 0,
     &quot;protocol&quot;: &quot;https:&quot;
   }
+}</code></pre><h3><code>GET /{identity}/score</code></h3><p>Given a known identity key, rank their reputation score into a percentile and 
+report their estimated utilization allowance.</p>
+<pre class="prettyprint source"><code>$ curl http://127.0.0.1:4446/501e820f0ec3eb0350a239f57062abce1f55da09/score | jq
+{
+  &quot;identity&quot;: &quot;501e820f0ec3eb0350a239f57062abce1f55da09&quot;,
+  &quot;percentile&quot;: 1,
+  &quot;allowance&quot;: 289988343594,
+  &quot;score&quot;: 0,
+  &quot;capacity&quot;: {
+    &quot;allocated&quot;: 11987253723136,
+    &quot;available&quot;: 11986184868582
+  }
 }</code></pre>
 </article>
 

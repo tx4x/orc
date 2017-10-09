@@ -127,6 +127,7 @@ class Directory {
     this.app.use(cors());
     this.app.get('/', this._handleGetOnlineProfiles.bind(this));
     this.app.get('/:identity', this._handleGetProfile.bind(this));
+    this.app.get('/:id/score', this._handleGetReputationImpact.bind(this));
 
     /* istanbul ignore if */
     if (options.enableSSL) {
@@ -178,6 +179,159 @@ class Directory {
   /**
    * @private
    */
+  _handleGetReputationImpact(req, res, next) {
+    this.getPeerReputationScore(req.params.id, (err, result) => {
+      /* istanbul ignore if */
+      if (err) {
+        return next(err);
+      }
+
+      res.status(200).send(result);
+    });
+  }
+
+  /**
+   * Calculates the percentile and relative usage allowance of the given identity
+   * @param {string} identity - 160 bit node identity key
+   * @param {Directory~getPeerReputationScoreCallback} callback
+   */
+  getPeerReputationScore(identity, callback) {
+    let target, highest, capacity, percentile, allowance, score, peers = {};
+
+    async.series([
+      (next) => {
+        this._getPeerProfileById(identity, (err, profile) => {
+          target = profile;
+          score = target ? target.reputation.score : 0;
+
+          /* istanbul ignore if */
+          if (!profile) {
+            err = new Error('Profile not found');
+            err.code = 404;
+          }
+
+          next(err);
+        });
+      },
+      (next) => {
+        this._getHighestScoringPeer((err, profile) => {
+          highest = profile;
+          next(err);
+        });
+      },
+      (next) => {
+        this._getTotalKnownNetworkCapacity((err, result) => {
+          capacity = result;
+          next(err);
+        })
+      },
+      (next) => {
+        async.parallel([
+          (done) => this.database.PeerProfile.count({
+            'reputation.score': { $gte: target.reputation.score }
+          }, (err, count) => {
+            peers.upper = count;
+            done(err);
+          }),
+          (done) => this.database.PeerProfile.count({
+            'reputation.score': { $lte: target.reputation.score }
+          }, (err, count) => {
+            peers.lower = count;
+            done(err);
+          })
+        ], next);
+      },
+      (next) => {
+        percentile = score / (highest.reputation.score || 1);
+        percentile = parseFloat(percentile.toFixed(2));
+
+        if (percentile &lt; 0.2) {
+          allowance = Math.floor((0.05 * capacity.available) / peers.lower);
+        } else if (percentile > 0.2 &amp;&amp; percentile &lt; 0.5) {
+          allowance = Math.floor((0.20 * capacity.available) / peers.lower);
+        } else {
+          allowance = Math.floor((0.75 * capacity.available) / peers.upper);
+        }
+
+        next();
+      }
+    ], (err) => callback(err, {
+      identity, percentile, allowance, score, capacity
+    }));
+  }
+  /**
+   * @callback Directory~getPeerReputationScoreCallback
+   * @param {object|null} error
+   * @param {object} result
+   * @param {number} result.score - Numberical repuation score
+   * @param {number} result.percentile - Percent of scores identity exceeds
+   * @param {number} result.allowance - Bytes identity is allowed to claim
+   */
+
+  /**
+   * @private
+   */
+  _getTotalKnownNetworkCapacity(callback) {
+    let allocated, available;
+
+    this.database.PeerProfile
+      .aggregate([
+        {
+          $match: {
+            'capacity.timestamp': { $gte: new Date(Date.now() - ms('24HR')) }
+          }
+        },
+        {
+          $group: {
+            _id: null,
+            available: { $sum: '$capacity.available' },
+            allocated: { $sum: '$capacity.allocated' }
+          }
+        }
+      ])
+      .cursor({})
+      .exec()
+      .on('data', data => {
+        allocated = data.allocated;
+        available = data.available;
+      })
+      .on('error', callback)
+      .on('end', () => callback(null, { allocated, available }));
+  }
+
+  /**
+   * Get the peer with the highest reputation score
+   * @private
+   */
+  _getHighestScoringPeer(callback) {
+    this.database.PeerProfile
+      .find({})
+      .sort({ 'reputation.score': -1 })
+      .exec((err, results) => {
+        /* istanbul ignore if */
+        if (err) {
+          return callback(err);
+        }
+
+        /* istanbul ignore if */
+        if (!results.length) {
+          return callback(new Error('Failed to load peer profile'));
+        }
+
+        callback(null, results[0]);
+      });
+  }
+
+  /**
+   * @private
+   */
+  _getPeerProfileById(identity, callback) {
+    this.database.PeerProfile.findOne({ identity }, callback);
+  }
+
+  /**
+   * @private
+   */
   _handleGetOnlineProfiles(req, res, next) {
     let now = Date.now();
 
@@ -203,9 +357,7 @@ class Directory {
    * @private
    */
   _handleGetProfile(req, res, next) {
-    this.database.PeerProfile.findOne({
-      identity: req.params.identity
-    }, (err, profile) => {
+    this._getPeerProfileById(req.params.identity, (err, profile) => {
       /* istanbul ignore if */
       if (err) {
         return next(err);

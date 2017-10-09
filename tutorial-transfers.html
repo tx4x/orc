@@ -170,7 +170,68 @@ size, name, hash, location of shards, and more.</p>
     &quot;name&quot;: &quot;avatar.png&quot;,
     &quot;id&quot;: &quot;59d2627ebb28977b0e6ab841&quot;
   }
-]</code></pre><h3><code>POST /</code></h3><p>You can upload a file to the network my sending a multipart/form-upload request 
+]</code></pre><h3><code>GET /{id}/info</code></h3><p>Retrieve the metadata for a specific object by it's unique ID.</p>
+<pre class="prettyprint source"><code>$ curl http://127.0.0.1:4445/59d2627ebb28977b0e6ab841/info | jq
+{
+  &quot;encoding&quot;: &quot;7bit&quot;,
+  &quot;size&quot;: 43472,
+  &quot;ecpub&quot;: &quot;02dc3937fd97fc26a54ad976c4cda37eb513d9a86debca18dd6f2e83717c9227d3&quot;,
+  &quot;hash&quot;: &quot;24081ee6fd4a5395a44597e36c5314b1308a197137db45e08d6d86aa070fbe84&quot;,
+  &quot;status&quot;: &quot;finished&quot;,
+  &quot;policies&quot;: [
+    &quot;::RETRIEVE&quot;
+  ],
+  &quot;shards&quot;: [
+    {
+      &quot;size&quot;: 21744,
+      &quot;hash&quot;: &quot;e1eede74c9512f1994b18eac6465a0b471201548&quot;,
+      &quot;service&quot;: [
+        &quot;ccfbab389c9c547badb708021c0eaad4d9ec87ed&quot;,
+        {
+          &quot;agent&quot;: &quot;orc-8.1.1-beta5/linux&quot;,
+          &quot;index&quot;: 2,
+          &quot;xpub&quot;: &quot;xpub6BRiU17o5vnTq8sGX2DgjBoU1ozBZnBDiW4avCwoFUzcYtrHMKxs8BjdS3qt6AAv42KDE2B4D2q3Fj3cYuzuCFoDijnQKJYvoMLJV2rEGVL&quot;,
+          &quot;port&quot;: 443,
+          &quot;protocol&quot;: &quot;https:&quot;,
+          &quot;hostname&quot;: &quot;orcwfkilxjxo63mr.onion&quot;
+        }
+      ]
+    },
+    {
+      &quot;size&quot;: 21744,
+      &quot;hash&quot;: &quot;0a2f5a2a47ffe851403bfb4dc56be9b09392d182&quot;,
+      &quot;service&quot;: [
+        &quot;681069cc9dc643999be1031a8740d2a341939262&quot;,
+        {
+          &quot;agent&quot;: &quot;orc-8.1.1-beta6/linux&quot;,
+          &quot;index&quot;: 0,
+          &quot;xpub&quot;: &quot;xpub6ARoW5DJo4xBbob8Gr3HReVU3qqJQpBRqBR2SDJkaYq5eJGL17yhGijXzkmobJe3f5nPHyZrohWR5txhCUjiXvhfCR3v2vmc7MuAYCcrTbt&quot;,
+          &quot;port&quot;: 443,
+          &quot;protocol&quot;: &quot;https:&quot;,
+          &quot;hostname&quot;: &quot;puiq7u4bw6lroev5.onion&quot;
+        }
+      ]
+    },
+    {
+      &quot;size&quot;: 21744,
+      &quot;hash&quot;: &quot;4c38ad2a132b8d683abcc73f2eddf9d2700ad5d7&quot;,
+      &quot;service&quot;: [
+        &quot;1723b631252fc5f50ba43a8cfd2f38cba0daf44c&quot;,
+        {
+          &quot;agent&quot;: &quot;orc-8.1.1-beta1/linux&quot;,
+          &quot;index&quot;: 0,
+          &quot;xpub&quot;: &quot;xpub6AxEbAJY7bV33paGh9wbGgDh7q6T67LQKBEbo93vxez4zPF4sQQnNHK55suXWk4ViZYsjy1jwdUtuuWosUWAyEQMeqXmJKhbbuZnAcGLQRF&quot;,
+          &quot;port&quot;: 443,
+          &quot;protocol&quot;: &quot;https:&quot;,
+          &quot;hostname&quot;: &quot;wifniq3h3gqm2b2w.onion&quot;
+        }
+      ]
+    }
+  ],
+  &quot;mimetype&quot;: &quot;image/png&quot;,
+  &quot;name&quot;: &quot;avatar.png&quot;,
+  &quot;id&quot;: &quot;59d2627ebb28977b0e6ab841&quot;
+}</code></pre><h3><code>POST /</code></h3><p>You can upload a file to the network my sending a multipart/form-upload request 
 to <code>POST /</code>. This works the same as if using a <code>&lt;input type=&quot;file&quot;/&gt;</code> on a web
 page. You can also add <code>policy</code> fields to specify access policies as defined in 
 <a href="https://github.com/orcproject/imps/blob/master/imp-0010.md">IMP-0010</a>.</p>
