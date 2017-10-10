@@ -9,7 +9,6 @@ import appStore from './app-store'
 import bootstrap from './views/bootstrap.vue'
 import layout from './views/layout.vue'
 import objectManager from './views/object-manager.vue'
-import profile from './views/profile.vue'
 
 import Vue from 'vue';
 Vue.use(VueRouter);
@@ -29,13 +28,6 @@ let router = new VueRouter({
           component: objectManager,
           beforeEnter: (to, prev, next) => {
             appStore.objectManager.getList().then(next);
-          }
-        },
-        {
-          path: 'profile',
-          component: profile,
-          beforeEnter: (to, prev, next) => {
-            appStore.profile.getCapacityDirectory().then(next);
           }
         }
       ]
