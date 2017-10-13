@@ -21,13 +21,23 @@ if (process.platform === 'win32') {
     )
   });
 } else if (process.platform === 'darwin') {
+  process.env.OPENSSL_CONF = path.join(
+    __dirname, '../vendor', 'openssl-darwin', 'openssl.cnf'
+  );
   pem.config({
     pathOpenSSL: path.join(
       __dirname, '../vendor', 'openssl-darwin', 'bin', 'openssl'
     )
   });
 } else {
-  pem.config({ pathOpenSSL: '/usr/bin/openssl' });
+  process.env.OPENSSL_CONF = path.join(
+    __dirname, '../vendor', 'openssl-linux', 'openssl.cnf'
+  );
+  pem.config({
+    pathOpenSSL: path.join(
+      __dirname, '../vendor', 'openssl-linux', 'bin', 'openssl'
+    )
+  });
 }
 
 program.version(`
