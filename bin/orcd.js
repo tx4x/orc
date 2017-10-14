@@ -402,6 +402,17 @@ function init() {
           });
         });
         announceCapacity();
+
+        if (!ms(config.ShardCapacityAnnounceInterval)) {
+          node.logger.error('invalid capacity announce interval configured');
+          process.exit(1);
+        }
+
+        if (!ms(config.ShardReaperInterval)) {
+          node.logger.error('invalid shard reaper interval configured');
+          process.exit(1);
+        }
+
         setInterval(() => announceCapacity(),
                     ms(config.ShardCapacityAnnounceInterval));
         setInterval(() => reapExpiredShards(), ms(config.ShardReaperInterval));
