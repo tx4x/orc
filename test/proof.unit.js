@@ -45,9 +45,12 @@ describe('@class Proof', function() {
       const audit = new AuditStream(12);
       audit.end(SHARD);
       setImmediate(() => {
-        const leaves = audit.getPublicRecord();
-        const { challenges, root, depth } = audit.getPrivateRecord();
-        const [result, expected] = ProofStream.verify([null, null], root, depth);
+        const { root, depth } = audit.getPrivateRecord();
+        const [result, expected] = ProofStream.verify(
+          [null, null],
+          root,
+          depth
+        );
         expect(Buffer.compare(result, expected)).to.equal(1);
         done();
       });
