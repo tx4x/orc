@@ -39,6 +39,24 @@ describe('@class Shards', function() {
       });
     });
 
+    it('should callback error if stream error', function(done) {
+      const stream = new EventEmitter();
+      const Shards = proxyquire('../lib/shards', {
+        fs: {
+          existsSync: sinon.stub().returns(true),
+          createReadStream: sinon.stub().returns(stream)
+        }
+      });
+      const shards = new Shards(tmpdir());
+      shards.createReadStream('key', (err) => {
+        expect(err.message).to.equal('Failed to read');
+        done();
+      });
+      setImmediate(() => {
+        stream.emit('error', new Error('Failed to read'));
+      });
+    });
+
     it('should callback with created stream', function(done) {
       const stream = new EventEmitter();
       const Shards = proxyquire('../lib/shards', {
