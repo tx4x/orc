@@ -41,6 +41,21 @@ describe('@class Proof', function() {
       });
     });
 
+    it('should fail the invalid proof', function(done) {
+      const audit = new AuditStream(12);
+      audit.end(SHARD);
+      setImmediate(() => {
+        const { root, depth } = audit.getPrivateRecord();
+        const [result, expected] = ProofStream.verify(
+          [null, null],
+          root,
+          depth
+        );
+        expect(Buffer.compare(result, expected)).to.equal(1);
+        done();
+      });
+    });
+
     it('should pass the valid proof', function(done) {
       const audit = new AuditStream(12);
       audit.end(SHARD);

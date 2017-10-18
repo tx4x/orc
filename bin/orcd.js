@@ -353,7 +353,7 @@ function init() {
     });
   }
 
-  function join() {
+  function join(callback) {
     let entry = null;
 
     logger.info(
@@ -401,7 +401,6 @@ function init() {
             });
           });
         });
-        announceCapacity();
 
         if (!ms(config.ShardCapacityAnnounceInterval)) {
           node.logger.error('invalid capacity announce interval configured');
@@ -416,6 +415,9 @@ function init() {
         setInterval(() => announceCapacity(),
                     ms(config.ShardCapacityAnnounceInterval));
         setInterval(() => reapExpiredShards(), ms(config.ShardReaperInterval));
+
+        announceCapacity();
+        callback();
       }
     });
   }
@@ -449,7 +451,6 @@ function init() {
       `${config.BridgeHostname}:${config.BridgePort}`
     );
     bridge.listen(parseInt(config.BridgePort), config.BridgeHostname);
-    bridge.audit();
 
     if (parseInt(config.BridgeOnionServiceEnabled)) {
       node.onion.tor.createHiddenService(
@@ -591,7 +592,7 @@ function init() {
       });
     }
 
-    bootstrapFromLocalProfiles(() => join());
+    bootstrapFromLocalProfiles(() => join(() => bridge.audit()));
   });
 
   // Establish control server and wrap node instance

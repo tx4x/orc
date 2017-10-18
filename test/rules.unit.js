@@ -75,6 +75,31 @@ describe('@class Rules', function() {
       });
     });
 
+    it('should callback error if invalid challenge', function(done) {
+      const rules = new Rules({
+        database: {
+          ShardContract: {
+            findOne: sinon.stub().callsArgWith(1, null, {
+              shardHash: 'datahash',
+              checkAccessPolicy: sinon.stub().returns(['AUDIT'])
+            })
+          }
+        }
+      });
+      const request = {
+        params: [{ hash: 'datahash' }],
+        contact: [
+          'identity',
+          { xpub: 'xpubkey' }
+        ]
+      };
+      const response = {};
+      rules.audit(request, response, (err) => {
+        expect(err.message).to.equal('Invalid challenge supplied');
+        done();
+      });
+    });
+
     it('should return null if cannot load contract', function(done) {
       const rules = new Rules({
         database: {
@@ -139,7 +164,7 @@ describe('@class Rules', function() {
       rules.audit(request, response, done);
     });
 
-    it('should return null if proof fails', function(done) {
+    it('should return [] if proof fails', function(done) {
       const shardParts = [dataShard];
       const readStream = new Readable({
         read: function() {
@@ -173,7 +198,7 @@ describe('@class Rules', function() {
       };
       const response = {
         send: (params) => {
-          expect(params[0].proof).to.equal(null);
+          expect(params[0].proof).to.have.lengthOf(0);
           done();
         }
       };
