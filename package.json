@@ -77,7 +77,7 @@
     "kad": "^2.4.1",
     "kad-content": "^1.0.0",
     "kad-hibernate": "^1.0.0",
-    "kad-onion": "^1.6.4",
+    "kad-onion": "^1.7.0",
     "kad-quasar": "^2.1.0",
     "kad-spartacus": "^2.4.1",
     "knuth-shuffle": "^1.0.1",
