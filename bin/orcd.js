@@ -23,12 +23,11 @@ const { Transform } = require('stream');
 const config = require('rc')('orc', options);
 const boscar = require('boscar');
 const kad = require('kad');
-const { MongodHelper } = require('mongodb-prebuilt');
-const mongodArgs = [
+const mongodb = require('mongodb-bin-wrapper');
+const mongodargs = [
   '--port', config.MongoDBPort,
   '--dbpath', config.MongoDBDataDirectory
 ];
-const mongod = new MongodHelper(mongodArgs);
 
 
 program.version(`
@@ -102,24 +101,31 @@ if (!fs.existsSync(path.join(config.ShardStorageBaseDir, 'shards'))) {
 // Initialize logging
 const logger = bunyan.createLogger({ name: identity });
 
-// Start mongod before everything else
-mongod.run().then((proc) => {
-  const mongodShutdown = new MongodHelper(mongodArgs.concat(['--shutdown']));
+// Start mongod
+const mongod = mongodb('mongod', mongodargs);
 
-  init();
-  process.on('exit', () => {
-    logger.info('exiting, killing mongod');
-    mongodShutdown.run().then(() => null, () => null);
-  });
-}, (err) => {
-  // HACK: This will happen when orcd is started from the GUI
-  // HACK: The GUI start mongod itself so it can properly terminate it on exit
-  if (err.includes('already running') || err.includes('shutting down')) {
-    return init();
+mongod.stdout.on('data', data => {
+  if (data.toString().includes('waiting for connections')) {
+    init();
   }
+});
 
-  logger.error(`failed to start mongod: ${err}`);
-  process.exit(1);
+mongod.stderr.on('data', data => {
+  logger.error(data.toString());
+});
+
+// If mongod exits because then stop
+mongod.on('close', code => {
+  if (code !== 0) {
+    logger.error(`mongod exited with non-zero code (${code}), stopping orc`);
+    process.exit(code);
+  }
+});
+
+// Shutdown mongod cleanly on exit
+process.on('exit', () => {
+  logger.info('exiting, killing mongod');
+  mongodb('mongod', mongodargs.concat(['--shutdown']));
 });
 
 function init() {

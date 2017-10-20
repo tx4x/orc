@@ -6,18 +6,16 @@ const { homedir } = require('os');
 const orc = require('../lib');
 const { app, BrowserWindow, ipcMain, Menu, Tray } = require('electron');
 const enableLiveReload = require('electron-compile').enableLiveReload;
-const { MongodHelper } = require('mongodb-prebuilt');
-const mongodArgs = [
+const isDevMode = process.execPath.match(/[\\/]electron/);
+const mongodb = require('mongodb-bin-wrapper');
+const mongodargs = [
   '--port', config.MongoDBPort,
   '--dbpath', config.MongoDBDataDirectory
 ];
-const mongod = new MongodHelper(mongodArgs);
-const isDevMode = process.execPath.match(/[\\/]electron/);
 
-let mainWindow, tray, mongodProcess;
 
-// This crashes for unknown reasons
-//if(isDevMode) enableLiveReload();
+let mainWindow, tray;
+
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -67,9 +65,12 @@ function init() {
 
   });
 
+  orcd.stdout.pipe(process.stdout);
+  orcd.stderr.pipe(process.stderr);
+
   app.on('will-quit', () => {
-    process.kill(mongodProcess.pid);
     process.kill(orcd.pid);
+    mongodb('mongod', mongodargs.concat(['--shutdown']));
   });
 
   const updateLogs = (data) => {
@@ -118,10 +119,7 @@ function init() {
 if (require('electron-squirrel-startup')) {
   app.quit();
 } else {
-  mongod.run().then((proc) => {
-    mongodProcess = proc;
-    init();
-  }, (err) => console.error(err));
+  init();
 }
 
 // This method will be called when Electron has finished
