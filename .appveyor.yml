@@ -12,7 +12,6 @@ install:
   # install modules
   - npm install --ignore-scripts
   - npm install granax
-  - npm run postinstall
 
 # Post-install test scripts.
 test_script:

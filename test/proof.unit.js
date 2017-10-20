@@ -51,7 +51,7 @@ describe('@class Proof', function() {
           root,
           depth
         );
-        expect(Buffer.compare(result, expected)).to.equal(1);
+        expect(Buffer.compare(result, expected)).to.not.equal(0);
         done();
       });
     });
