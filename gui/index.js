@@ -135,6 +135,12 @@ app.on('window-all-closed', () => {
   // to stay active until the user quits explicitly with Cmd + Q
   if (process.platform !== 'darwin') {
     tray = new Tray(path.join(__dirname, 'assets/logo-app-icon.png'));
+    tray.setToolTip('ORC')
+    const contextMenu = Menu.buildFromTemplate([
+      {label: 'Open ORC', type: 'normal', click: createWindow},
+      {label: 'Quit ORC', type: 'normal', click: app.quit}
+    ])
+    tray.setContextMenu(contextMenu)
     tray.on('click', createWindow);
   }
 });
