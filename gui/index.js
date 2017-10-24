@@ -30,7 +30,23 @@ function createWindow() {
   // to stay active until the user quits explicitly with Cmd + Q
   if (process.platform !== 'darwin') {
     tray = new Tray(path.join(__dirname, 'assets/logo-white.png'));
+    tray.setToolTip('ORC');
     tray.on('click', () => mainWindow.show());
+    tray.setContextMenu(Menu.buildFromTemplate([
+      {
+        label: 'Show ORC',
+        type: 'normal',
+        click: () => mainWindow.show()
+      },
+      {
+        label: 'Quit ORC',
+        type: 'normal',
+        click: () => {
+          app.isQuitting = true;
+          app.quit();
+        }
+      }
+    ]));
   }
 
   mainWindow.loadURL(`file://${__dirname}/index.html`);
