@@ -26,6 +26,13 @@ function createWindow() {
     icon: path.join(__dirname, 'assets/logo-app-icon.png')
   });
 
+  // On OS X it is common for applications and their menu bar
+  // to stay active until the user quits explicitly with Cmd + Q
+  if (process.platform !== 'darwin') {
+    tray = new Tray(path.join(__dirname, 'assets/logo-white.png'));
+    tray.on('click', () => mainWindow.show());
+  }
+
   mainWindow.loadURL(`file://${__dirname}/index.html`);
 
   mainWindow.on('closed', () => {
@@ -35,10 +42,20 @@ function createWindow() {
   mainWindow.on('ready-to-show', () => {
     mainWindow.show();
     mainWindow.focus();
+  });
 
-    if (tray) {
-      tray.destroy();
+  mainWindow.on('minimize', (event) => {
+    event.preventDefault();
+    mainWindow.hide();
+  });
+
+  mainWindow.on('close', (event) => {
+    if (!app.isQuitting) {
+      event.preventDefault();
+      mainWindow.hide();
     }
+
+    return false;
   });
 
   Menu.setApplicationMenu(require('./menu'));
@@ -131,12 +148,7 @@ app.on('ready', () => {
 
 // Quit when all windows are closed.
 app.on('window-all-closed', () => {
-  // On OS X it is common for applications and their menu bar
-  // to stay active until the user quits explicitly with Cmd + Q
-  if (process.platform !== 'darwin') {
-    tray = new Tray(path.join(__dirname, 'assets/logo-app-icon.png'));
-    tray.on('click', createWindow);
-  }
+
 });
 
 app.on('activate', () => {
