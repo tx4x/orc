@@ -58,15 +58,19 @@ describe('@module orc (end-to-end)', function() {
   });
 
   it('should succeed in subscribing to capacity', function(done) {
-    this.timeout(6000);
+    this.timeout(24000);
+    let received = 0;
     const renter = nodes[0];
     const farmer = nodes[1];
     renter.subscribeCapacityAnnouncement((err, stream) => {
       stream.on('data', (data) => {
         capacities.push(data);
         expect(capacities[0][0].available).to.equal(shard.length);
+        received++;
+        if (received === 2) {
+          done();
+        }
       });
-      stream.once('data', () => done());
     });
     setTimeout(() => {
       farmer.publishCapacityAnnouncement({

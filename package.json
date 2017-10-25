@@ -1,6 +1,6 @@
 {
   "name": "@orcproject/orc",
-  "version": "9.0.5",
+  "version": "9.1.0",
   "description": "distributed anonymous storage network",
   "main": "gui/index.js",
   "bin": {
@@ -75,10 +75,11 @@
     "json-stable-stringify": "^1.0.1",
     "kad": "^2.4.1",
     "kad-content": "^1.0.0",
+    "kad-hashcash": "^1.0.0",
     "kad-hibernate": "^1.0.0",
     "kad-onion": "^1.7.1",
     "kad-quasar": "^2.1.0",
-    "kad-spartacus": "^2.4.1",
+    "kad-spartacus": "^2.4.2",
     "knuth-shuffle": "^1.0.1",
     "material-design-icons": "^3.0.1",
     "merge": "^1.2.0",
