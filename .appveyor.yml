@@ -20,12 +20,13 @@ before_deploy:
   - npm run make-win
 
 deploy:
-  description: 'automatic draft release'
+  description: "automatic draft release"
   provider: GitHub
   auth_token:
     secure: lN8A7/iiIPrWb0iJ4P2wvJUQ7qG7r6b2qxkMFN/pUNaMlyxck/hz1ba6/0oqYKoN
   artifact: /out\make\squirrel.windows\*.exe/
   draft: true
+  name: "automatic draft release"
   prerelease: false
   on:
     appveyor_repo_tag: true

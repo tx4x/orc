@@ -37,3 +37,5 @@ deploy:
   on:
     tags: true
   draft: true
+  name: "automatic draft release"
+  body: "automatic draft release"
