@@ -23,5 +23,4 @@ deploy:
   prerelease: false
   on:
     appveyor_repo_tag: true
-    branch: release-test
 

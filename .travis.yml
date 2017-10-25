@@ -35,6 +35,5 @@ deploy:
     - "out/make/*.dmg"
   on:
     tags: true
-    branch: release-test
   options:
     draft: true
