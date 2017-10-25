@@ -1,23 +1,40 @@
 language: node_js
 os:
-  - linux
-  - osx
+- linux
+- osx
 services:
-  - mongodb
+- mongodb
 compiler:
-  - gcc
-  - clang
+- gcc
+- clang
 addons:
   apt:
     sources:
-      - ubuntu-toolchain-r-test
+    - ubuntu-toolchain-r-test
     packages:
-      - gcc-4.8
-      - g++-4.8
-      - clang
+    - gcc-4.8
+    - g++-4.8
+    - clang
 node_js:
-  - "6.11.5"
-before_install: ./script/preinstall-ci.sh
+- 6.11.5
+before_install: "./script/preinstall-ci.sh"
 after_script:
-  - npm run coverage
-  - cat ./coverage/lcov.info | ./node_modules/.bin/coveralls
+- npm run coverage
+- cat ./coverage/lcov.info | ./node_modules/.bin/coveralls
+before_deploy: 
+  - "npm remove dtrace-provider"
+  - "npm run make"
+deploy:
+  provider: releases
+  skip_cleanup: true
+  api_key:
+    secure: NjepLGeGiMCj3FVsJwLwjEEyMwgMq5akUIoW343DbvAXyENdoHFgYS7U84KFmu3c7wwPKWklhqfFP5UG4qUf3CevZB36HvzrkT+exRPxDjZ41OShHG2tOR3xBkF/PesgMcheUmPo7H/eQRJqWLWPLB9kYSbumg2LOnelvQM7MGHOJxMEqaDuDXQFyrynL7qzVFOOu2FDMYoCGZfXcAUsJsgIqOPxvsG7/BsI6PYB1hv0TF0zt/cyCqq3pdgTD1NwIh+h9+tZcIatJokGF04NcTayk9HJp3Ni/z5mzIYy2Knq/VdhdI1LlaPwTeL4sWWuI6Kp4dP9eMuTnD+bpVp6cpFApr7lEbN158kYca9i9DlT/6DBwQja9ChN6neO1zejS5WTMth3PGAjw0L7Iam4aDyJzVtNgkQEv/XW0RiYiqEf0fMdTivBYH6rKfpaQ5uzbjeOfwTpGa/bBFU1uv+4UnH3+ykddXrSAeFTnto3iMBt1X2VRrYKQ2BDBbxDfJTeVKXreyEjmQ2yFvsT3D+9VaJj9xQvGpapPx5Gq3lgbPdmH4eqveeXRE3CfdupdCwjh0q6jUUXJZLJYQFtuiYYRNdYtQuJ2AZej5KGDMXWWpIV5YXszGBAMJevNsXG7D0RpTEuq0PplgyrHZMBKqtsOJL+PsftojynuNcN5I9tmA8=
+  file_glob: true
+  file: 
+    - "out/make/@orcproject/*.deb"
+    - "out/make/*.dmg"
+  on:
+    tags: true
+    branch: release-test
+  options:
+    draft: true
