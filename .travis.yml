@@ -36,5 +36,4 @@ deploy:
     - "out/make/*.dmg"
   on:
     tags: true
-  options:
-    draft: true
+  draft: true
