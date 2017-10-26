@@ -24,7 +24,7 @@ after_script:
 - cat ./coverage/lcov.info | ./node_modules/.bin/coveralls
 before_deploy: 
   - "npm remove dtrace-provider"
-  - "npm run make"
+  - "travis_wait 60 npm run make"
 deploy:
   provider: releases
   skip_cleanup: true
