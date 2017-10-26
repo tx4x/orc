@@ -122,11 +122,22 @@ mongod.on('close', code => {
   }
 });
 
-// Shutdown mongod cleanly on exit
-process.on('exit', () => {
+// Shutdown mongod cleanly on exit or SIGTERM
+process.on('exit', killMongodAndExit);
+process.on('SIGTERM', killMongodAndExit);
+
+function killMongodAndExit() {
   logger.info('exiting, killing mongod');
-  mongodb('mongod', mongodargs.concat(['--shutdown']));
-});
+
+  if (process.platform === 'linux') {
+    mongodb('mongod', mongodargs.concat(['--shutdown']));
+  } else {
+    process.kill(mongod.pid);
+  }
+
+  process.removeListener('exit', killMongodAndExit);
+  process.exit(0);
+}
 
 function init() {
   // Initialize the shard storage database
@@ -381,7 +392,7 @@ function init() {
     }, (err, result) => {
       if (!result) {
         logger.error('failed to join network, will retry in 1 minute');
-        retry = setTimeout(() => join(), ms('1m'));
+        retry = setTimeout(() => join(callback), ms('1m'));
       } else {
         logger.info(
           `connected to network via ${entry[0]} ` +

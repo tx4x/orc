@@ -102,8 +102,7 @@ function init() {
   orcd.stderr.pipe(process.stderr);
 
   app.on('will-quit', () => {
-    process.kill(orcd.pid);
-    mongodb('mongod', mongodargs.concat(['--shutdown']));
+    process.kill(orcd.pid, 'SIGTERM');
   });
 
   const updateLogs = (data) => {
@@ -172,5 +171,7 @@ app.on('activate', () => {
   // dock icon is clicked and there are no other windows open.
   if (mainWindow === null) {
     createWindow();
+  } else {
+    mainWindow.show();
   }
 });
