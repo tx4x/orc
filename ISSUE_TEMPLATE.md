@@ -3,8 +3,8 @@
 Replace the value below using the output from `orc --version`.
 
 ```
-orc      0.0.0
-protocol 2.0.0
+orc      9.1.0
+protocol 4.0.0
 ```
 
 Replace the value below using the output from `node --version`.

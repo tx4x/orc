@@ -1,6 +1,6 @@
 {
   "name": "@orcproject/orc",
-  "version": "9.0.4",
+  "version": "9.1.0",
   "description": "distributed anonymous storage network",
   "main": "gui/index.js",
   "bin": {
@@ -49,7 +49,7 @@
   ],
   "license": "AGPL-3.0",
   "engines": {
-    "node": "6.x.x"
+    "node": "^6.11.5"
   },
   "dependencies": {
     "@ronomon/reed-solomon": "^4.0.1",
@@ -75,10 +75,11 @@
     "json-stable-stringify": "^1.0.1",
     "kad": "^2.4.1",
     "kad-content": "^1.0.0",
+    "kad-hashcash": "^1.0.0",
     "kad-hibernate": "^1.0.0",
     "kad-onion": "^1.7.1",
     "kad-quasar": "^2.1.0",
-    "kad-spartacus": "^2.4.1",
+    "kad-spartacus": "^2.4.2",
     "knuth-shuffle": "^1.0.1",
     "material-design-icons": "^3.0.1",
     "merge": "^1.2.0",
@@ -134,7 +135,6 @@
           "squirrel"
         ],
         "darwin": [
-          "zip",
           "dmg"
         ],
         "linux": [
@@ -172,18 +172,6 @@
         "homepage": "https://orc.network",
         "icon": "gui/assets/logo-app-icon.png",
         "bin": "ORC"
-      },
-      "electronInstallerRedhat": {
-        "name": "orc",
-        "productName": "orc",
-        "genericName": "onion routed cloud",
-        "description": "The Onion Routed Cloud",
-        "productDescription": "ORC is a distributed anonymous file storage system owned and operated by all of us!",
-        "section": "web",
-        "maintainer": "Gordon Hall <gordonh@member.fsf.org",
-        "homepage": "https://orc.network",
-        "icon": "gui/assets/logo-app-icon.png",
-        "bin": "orc"
       }
     }
   }

@@ -7,7 +7,13 @@ const template = [
   {
     label: 'File',
     submenu: [
-      { role: 'quit' }
+      {
+        label: 'Quit',
+        click: function() {
+          electron.app.isQuitting = true;
+          electron.app.quit();
+        }
+      }
     ]
   },
   {
