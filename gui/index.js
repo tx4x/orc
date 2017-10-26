@@ -120,18 +120,10 @@ function init() {
         // NB: installation or errors so we can show a message that gives
         // NB: updates if the former, and just print the latter
         if (mainWindow) {
-          if (l.includes('Completed:')) {
-            mainWindow.webContents.send('log', {
-              msg: 'first run initialization... ' +
-                l.split('(')[0].toLowerCase(),
-              time: Date.now()
-            });
-          } else {
-            mainWindow.webContents.send('err', {
-              msg: data.toString(),
-              time: Date.now()
-            });
-          }
+          mainWindow.webContents.send('err', {
+            msg: data.toString(),
+            time: Date.now()
+          });
         }
 
         return;
