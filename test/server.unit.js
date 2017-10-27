@@ -245,6 +245,7 @@ describe('@class Server', function() {
     });
 
     it('should respond with 400 if integrity fails', function(done) {
+      this.timeout(6000);
       const shards = {
         createWriteStream: function(key, callback) {
           let ws = new stream.Writable({ write: (d, e, cb) => cb() });
