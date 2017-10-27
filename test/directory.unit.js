@@ -29,7 +29,8 @@ describe('@class Directory', function() {
   let identity5 = keyutils.toPublicKeyHash(key5.publicKey);
   let identity6 = keyutils.toPublicKeyHash(key6.publicKey);
 
-  before((done) => {
+  before(function(done) {
+    this.timeout(8000);
     getDatabase((err, database) => {
       directory = new Directory({
         database,
