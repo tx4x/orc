@@ -4,7 +4,16 @@ const config = require('rc')('orc', require('../bin/config'));
 const path = require('path');
 const { homedir } = require('os');
 const orc = require('../lib');
-const { app, BrowserWindow, ipcMain, Menu, Tray } = require('electron');
+
+const {
+  app,
+  BrowserWindow,
+  ipcMain,
+  Menu,
+  Tray,
+  dialog
+} = require('electron');
+
 const enableLiveReload = require('electron-compile').enableLiveReload;
 const isDevMode = process.execPath.match(/[\\/]electron/);
 const mongodb = require('mongodb-bin-wrapper');
@@ -96,6 +105,23 @@ function init() {
   // Handle process errors
   orcd.on('error', (err) => {
 
+  });
+
+  // Handle orcd crashes
+  orcd.on('exit', (code, signal) => {
+    if (code === 0 && signal === 'SIGTERM') {
+      return;
+    }
+
+    dialog.showMessageBox(mainWindow, {
+      type: 'error',
+      buttons: ['Exit ORC'],
+      title: 'Whoops!',
+      message: 'The ORC daemon process exit unexpectedly!'
+    }, () => {
+      app.isQuitting = true;
+      app.quit();
+    });
   });
 
   orcd.stdout.pipe(process.stdout);
