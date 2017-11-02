@@ -41,6 +41,7 @@ describe('@class Bridge (integration)', function() {
   let shards = {};
 
   before((done) => {
+    this.timeout(6000);
     sandbox.stub(utils, 'createShardUploader').callsFake((t, h) => {
       let uploader = new stream.Transform({
         write: function(d, e, cb) {
