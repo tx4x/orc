@@ -195,9 +195,11 @@ function init() {
       CircuitBuildTimeout: 10,
       KeepalivePeriod: 60,
       NewCircuitPeriod: 60,
-      NumEntryGuards: 8
+      NumEntryGuards: 8,
+      Log: `${config.TorLoggingVerbosity} stdout`
     },
-    serviceHealthCheckInterval: ms(config.ServiceAvailabilityCheckInterval)
+    serviceHealthCheckInterval: ms(config.ServiceAvailabilityCheckInterval),
+    passthroughLoggingEnabled: !!parseInt(config.TorPassthroughLoggingEnabled)
   }));
 
   // Intialize control server with explicity api permissions
