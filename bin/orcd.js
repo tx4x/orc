@@ -356,15 +356,16 @@ function init() {
   function bootstrapFromLocalProfiles(callback) {
     database.PeerProfile.find({
       updated: { $gt: Date.now() - ms('48HR') },
-      identity: { $not: identity.toString('hex') }
+      identity: { $ne: identity.toString('hex') }
     }).sort({ updated: -1 }).limit(10).exec((err, profiles) => {
       if (err) {
+        logger.warn(err.message);
         return callback(err);
       }
 
       profiles
         .map((p) => p.toString())
-        .forEach((url) => config.NetworkBootstrapNodes.unshift(url));
+        .forEach((url) => config.NetworkBootstrapNodes.push(url));
 
       callback();
     });
