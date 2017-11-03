@@ -32,6 +32,7 @@ describe('@class Bridge (integration)', function() {
   let file = crypto.randomBytes(3000);
   let id = null;
   let magnet = null;
+  let queued = null;
 
   mkdirp.sync(shardsdir);
 
@@ -299,6 +300,26 @@ describe('@class Bridge (integration)', function() {
     req.end();
   });
 
+  it('should not retry a finished object', function(done) {
+    let body = '';
+    let req = http.request({
+      auth: 'orctest:orctest',
+      hostname: 'localhost',
+      port,
+      path: `/${id}`,
+      method: 'PUT'
+    });
+    req.on('response', (res) => {
+      res.on('data', (data) => body += data.toString());
+      res.on('end', () => {
+        expect(res.statusCode).to.not.equal(201);
+        expect(body).to.equal('Object is not queued');
+        done();
+      });
+    });
+    req.end();
+  });
+
   it('should resolve the encrypted pointer and save it', function(done) {
     let body = '';
     let req = http.request({
@@ -411,11 +432,64 @@ describe('@class Bridge (integration)', function() {
         expect(body[0].status).to.equal('finished');
         expect(body[0].mimetype).to.equal('application/octet-stream');
         expect(body[0].name).to.equal('random');
+        queued = body[2].id;
         done();
       });
     });
     req.end();
 
+  });
+
+  it('should retry a failed/queued object', function(done) {
+    let distribute = sinon.stub(bridge, 'distribute').callsArgWith(2, null, {
+      toObject() {
+        return { id: queued };
+      }
+    });
+    let body = '';
+    let req = http.request({
+      auth: 'orctest:orctest',
+      hostname: 'localhost',
+      port,
+      path: `/${queued}`,
+      method: 'PUT'
+    });
+    req.on('response', (res) => {
+      distribute.restore();
+      res.on('data', (data) => body += data.toString());
+      res.on('end', () => {
+        body = JSON.parse(body);
+        expect(res.statusCode).to.equal(201);
+        expect(body.id).to.equal(queued);
+        done();
+      });
+    });
+    req.end();
+  });
+
+  it('should retry a failed/queued object and report error', function(done) {
+    let distribute = sinon.stub(bridge, 'distribute').callsArgWith(
+      2,
+      new Error('Failed to retry')
+    );
+    let body = '';
+    let req = http.request({
+      auth: 'orctest:orctest',
+      hostname: 'localhost',
+      port,
+      path: `/${queued}`,
+      method: 'PUT'
+    });
+    req.on('response', (res) => {
+      distribute.restore();
+      res.on('data', (data) => body += data.toString());
+      res.on('end', () => {
+        expect(res.statusCode).to.equal(500);
+        expect(body).to.equal('Failed to retry');
+        done();
+      });
+    });
+    req.end();
   });
 
   it('should download the file requested and repair', function(done) {

@@ -333,4 +333,16 @@ describe('@module utils', function() {
 
   });
 
+  describe('@function bufferAsReadableStream', function() {
+
+    it('should expose the buffer as a readable stream', function(done) {
+      let buffer = Buffer.from('hello buffer');
+      let stream = utils.bufferAsReadableStream(buffer);
+      stream.on('data', (chunk) => {
+        expect(Buffer.compare(buffer, chunk)).to.equal(0);
+      }).on('end', done);
+    });
+
+  });
+
 });
