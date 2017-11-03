@@ -56,27 +56,13 @@ describe('@class Bridge', function() {
   describe('@method listen', function() {
 
     it('should start server and bridge control port', function(done) {
-      let closeBubbled = false;
-      let errorBubbled = false;
-      let bridge = new Bridge({}, {
-        control: {
-          client: function(c) {
-            c.on('error', () => errorBubbled = true);
-            c.on('close', () => closeBubbled = true);
-          }
-        },
-        enableControlProxy: true
-      });
+      let bridge = new Bridge({}, {});
       let listen = sinon.stub(bridge.server, 'listen');
       bridge.listen(0);
       setImmediate(() => {
         let sock = new EventEmitter();
         bridge.wss.emit('connection', sock);
         setImmediate(() => {
-          sock.emit('close');
-          sock.emit('error');
-          expect(closeBubbled).to.equal(true);
-          expect(errorBubbled).to.equal(true);
           expect(listen.called).to.equal(true);
           done();
         });
