@@ -50,6 +50,8 @@ module.exports = {
 
   // Debugging/Developer
   VerboseLoggingEnabled: '1',
+  TorPassthroughLoggingEnabled: '0',
+  TorLoggingVerbosity: 'notice',
   ControlPort: '4444',
   ControlHostname: '127.0.0.1',
 

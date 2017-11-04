@@ -195,9 +195,11 @@ function init() {
       CircuitBuildTimeout: 10,
       KeepalivePeriod: 60,
       NewCircuitPeriod: 60,
-      NumEntryGuards: 8
+      NumEntryGuards: 8,
+      Log: `${config.TorLoggingVerbosity} stdout`
     },
-    serviceHealthCheckInterval: ms(config.ServiceAvailabilityCheckInterval)
+    serviceHealthCheckInterval: ms(config.ServiceAvailabilityCheckInterval),
+    passthroughLoggingEnabled: !!parseInt(config.TorPassthroughLoggingEnabled)
   }));
 
   // Intialize control server with explicity api permissions
@@ -356,15 +358,16 @@ function init() {
   function bootstrapFromLocalProfiles(callback) {
     database.PeerProfile.find({
       updated: { $gt: Date.now() - ms('48HR') },
-      identity: { $not: identity.toString('hex') }
+      identity: { $ne: identity.toString('hex') }
     }).sort({ updated: -1 }).limit(10).exec((err, profiles) => {
       if (err) {
+        logger.warn(err.message);
         return callback(err);
       }
 
       profiles
         .map((p) => p.toString())
-        .forEach((url) => config.NetworkBootstrapNodes.unshift(url));
+        .forEach((url) => config.NetworkBootstrapNodes.push(url));
 
       callback();
     });

@@ -32,6 +32,7 @@ describe('@class Bridge (integration)', function() {
   let file = crypto.randomBytes(3000);
   let id = null;
   let magnet = null;
+  let queued = null;
 
   mkdirp.sync(shardsdir);
 
@@ -299,6 +300,26 @@ describe('@class Bridge (integration)', function() {
     req.end();
   });
 
+  it('should not retry a finished object', function(done) {
+    let body = '';
+    let req = http.request({
+      auth: 'orctest:orctest',
+      hostname: 'localhost',
+      port,
+      path: `/${id}`,
+      method: 'PUT'
+    });
+    req.on('response', (res) => {
+      res.on('data', (data) => body += data.toString());
+      res.on('end', () => {
+        expect(res.statusCode).to.not.equal(201);
+        expect(body).to.equal('Object is not queued');
+        done();
+      });
+    });
+    req.end();
+  });
+
   it('should resolve the encrypted pointer and save it', function(done) {
     let body = '';
     let req = http.request({
@@ -383,7 +404,7 @@ describe('@class Bridge (integration)', function() {
       let body = '';
       res.on('data', (data) => body += data);
       res.on('end', () => {
-        expect(body).to.equal('Cannot claim capacity');
+        expect(body).to.equal('Not enough capacity information');
         done();
       });
     });
@@ -411,11 +432,64 @@ describe('@class Bridge (integration)', function() {
         expect(body[0].status).to.equal('finished');
         expect(body[0].mimetype).to.equal('application/octet-stream');
         expect(body[0].name).to.equal('random');
+        queued = body[2].id;
         done();
       });
     });
     req.end();
 
+  });
+
+  it('should retry a failed/queued object', function(done) {
+    let distribute = sinon.stub(bridge, 'distribute').callsArgWith(2, null, {
+      toObject() {
+        return { id: queued };
+      }
+    });
+    let body = '';
+    let req = http.request({
+      auth: 'orctest:orctest',
+      hostname: 'localhost',
+      port,
+      path: `/${queued}`,
+      method: 'PUT'
+    });
+    req.on('response', (res) => {
+      distribute.restore();
+      res.on('data', (data) => body += data.toString());
+      res.on('end', () => {
+        body = JSON.parse(body);
+        expect(res.statusCode).to.equal(201);
+        expect(body.id).to.equal(queued);
+        done();
+      });
+    });
+    req.end();
+  });
+
+  it('should retry a failed/queued object and report error', function(done) {
+    let distribute = sinon.stub(bridge, 'distribute').callsArgWith(
+      2,
+      new Error('Failed to retry')
+    );
+    let body = '';
+    let req = http.request({
+      auth: 'orctest:orctest',
+      hostname: 'localhost',
+      port,
+      path: `/${queued}`,
+      method: 'PUT'
+    });
+    req.on('response', (res) => {
+      distribute.restore();
+      res.on('data', (data) => body += data.toString());
+      res.on('end', () => {
+        expect(res.statusCode).to.equal(500);
+        expect(body).to.equal('Failed to retry');
+        done();
+      });
+    });
+    req.end();
   });
 
   it('should download the file requested and repair', function(done) {
@@ -582,24 +656,15 @@ describe('@class Bridge (integration)', function() {
   });
 
   it('should proxy websocket to control port', function(done) {
-    let ping = sandbox.stub(node, 'ping').callsArgWith(1, null, []);
     let creds = Buffer.from('orctest:orctest').toString('base64');
     let sock = new ws(`http://localhost:${port}?auth=${creds}`);
     sock.on('open', () => {
-      sock.on('message', (data) => {
-        data = JSON.parse(data);
-        expect(ping.callCount).to.equal(1);
-        expect(data.result).to.have.lengthOf(1);
+      sock.on('message', (msg) => {
+        msg = JSON.parse(msg);
+        expect(msg.type).to.equal('CONNECT_INFO');
+        expect(msg.data.clients).to.equal(1);
         done();
       });
-      sock.send(JSON.stringify({
-        jsonrpc: '2.0',
-        id: 'rpctest',
-        method: 'ping',
-        params: [
-          ['{ identity }', { contact: 'data' }]
-        ]
-      }) + '\r\n');
     });
   });
 

@@ -172,6 +172,37 @@ Once the object is completely distributed, the metadata will be returned. You
 can check on the status of an object while the request is pending by listing 
 the objects using `GET /`. Statuses may be *finished*, *queued*, or *failed*.
 
+#### Status Updates
+
+You can get detailed status updates on progress of an upload using the event 
+controller. Connect to the local bridge using a WebSocket. If you have authentication 
+enabled, add the query parameter `?auth={Base64(user:pass)}` to the URL.
+
+You will receive messages indicating the status of uploads in the form of JSON 
+payloads including `{ type, reference, message, data }`, where *type* can be: 
+
+* `CONNECT_INFO`
+* `TRANSFER_INFO`
+* `TRANSFER_SUCCESS`
+* `TRANSFER_FAILURE`
+
+The `reference` parameter will be either `null` if `CONNECT_INFO` or the hash 
+of the object the status message is about if `TRANSFER_*`. This can be used to 
+get the progress data about a pending upload.
+
+### `PUT /{id}`
+
+In the event that an upload fails due to network issues, it will end up in a 
+"queued" state, which allows for it to have a retry triggered by sending this 
+request. The result of this request is identical to uploading an object and 
+is functionally equivalent, except instead of first accepting the file as part 
+of the request, it will use the already encrypted copy stored locally.
+
+```
+$ curl -X PUT http://127.0.0.1:4445/59d2627ebb28977b0e6ab841 | jq
+```
+
+
 ### `GET /{id}`
 
 You can download a file from the network knowing only the object's ID in the 
