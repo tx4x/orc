@@ -139,12 +139,16 @@ class Rules {
           return next(new Error('Not authorized'));
         }
 
+        if (!challenge) {
+          return next(new Error('Invalid challenge supplied'));
+        }
+
         const auditLeaves = contract.auditLeaves;
         const proofStream = new ProofStream(auditLeaves, challenge);
 
         proofStream.on('error', () => {
           proofStream.removeAllListeners('finish');
-          done(null, { hash, proof: null });
+          done(null, { hash, proof: [] });
         });
 
         proofStream.on('finish', () => {
@@ -301,7 +305,6 @@ class Rules {
       const allowed = [
         'ownerIdentity',
         'ownerParentKey',
-        'ownerSignature',
         'ownerIndex',
         'auditLeaves',
         'accessPolicies'
@@ -311,7 +314,7 @@ class Rules {
         renewal
       );
 
-      for (let prop of difference) {
+      for (let prop of difference.filter(p => !p.includes('Signature'))) {
         if (!allowed.includes(prop)) {
           return next(new Error(`Rejecting renewal of ${prop}`));
         }

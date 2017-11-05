@@ -202,6 +202,10 @@ const PeerProfile = new Schema({
       type: Number,
       default: 0
     }
+  },
+  _failed: {
+    type: Date,
+    default: 0
   }
 });
 
@@ -210,6 +214,7 @@ PeerProfile.set('toObject', {
     delete ret._id;
     delete ret.__v;
     delete ret._reports;
+    delete ret._failed;
   }
 });
 
@@ -677,8 +682,6 @@ const ObjectPointer = new Schema({
   }
 });
 
-ObjectPointer.index({ uuid: 1 });
-
 ObjectPointer.set('toObject', {
   transform: (doc, ret) => {
     delete ret._id;
@@ -757,8 +760,6 @@ const NetworkBlob = new Schema({
     default: Date.now
   }
 });
-
-NetworkBlob.index({ key: 1 });
 
 NetworkBlob.set('toObject', {
   transform: (doc, ret) => {

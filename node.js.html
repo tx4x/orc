@@ -100,6 +100,7 @@ const kad = require('kad');
 const quasar = require('kad-quasar');
 const spartacus = require('kad-spartacus');
 const cas = require('kad-content');
+const hashcash = require('kad-hashcash');
 const constants = require('./constants');
 const https = require('https');
 const async = require('async');
@@ -143,6 +144,10 @@ class Node extends kad.KademliaNode {
 
     super(opts);
 
+    this.hashcash = this.plugin(hashcash({
+      methods: ['PUBLISH', 'STORE'],
+      difficulty: 3
+    }));
     this.quasar = this.plugin(quasar);
     this.spartacus = this.plugin(spartacus(
       options.privateExtendedKey,
@@ -190,6 +195,7 @@ class Node extends kad.KademliaNode {
     this.use('RETRIEVE', handlers.retrieve.bind(handlers));
     this.use('RENEW', handlers.renew.bind(handlers));
     this.use('CLAIM', handlers.claim.bind(handlers));
+    this.use('REPORT', handlers.report.bind(handlers));
 
     super.listen(...arguments);
   }

@@ -404,6 +404,23 @@ module.exports.getErasureParameters = function(n) {
   return accumulate();
 };
 
+/**
+ * Returns a readable stream version of the given buffer
+ * @param {buffer} buffer
+ * @returns {object}
+ */
+module.exports.bufferAsReadableStream = function(buffer) {
+  return new stream.Readable({
+    read: function() {
+      if (this._bufferDrained) {
+        this.push(null);
+      } else {
+        this._bufferDrained = true;
+        this.push(buffer);
+      }
+    }
+  });
+};
 </pre>
     </article>
 </section>
