@@ -74,6 +74,10 @@ module.exports = {
   BridgeTempStagingBaseDir: join(datadir, 'tmp'),
   BridgeControlProxyEnabled: '0',
 
+  // Additional Bridge Options
+  PeerCapacityPoolTimeout: '24HR',
+  PeerFailureBlacklistTimeout: '6HR',
+
   // Directory Server
   DirectoryEnabled: '1',
   DirectoryPort: '4446',

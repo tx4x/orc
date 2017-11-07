@@ -450,8 +450,8 @@ function init() {
       serviceKeyPath: config.BridgeServiceKeyPath,
       certificatePath: config.BridgeCertificatePath,
       authorityChains: config.BridgeAuthorityChains,
-      control,
-      enableControlProxy: parseInt(config.BridgeControlProxyEnabled)
+      peerCapacityPoolTimeout: ms(config.PeerCapacityPoolTimeout),
+      peerFailureBlacklistTimeout: ms(config.PeerFailureBlacklistTimeout)
     };
 
     if (parseInt(config.BridgeAuthenticationEnabled)) {

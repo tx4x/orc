@@ -359,9 +359,32 @@ generate one yourself, you can use:
 orctool generate-onion >> bridge_key
 ```
 
-#### BridgeControlProxyEnabled
+#### PeerCapacityPoolTimeout
+
+##### Default: `24HR`
+
+If we haven't received a relayed capacity announcement from a peer within 
+this defined timeframe, remove them from the provider pool until we receive 
+an announcement again. Prevents attempting to use providers that are unlikely 
+to be available.
+
+#### PeerFailureBlacklistTimeout
+
+##### Default: `6HR`
+
+If we have tried to store a shard with a peer and a failure occurred on the 
+provider's end, temporarily remove them from the provider pool for this defined 
+amount of time.
+
+#### TorPassthroughLoggingEnabled
 
 ##### Default: `0`
 
-If enabled, the bridge service will accept websocket connections and proxy 
-messages through to the control port.
+Redirects the Tor process log output through ORC's logger for the purpose of 
+debugging.
+
+#### TorLoggingVerbosity
+
+##### Default: `notice`
+
+Defines the verbosity level of the Tor process logging. Valid options are: `debug`, `info`, `notice`.
