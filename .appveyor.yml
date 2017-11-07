@@ -6,7 +6,6 @@ platform:
 
 install:
   - ps: Install-Product node 8 x64
-  - rm package-lock.json # windows npm@5 issues
   - npm install --ignore-scripts
   - npm install granax
 

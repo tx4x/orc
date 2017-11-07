@@ -68,7 +68,6 @@ On Windows, things are different - and a little weird. Instead, do the following
 ```
 git clone https://github.com/orproject/orc
 cd orc
-rm package-lock.json
 npm install --ignore-scripts
 npm install granax
 npm remove electron-prebuilt-compile
