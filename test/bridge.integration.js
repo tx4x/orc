@@ -348,6 +348,25 @@ describe('@class Bridge (integration)', function() {
     req.end(magnet);
   });
 
+  it('should not crash with invalid magnet', function(done) {
+    let body = '';
+    let req = http.request({
+      auth: 'orctest:orctest',
+      hostname: 'localhost',
+      port,
+      path: '/',
+      method: 'PUT'
+    });
+    req.on('response', (res) => {
+      res.on('data', (data) => body += data.toString());
+      res.on('end', () => {
+        expect(body).to.equal('Failed to parse magnet link');
+        done();
+      });
+    });
+    req.end('');
+  });
+
   it('should fail to upload if error loading capacity', function(done) {
     let findQuery = sandbox.stub(
       node.database.PeerProfile,
