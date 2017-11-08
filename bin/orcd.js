@@ -50,7 +50,7 @@ function orctool() {
 }
 
 // Extend the Kad T_RESPONSETIMEOUT to 30s because Tor
-kad.constants.T_RESPONSETIMEOUT = ms('30s');
+kad.constants.T_RESPONSETIMEOUT = ms(config.TransportMessageResponseTimeout);
 
 // Generate a private extended key if it does not exist
 if (!fs.existsSync(config.PrivateExtendedKeyPath)) {

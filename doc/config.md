@@ -157,6 +157,12 @@ not exist, it will be created.
 URL for an accessible directory service to use for initial directory 
 bootstrapping.
 
+#### TransportMessageResponseTimeout
+
+##### Default: `10S`
+
+How long we should wait on a response back from a peer for any given message.
+
 #### TransportServiceKeyPath
 
 ##### Default: `$HOME/.config/orc/service_key.pem`
