@@ -1,6 +1,6 @@
 {
   "name": "@orcproject/orc",
-  "version": "9.2.0",
+  "version": "9.2.1",
   "description": "distributed anonymous storage network",
   "main": "gui/index.js",
   "bin": {
@@ -49,7 +49,7 @@
   ],
   "license": "AGPL-3.0",
   "engines": {
-    "node": "^6.11.5"
+    "node": "^8.9.0"
   },
   "dependencies": {
     "@ronomon/reed-solomon": "^4.0.1",
@@ -69,7 +69,7 @@
     "express": "^4.15.4",
     "finalhandler": "^1.0.4",
     "form-data": "^2.3.1",
-    "granax": "^2.2.0",
+    "granax": "^2.2.1",
     "ip": "^1.1.5",
     "json-stable-stringify": "^1.0.1",
     "kad": "^2.4.1",

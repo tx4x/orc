@@ -27,6 +27,7 @@ module.exports = {
   // Server SSL
   TransportServiceKeyPath: join(datadir, 'service_key.pem'),
   TransportCertificatePath: join(datadir, 'certificate.pem'),
+  TransportMessageResponseTimeout: '10S',
 
   // Public Addressability
   PublicPort: '443',
@@ -73,6 +74,10 @@ module.exports = {
   BridgeAuthenticationPassword: randomBytes(16).toString('hex'),
   BridgeTempStagingBaseDir: join(datadir, 'tmp'),
   BridgeControlProxyEnabled: '0',
+
+  // Additional Bridge Options
+  PeerCapacityPoolTimeout: '24HR',
+  PeerFailureBlacklistTimeout: '6HR',
 
   // Directory Server
   DirectoryEnabled: '1',
