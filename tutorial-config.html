@@ -146,6 +146,7 @@ the directory service.</p>
 not exist, it will be created.</p>
 <h4>DirectoryBootstrapService</h4><h5>Default: <code>https://orcucqxc54fkhupb.onion:443</code></h5><p>URL for an accessible directory service to use for initial directory 
 bootstrapping.</p>
+<h4>TransportMessageResponseTimeout</h4><h5>Default: <code>10S</code></h5><p>How long we should wait on a response back from a peer for any given message.</p>
 <h4>TransportServiceKeyPath</h4><h5>Default: <code>$HOME/.config/orc/service_key.pem</code></h5><p>Path to this node's RPC service's SSL private key. If this path does 
 not exist, it will be created. You can also manually generate one with the 
 following:</p>
@@ -204,8 +205,16 @@ that authentication is enabled if using this option. Set to <code>1</code> to en
 <h4>BridgeOnionServicePrivateKeyPath</h4><h5>Default: <code>$HOME/.config/orc/bridge_key</code></h5><p>Path to this bridge's RSA1024 Tor hidden service private key. If this path does 
 not exist, it will be automatically generated for you. If you'd like to 
 generate one yourself, you can use:</p>
-<pre class="prettyprint source"><code>orctool generate-onion >> bridge_key</code></pre><h4>BridgeControlProxyEnabled</h4><h5>Default: <code>0</code></h5><p>If enabled, the bridge service will accept websocket connections and proxy 
-messages through to the control port.</p>
+<pre class="prettyprint source"><code>orctool generate-onion >> bridge_key</code></pre><h4>PeerCapacityPoolTimeout</h4><h5>Default: <code>24HR</code></h5><p>If we haven't received a relayed capacity announcement from a peer within 
+this defined timeframe, remove them from the provider pool until we receive 
+an announcement again. Prevents attempting to use providers that are unlikely 
+to be available.</p>
+<h4>PeerFailureBlacklistTimeout</h4><h5>Default: <code>6HR</code></h5><p>If we have tried to store a shard with a peer and a failure occurred on the 
+provider's end, temporarily remove them from the provider pool for this defined 
+amount of time.</p>
+<h4>TorPassthroughLoggingEnabled</h4><h5>Default: <code>0</code></h5><p>Redirects the Tor process log output through ORC's logger for the purpose of 
+debugging.</p>
+<h4>TorLoggingVerbosity</h4><h5>Default: <code>notice</code></h5><p>Defines the verbosity level of the Tor process logging. Valid options are: <code>debug</code>, <code>info</code>, <code>notice</code>.</p>
 </article>
 
 </section>
