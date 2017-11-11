@@ -4,6 +4,8 @@ import https from 'https';
 import http from 'http';
 import FormData from 'form-data';
 import fs from 'fs';
+import net from 'net';
+import async from 'async';
 import mimeTypes from 'mime-types';
 import path from 'path';
 import { ipcRenderer } from 'electron';
@@ -18,24 +20,14 @@ export default class DaemonConnection extends State {
   }
 
   connect() {
-    var eventEmitter = new EventEmitter();
-    const handleInitEvent = (ev, data) => {
-      if (data.msg.includes('establishing local bridge')) {
-        ipcRenderer.removeListener('log', handleInitEvent)
-        eventEmitter.emit('connected');
-      }
-    };
-    const handleErrorEvent = (ev, err) => {
-      this.commit(err.message)
-    };
+    const eventEmitter = new EventEmitter();
+    const handleErrorEvent = (ev, err) => this.commit(err.message);
 
     ipcRenderer.on('log', this.handleLogEvent.bind(this));
 
-    this._checkAlreadyRunning().then(() => {
-      eventEmitter.emit('connected');
-    }).catch(() => {
-      ipcRenderer.on('log', handleInitEvent);
-    })
+    async.retry({ times: 60, interval: 2000 }, (done) => {
+      this._checkAlreadyRunning().then(() => done()).catch(err => done(err));
+    }, () => eventEmitter.emit('connected'));
 
     ipcRenderer.on('err', handleErrorEvent);
 
@@ -262,7 +254,7 @@ export default class DaemonConnection extends State {
         return resolve(null, this.config);
       });
 
-      sock.once('error', () => { return reject() });
+      sock.once('error', reject);
     });
   }
 };
