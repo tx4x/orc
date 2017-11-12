@@ -56,29 +56,12 @@ npm install -g windows-build-tools
 
 ### Daemon + Utilities CLI
 
-This package exposes 3 command line programs: `orc`, `orcd`,  and `orctool`. To 
-install these, use the `--global` flag.
+This package exposes 3 programs: `orc`, `orcd`,  and `orctool`. To install 
+these, use the `--global` flag.
 
 ```
 npm install -g @orcproject/orc
 ```
-
-On Windows, things are different - and a little weird. Instead, do the following.
-
-```
-git clone https://github.com/orproject/orc
-cd orc
-npm install --ignore-scripts
-npm install granax
-npm remove electron-prebuilt-compile
-npm install electron-prebuilt-compile
-npm link
-npm run start-win
-```
-
-> Note that some native dependencies do not work on Windows and will fallback
-> to JavaScript implementations. This will impact performance. You should run 
-> GNU+Linux. :)
 
 ### Core Library
 
