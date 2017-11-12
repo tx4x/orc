@@ -107,22 +107,9 @@ install Node.js (which comes with NPM):</p>
 <pre class="prettyprint source"><code>yum groupinstall 'Development Tools'</code></pre><p>You might also find yourself lacking a C++11 compiler - 
 <a href="http://hiltmon.com/blog/2015/08/09/c-plus-plus-11-on-centos-6-dot-6/">see this</a>.</p>
 <h4>Mac OSX</h4><pre class="prettyprint source"><code>xcode-select --install</code></pre><h4>Windows</h4><p>Run as administrator in PowerShell or cmd:</p>
-<pre class="prettyprint source"><code>npm install -g windows-build-tools</code></pre><h3>Daemon + Utilities CLI</h3><p>This package exposes 3 command line programs: <code>orc</code>, <code>orcd</code>,  and <code>orctool</code>. To 
-install these, use the <code>--global</code> flag.</p>
-<pre class="prettyprint source"><code>npm install -g @orcproject/orc</code></pre><p>On Windows, things are different - and a little weird. Instead, do the following.</p>
-<pre class="prettyprint source"><code>git clone https://github.com/orproject/orc
-cd orc
-npm install --ignore-scripts
-npm install granax
-npm remove electron-prebuilt-compile
-npm install electron-prebuilt-compile
-npm link
-npm run start-win</code></pre><blockquote>
-<p>Note that some native dependencies do not work on Windows and will fallback
-to JavaScript implementations. This will impact performance. You should run 
-GNU+Linux. :)</p>
-</blockquote>
-<h3>Core Library</h3><p>This package exposes a module providing a complete implementation of the 
+<pre class="prettyprint source"><code>npm install -g windows-build-tools</code></pre><h3>Daemon + Utilities CLI</h3><p>This package exposes 3 programs: <code>orc</code>, <code>orcd</code>,  and <code>orctool</code>. To install 
+these, use the <code>--global</code> flag.</p>
+<pre class="prettyprint source"><code>npm install -g @orcproject/orc</code></pre><h3>Core Library</h3><p>This package exposes a module providing a complete implementation of the 
 protocol. To use it in your project, from your project's root directory, 
 install as a dependency.</p>
 <pre class="prettyprint source"><code>npm install @orcproject/orc --save</code></pre><p>Then you can require the library with:</p>
