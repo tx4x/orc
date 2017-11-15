@@ -167,6 +167,9 @@ exceed <code>BandwidthAccountingMax</code> within the period defined by
 transfer. Low-bandwidth RPC messages will still be allowed.</p>
 <h4>BandwidthAccountingReset</h4><h5>Default: <code>24HR</code></h5><p>Resets the bandwidth accounting on an interval defined by this property.</p>
 <h4>VerboseLoggingEnabled</h4><h5>Default: <code>1</code></h5><p>More detailed logging of messages sent and received. Useful for debugging.</p>
+<h4>LogFilePath</h4><h5>Default: <code>$HEAD/.config/orcd.log</code></h5><p>Path to write the daemon's log file. Log file will rotate either every 24 hours 
+or when it exceeds 10MB, whichever happens first.</p>
+<h4>LogFileMaxBackCopies</h4><h5>Default: <code>3</code></h5><p>Maximum number of rotated log files to keep.</p>
 <h4>ControlPort</h4><h5>Default: <code>4444</code></h5><p>Sets the port to bind the control interface. Used for controlling the 
 node from other applications. Be sure that <code>ControlHostname</code> is kept set to 
 a loopback address, unless you have taken other measures to prevent others 
