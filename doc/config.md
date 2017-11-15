@@ -236,6 +236,19 @@ Resets the bandwidth accounting on an interval defined by this property.
 
 More detailed logging of messages sent and received. Useful for debugging.
 
+#### LogFilePath
+
+##### Default: `$HEAD/.config/orcd.log`
+
+Path to write the daemon's log file. Log file will rotate either every 24 hours 
+or when it exceeds 10MB, whichever happens first.
+
+#### LogFileMaxBackCopies
+
+##### Default: `3`
+
+Maximum number of rotated log files to keep.
+
 #### ControlPort
 
 ##### Default: `4444`

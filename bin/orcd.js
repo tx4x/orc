@@ -12,6 +12,7 @@ const spartacus = require('kad-spartacus');
 const onion = require('kad-onion');
 const ms = require('ms');
 const bunyan = require('bunyan');
+const RotatingLogStream = require('bunyan-rotating-file-stream');
 const mkdirp = require('mkdirp');
 const path = require('path');
 const fs = require('fs');
@@ -130,7 +131,20 @@ async.parallel([
   }
 
   // Initialize logging
-  logger = bunyan.createLogger({ name: identity });
+  logger = bunyan.createLogger({
+    name: identity,
+    streams: [
+      {
+        stream: new RotatingLogStream({
+          path: config.LogFilePath,
+          totalFiles: parseInt(config.LogFileMaxBackCopies),
+          rotateExisting: true,
+          gzip: false
+        })
+      },
+      { stream: process.stdout }
+    ]
+  });
 
   // Start mongod
   mongod = mongodb('mongod', mongodargs);
@@ -156,6 +170,10 @@ async.parallel([
   // Shutdown mongod cleanly on exit or SIGTERM
   process.on('exit', killMongodAndExit);
   process.on('SIGTERM', killMongodAndExit);
+  process.on('uncaughtException', (err) => {
+    logger.error(err.message);
+    process.exit(1);
+  });
 });
 
 function killMongodAndExit() {
