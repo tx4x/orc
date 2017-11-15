@@ -1,6 +1,6 @@
 {
   "name": "@orcproject/orc",
-  "version": "9.2.2",
+  "version": "9.3.0",
   "description": "distributed anonymous storage network",
   "main": "gui/index.js",
   "bin": {
@@ -57,6 +57,7 @@
     "babel-polyfill": "^6.26.0",
     "basic-auth": "^1.1.0",
     "boscar": "^2.0.0",
+    "bunyan-rotating-file-stream": "^1.6.3",
     "busboy": "^0.2.14",
     "bytes": "^2.5.0",
     "commander": "^2.9.0",
@@ -72,6 +73,7 @@
     "granax": "^2.2.1",
     "ip": "^1.1.5",
     "json-stable-stringify": "^1.0.1",
+    "jsonrpc-lite": "^1.3.0",
     "kad": "^2.4.1",
     "kad-content": "^1.0.0",
     "kad-hashcash": "^1.0.0",

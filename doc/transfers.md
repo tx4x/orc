@@ -16,6 +16,28 @@ BridgeUseSSL = 0
 BridgeAuthenticationEnabled = 0
 ```
 
+### Status Updates
+
+You can get detailed status updates on progress of a transfer using the event 
+controller. Connect to the local bridge using a WebSocket. If you have 
+authentication enabled, be sure to send the appropriate 
+`Authorization: Basic <base64(user:pass)>` header when creating the request. 
+You will receive messages indicating the status of transfers in the form of 
+JSON-RPC notification payloads including `[reference, message, data]`, where 
+the *method* can be: 
+
+* `CONNECT_INFO`
+* `TRANSFER_DOWN_INFO`
+* `TRANSFER_DOWN_FAIL`
+* `TRANSFER_DOWN_PASS`
+* `TRANSFER_UP_INFO`
+* `TRANSFER_UP_PASS`
+* `TRANSFER_UP_FAIL`
+
+The `reference` parameter will be either `null` if `CONNECT_INFO` or the hash 
+of the object the status message is about if `TRANSFER_*`. This can be used to 
+get the progress data about a pending upload or download.
+
 ### `GET /`
 
 Retreive a JSON list of your objects stored in the network and managed by this 
@@ -171,24 +193,6 @@ $ curl -F "file=@avatar.png;type=image/png;" -F "policy=::RETRIEVE" http://127.0
 Once the object is completely distributed, the metadata will be returned. You 
 can check on the status of an object while the request is pending by listing 
 the objects using `GET /`. Statuses may be *finished*, *queued*, or *failed*.
-
-#### Status Updates
-
-You can get detailed status updates on progress of an upload using the event 
-controller. Connect to the local bridge using a WebSocket. If you have authentication 
-enabled, add the query parameter `?auth={Base64(user:pass)}` to the URL.
-
-You will receive messages indicating the status of uploads in the form of JSON 
-payloads including `{ type, reference, message, data }`, where *type* can be: 
-
-* `CONNECT_INFO`
-* `TRANSFER_INFO`
-* `TRANSFER_SUCCESS`
-* `TRANSFER_FAILURE`
-
-The `reference` parameter will be either `null` if `CONNECT_INFO` or the hash 
-of the object the status message is about if `TRANSFER_*`. This can be used to 
-get the progress data about a pending upload.
 
 ### `PUT /{id}`
 

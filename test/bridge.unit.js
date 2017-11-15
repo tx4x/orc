@@ -14,7 +14,7 @@ describe('@class Bridge', function() {
     it('should callback true if no creds defined', function(done) {
       let bridge = new Bridge({});
       bridge._verifyClient({
-        req: { url: '/' }
+        req: { url: '/', headers: {} }
       }, (result) => {
         expect(result).to.equal(true);
         done();
@@ -24,7 +24,7 @@ describe('@class Bridge', function() {
     it('should callback false if no creds supplied', function(done) {
       let bridge = new Bridge({}, { auth: { user: 'user', pass: 'pass' } });
       bridge._verifyClient({
-        req: { url: '/' }
+        req: { url: '/', headers: {} }
       }, (result) => {
         expect(result).to.equal(false);
         done();
@@ -34,7 +34,12 @@ describe('@class Bridge', function() {
     it('should callback true if creds match', function(done) {
       let bridge = new Bridge({}, { auth: { user: 'user', pass: 'pass' } });
       bridge._verifyClient({
-        req: { url: '/?auth=' + Buffer.from('user:pass').toString('base64') }
+        req: {
+          headers: {
+            authorization: 'Basic ' +
+              Buffer.from('user:pass').toString('base64')
+          }
+        }
       }, (result) => {
         expect(result).to.equal(true);
         done();
@@ -44,7 +49,12 @@ describe('@class Bridge', function() {
     it('should callback false if creds invalid', function(done) {
       let bridge = new Bridge({}, { auth: { user: 'user', pass: 'pass' } });
       bridge._verifyClient({
-        req: { url: '/?auth=' + Buffer.from('resu:ssap').toString('base64') }
+        req: {
+          headers: {
+            authorization: 'Basic ' +
+              Buffer.from('user:nope').toString('base64')
+          }
+        }
       }, (result) => {
         expect(result).to.equal(false);
         done();

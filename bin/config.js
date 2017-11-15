@@ -51,6 +51,8 @@ module.exports = {
 
   // Debugging/Developer
   VerboseLoggingEnabled: '1',
+  LogFilePath: join(datadir, 'orcd.log'),
+  LogFileMaxBackCopies: '3',
   TorPassthroughLoggingEnabled: '0',
   TorLoggingVerbosity: 'notice',
   ControlPort: '4444',

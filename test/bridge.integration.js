@@ -676,12 +676,16 @@ describe('@class Bridge (integration)', function() {
 
   it('should proxy websocket to control port', function(done) {
     let creds = Buffer.from('orctest:orctest').toString('base64');
-    let sock = new ws(`http://localhost:${port}?auth=${creds}`);
+    let sock = new ws(`http://localhost:${port}?auth=${creds}`, {
+      headers: {
+        authorization: `Basic ${creds}`
+      }
+    });
     sock.on('open', () => {
       sock.on('message', (msg) => {
         msg = JSON.parse(msg);
-        expect(msg.type).to.equal('CONNECT_INFO');
-        expect(msg.data.clients).to.equal(1);
+        expect(msg.method).to.equal('CONNECT_INFO');
+        expect(msg.params[2].clients).to.equal(1);
         done();
       });
     });
