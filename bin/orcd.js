@@ -23,6 +23,7 @@ const { Transform } = require('stream');
 const config = require('rc')('orc', options);
 const boscar = require('boscar');
 const kad = require('kad');
+const orctool = require('./orctool');
 const mongodb = require('mongodb-bin-wrapper');
 const mongodargs = [
   '--port', config.MongoDBPort,
@@ -43,88 +44,119 @@ program.description(`
 program.option('--config <file>', 'path to a orc configuration file');
 program.parse(process.argv);
 
-function orctool() {
-  return execSync([
-    `"${process.execPath}"`, path.join(__dirname, 'orctool.js'), ...arguments
-  ].join(' ')).toString().trim();
-}
-
 // Extend the Kad T_RESPONSETIMEOUT to 30s because Tor
 kad.constants.T_RESPONSETIMEOUT = ms(config.TransportMessageResponseTimeout);
+
+let xprivkey, parentkey, childkey, identity, logger, mongod;
 
 // Generate a private extended key if it does not exist
 if (!fs.existsSync(config.PrivateExtendedKeyPath)) {
   fs.writeFileSync(
     config.PrivateExtendedKeyPath,
-    orctool('generate-key', '--extended')
+    orctool.generateKey({ extended: true })
   );
 }
 
-// Generate self-signed ssl certificate if it does not exist
-if (!fs.existsSync(config.TransportServiceKeyPath)) {
-  let [key, cert] = orctool('generate-cert').split('\r\n\r\n');
-  fs.writeFileSync(config.TransportServiceKeyPath, key);
-  fs.writeFileSync(config.TransportCertificatePath, cert);
-}
-
-// Generate onion service key if it does not exist
-if (!fs.existsSync(config.OnionServicePrivateKeyPath)) {
-  let key = orctool('generate-onion');
-  fs.writeFileSync(config.OnionServicePrivateKeyPath, key);
-}
-
-// Generate onion service key if it does not exist
-if (!fs.existsSync(config.BridgeOnionServicePrivateKeyPath)) {
-  let key = orctool('generate-onion');
-  fs.writeFileSync(config.BridgeOnionServicePrivateKeyPath, key);
-}
-
-// Generate onion service key if it does not exist
-if (!fs.existsSync(config.DirectoryOnionServicePrivateKeyPath)) {
-  let key = orctool('generate-onion');
-  fs.writeFileSync(config.DirectoryOnionServicePrivateKeyPath, key);
-}
-
-// Initialize private extended key
-const xprivkey = fs.readFileSync(config.PrivateExtendedKeyPath).toString();
-const parentkey = hdkey.fromExtendedKey(xprivkey)
-                    .derive(orc.constants.HD_KEY_DERIVATION_PATH);
-const childkey = parentkey.deriveChild(parseInt(config.ChildDerivationIndex));
-const identity = spartacus.utils.toPublicKeyHash(childkey.publicKey)
-                   .toString('hex');
-
-// Create the shards directory if it does not exist
-if (!fs.existsSync(path.join(config.ShardStorageBaseDir, 'shards'))) {
-  mkdirp.sync(path.join(config.ShardStorageBaseDir, 'shards'));
-}
-
-// Initialize logging
-const logger = bunyan.createLogger({ name: identity });
-
-// Start mongod
-const mongod = mongodb('mongod', mongodargs);
-
-mongod.stdout.on('data', data => {
-  if (data.toString().includes('waiting for connections')) {
-    init();
+async.parallel([
+  function generateCertificate(done) {
+    // Generate self-signed ssl certificate if it does not exist
+    if (!fs.existsSync(config.TransportServiceKeyPath)) {
+      orctool.generateCert({}, (err, data) => {
+        if (err) {
+          return done(err);
+        }
+        fs.writeFileSync(config.TransportServiceKeyPath, data.serviceKey);
+        fs.writeFileSync(config.TransportCertificatePath, data.certificate);
+        done();
+      });
+    } else {
+      done();
+    }
+  },
+  function generateNodeOnion(done) {
+    // Generate onion service key if it does not exist
+    if (!fs.existsSync(config.OnionServicePrivateKeyPath)) {
+      orctool.generateOnion((err, data) => {
+        if (err) {
+          return done(err);
+        }
+        fs.writeFileSync(config.OnionServicePrivateKeyPath, data.key);
+        done();
+      });
+    } else {
+      done();
+    }
+  },
+  function generateBridgeOnion(done) {
+    // Generate onion service key if it does not exist
+    if (!fs.existsSync(config.BridgeOnionServicePrivateKeyPath)) {
+      orctool.generateOnion((err, data) => {
+        if (err) {
+          return done();
+        }
+        fs.writeFileSync(config.BridgeOnionServicePrivateKeyPath, data.key);
+        done();
+      });
+    } else {
+      done();
+    }
+  },
+  function generateDirectoryOnion(done) {
+    // Generate onion service key if it does not exist
+    if (!fs.existsSync(config.DirectoryOnionServicePrivateKeyPath)) {
+      orctool.generateOnion((err, data) => {
+        if (err) {
+          return done(err);
+        }
+        fs.writeFileSync(config.DirectoryOnionServicePrivateKeyPath, data.key);
+        done();
+      });
+    } else {
+      done();
+    }
   }
-});
+], function readyForInit(err) {
+  // Initialize private extended key
+  xprivkey = fs.readFileSync(config.PrivateExtendedKeyPath).toString();
+  parentkey = hdkey.fromExtendedKey(xprivkey)
+                .derive(orc.constants.HD_KEY_DERIVATION_PATH);
+  childkey = parentkey.deriveChild(parseInt(config.ChildDerivationIndex));
+  identity = spartacus.utils.toPublicKeyHash(childkey.publicKey)
+               .toString('hex');
 
-mongod.stderr.on('data', data => {
-  logger.error(data.toString());
-});
-
-// If mongod exits because then stop
-mongod.on('close', code => {
-  if (code !== 0) {
-    logger.error(`mongod exited with non-zero code (${code}), stopping orc`);
-    process.exit(code);
+  // Create the shards directory if it does not exist
+  if (!fs.existsSync(path.join(config.ShardStorageBaseDir, 'shards'))) {
+    mkdirp.sync(path.join(config.ShardStorageBaseDir, 'shards'));
   }
-});
 
-// Shutdown mongod cleanly on exit or SIGTERM
-process.on('exit', killMongodAndExit);
-process.on('SIGTERM', killMongodAndExit);
+  // Initialize logging
+  logger = bunyan.createLogger({ name: identity });
+
+  // Start mongod
+  mongod = mongodb('mongod', mongodargs);
+
+  mongod.stdout.on('data', data => {
+    if (data.toString().includes('waiting for connections')) {
+      init();
+    }
+  });
+
+  mongod.stderr.on('data', data => {
+    logger.error(data.toString());
+  });
+
+  // If mongod exits because then stop
+  mongod.on('close', code => {
+    if (code !== 0) {
+      logger.error(`mongod exited with non-zero code (${code}), stopping orc`);
+      process.exit(code);
+    }
+  });
+
+  // Shutdown mongod cleanly on exit or SIGTERM
+  process.on('exit', killMongodAndExit);
+  process.on('SIGTERM', killMongodAndExit);
+});
 
 function killMongodAndExit() {
   logger.info('exiting, killing mongod');
