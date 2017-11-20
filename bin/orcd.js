@@ -167,9 +167,10 @@ async.parallel([
     }
   });
 
-  // Shutdown mongod cleanly on exit or SIGTERM
+  // Shutdown mongod cleanly on exit or SIGTERM/SIGKILL
   process.on('exit', killMongodAndExit);
   process.on('SIGTERM', killMongodAndExit);
+  process.on('SIGINT', killMongodAndExit);
   process.on('uncaughtException', (err) => {
     logger.error(err.message);
     process.exit(1);
