@@ -46,7 +46,7 @@ program.option('--config <file>', 'path to a orc configuration file');
 program.parse(process.argv);
 
 // Extend the Kad T_RESPONSETIMEOUT to 30s because Tor
-kad.constants.T_RESPONSETIMEOUT = ms(config.TransportMessageResponseTimeout);
+kad.constants.T_RESPONSETIMEOUT = ms(config.TransportResponseTimeout);
 
 let xprivkey, parentkey, childkey, identity, logger, mongod;
 

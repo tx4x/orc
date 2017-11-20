@@ -27,7 +27,7 @@ module.exports = {
   // Server SSL
   TransportServiceKeyPath: join(datadir, 'service_key.pem'),
   TransportCertificatePath: join(datadir, 'certificate.pem'),
-  TransportMessageResponseTimeout: '10S',
+  TransportResponseTimeout: '30S',
 
   // Public Addressability
   PublicPort: '443',
