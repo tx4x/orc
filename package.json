@@ -2,11 +2,10 @@
   "name": "@orcproject/orc",
   "version": "10.0.0-beta",
   "description": "distributed anonymous storage network",
-  "main": "gui/index.js",
+  "main": "index.js",
   "bin": {
-    "orc": "bin/_orc",
-    "orcd": "bin/_orcd",
-    "orctool": "bin/_orctool"
+    "orc": "bin/orc.js",
+    "orcd": "bin/orcd.js"
   },
   "directories": {
     "test": "test",
@@ -21,13 +20,7 @@
     "coverage": "istanbul cover _mocha -- --recursive",
     "linter": "eslint ./index.js ./lib ./test",
     "generate-docs": "mkdir -p ./jsdoc && rm -r ./jsdoc && jsdoc lib -r -R README.md -u ./doc -c .jsdoc.json --verbose -d ./jsdoc",
-    "publish-docs": "gh-pages -d jsdoc --repo git@github.com:orcproject/orc.git",
-    "start": "electron-forge start",
-    "package": "electron-forge package",
-    "make": "electron-forge make",
-    "start-win": "cross-env ELECTRON_REBUILD_ONLY=none electron-forge start",
-    "package-win": "cross-env ELECTRON_REBUILD_ONLY=none electron-forge package",
-    "make-win": "cross-env ELECTRON_REBUILD_ONLY=none electron-forge make"
+    "publish-docs": "gh-pages -d jsdoc --repo git@github.com:orcproject/orc.git"
   },
   "keywords": [
     "orc",
@@ -54,24 +47,19 @@
   "dependencies": {
     "@ronomon/reed-solomon": "^4.0.1",
     "async": "^2.4.1",
-    "babel-polyfill": "^6.26.0",
     "basic-auth": "^1.1.0",
-    "boscar": "^2.0.0",
     "bunyan": "^1.8.12",
     "bunyan-rotating-file-stream": "^1.6.3",
     "busboy": "^0.2.14",
     "bytes": "^2.5.0",
     "commander": "^2.9.0",
     "concat-stream": "^1.6.0",
-    "connect": "^3.6.1",
+    "connect": "^3.6.5",
     "cors": "^2.8.4",
     "du": "^0.1.0",
-    "electron-compile": "^6.4.2",
-    "electron-squirrel-startup": "^1.0.0",
     "express": "^4.15.4",
     "finalhandler": "^1.0.4",
     "form-data": "^2.3.1",
-    "granax": "^2.2.1",
     "ip": "^1.1.5",
     "json-stable-stringify": "^1.0.1",
     "jsonrpc-lite": "^1.3.0",
@@ -79,11 +67,10 @@
     "kad-content": "^1.0.0",
     "kad-hashcash": "^1.0.0",
     "kad-hibernate": "^1.0.0",
-    "kad-onion": "^1.8.0",
+    "kad-onion": "^2.0.0-beta",
     "kad-quasar": "^2.1.0",
     "kad-spartacus": "^2.4.2",
     "knuth-shuffle": "^1.0.1",
-    "material-design-icons": "^3.0.1",
     "merge": "^1.2.0",
     "mime-types": "^2.1.16",
     "mkdirp": "^0.5.1",
@@ -97,84 +84,24 @@
     "secp256k1": "^3.2.2",
     "semver": "^5.1.0",
     "stream-slice": "^0.1.2",
-    "util.promisify": "^1.0.0",
-    "vue": "^2.4.2",
-    "vue-router": "^2.7.0",
-    "vueify": "^9.4.1",
-    "vuetify": "github:MrFancyMonocle/vuetify",
-    "ws": "^3.0.0"
+    "ws": "^3.0.0",
+    "zcash": "^0.1.0"
   },
   "devDependencies": {
-    "babel-plugin-transform-export-extensions": "^6.22.0",
-    "babel-plugin-transform-object-rest-spread": "^6.26.0",
-    "babel-preset-es2015": "^6.24.1",
-    "babel-preset-es2016": "^6.24.1",
-    "babel-preset-es2017": "^6.24.1",
     "chai": "^2.2.0",
     "coveralls": "^2.11.2",
-    "cross-env": "^5.0.5",
-    "electron-forge": "github:bookchin/electron-forge",
-    "electron-prebuilt-compile": "1.7.5",
     "eslint": "^3.14.0",
     "gh-pages": "^0.9.0",
     "ink-docstrap": "bookchin/docstrap",
-    "istanbul": "^0.4.5",
+    "istanbul": "^1.1.0-alpha.1",
     "jsdoc": "^3.4.0",
     "mocha": "^2.2.4",
     "node-mocks-http": "^1.6.1",
     "proxyquire": "^1.7.3",
-    "remove": "^0.1.5",
     "sinon": "^2.4.1"
   },
   "optionalDependencies": {
     "bufferutil": "^3.0.2",
     "utf-8-validate": "^3.0.3"
-  },
-  "config": {
-    "forge": {
-      "make_targets": {
-        "win32": [
-          "squirrel"
-        ],
-        "darwin": [
-          "dmg"
-        ],
-        "linux": [
-          "deb"
-        ]
-      },
-      "electronPackagerConfig": {
-        "appCopyright": "Copyright (C) 2017  Counterpoint Hackerspace, Ltd.",
-        "asar": false,
-        "overwrite": true,
-        "name": "ORC",
-        "icon": "gui/assets/logo-app-icon",
-        "extraResource": []
-      },
-      "electronInstallerDMG": {
-        "icon": "gui/assets/logo-app-icon.icns",
-        "background": "gui/assets/dmg-bg.jpg"
-      },
-      "electronWinstallerConfig": {
-        "name": "orc.exe",
-        "description": "Anonymous Distributed Cloud",
-        "title": "orc",
-        "setupIcon": "gui/assets/logo-app-icon.ico",
-        "setupExe": "orc.exe",
-        "loadingGif": "gui/assets/loader.gif"
-      },
-      "electronInstallerDebian": {
-        "name": "orc",
-        "productName": "orc",
-        "genericName": "onion routed cloud",
-        "description": "The Onion Routed Cloud",
-        "productDescription": "ORC is a distributed anonymous file storage system owned and operated by all of us!",
-        "section": "web",
-        "maintainer": "Gordon Hall <gordonh@member.fsf.org",
-        "homepage": "https://orc.network",
-        "icon": "gui/assets/logo-app-icon.png",
-        "bin": "ORC"
-      }
-    }
   }
 }

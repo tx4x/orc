@@ -6,7 +6,7 @@ const { existsSync, writeFileSync } = require('fs');
 const mkdirp = require('mkdirp');
 const { tmpdir, homedir } = require('os');
 const { join } = require('path');
-const datadir = join(homedir(), '.config/orc');
+const datadir = join(homedir(), '.config/orcd');
 
 module.exports = {
 
@@ -15,34 +15,25 @@ module.exports = {
   ChildDerivationIndex: '0',
 
   // Database
-  MongoDBDataDirectory: join(datadir, 'data'),
+  MongoDBDataDirectory: join(datadir, 'node_data'),
   MongoDBPort: '37017',
 
   // Shard Database
-  ShardStorageBaseDir: datadir,
+  ShardStorageDataDirectory: join(datadir, 'provider_vault'),
   ShardStorageMaxAllocation: '5GB',
   ShardReaperInterval: '24HR',
-  ShardCapacityAnnounceInterval: '15M',
+  ShardReaperInvalidationBlocks: '432',
+  ShardCapacityAnnounceInterval: '30M',
 
-  // Server SSL
-  TransportServiceKeyPath: join(datadir, 'service_key.pem'),
-  TransportCertificatePath: join(datadir, 'certificate.pem'),
-  TransportResponseTimeout: '30S',
-
-  // Public Addressability
-  PublicPort: '443',
-  ListenPort: '4443',
+  // Node Options
+  NodeVirtualPort: '80',
+  NodeListenPort: '9088',
+  NodeOnionServiceDataDirectory: join(datadir, 'node_hs'),
 
   // Network Bootstrapping
   NetworkBootstrapNodes: [
-    'https://orcjfg52ty6ljv54.onion:443',
-    'https://orce4nqoa6muz3gt.onion:443',
-    'https://orcjd7xgshpovm6i.onion:443',
-    'https://orcwfkilxjxo63mr.onion:443'
-  ],
 
-  // Tor Behavior
-  ServiceAvailabilityCheckInterval: '10M',
+  ],
 
   // Bandwidth Metering
   BandwidthAccountingEnabled: '0',
@@ -55,43 +46,29 @@ module.exports = {
   LogFileMaxBackCopies: '3',
   TorPassthroughLoggingEnabled: '0',
   TorLoggingVerbosity: 'notice',
-  ControlPort: '4444',
-  ControlHostname: '127.0.0.1',
 
-  // Onion Service
-  OnionServicePrivateKeyPath: join(datadir, 'onion_key'),
 
   // Local Bridge
   BridgeEnabled: '1',
   BridgeHostname: '127.0.0.1',
-  BridgePort: '4445',
-  BridgeUseSSL: '1',
+  BridgePort: '9089',
   BridgeOnionServiceEnabled: '0',
-  BridgeOnionServicePrivateKeyPath: join(datadir, 'bridge_key'),
-  BridgeServiceKeyPath: join(datadir, 'service_key.pem'),
-  BridgeCertificatePath: join(datadir, 'certificate.pem'),
-  BridgeAuthorityChains: [],
+  BridgeOnionServiceDataDirectory: join(datadir, 'bridge_hs'),
   BridgeAuthenticationEnabled: '1',
   BridgeAuthenticationUser: 'orc',
   BridgeAuthenticationPassword: randomBytes(16).toString('hex'),
   BridgeTempStagingBaseDir: join(datadir, 'tmp'),
-  BridgeControlProxyEnabled: '0',
 
   // Additional Bridge Options
-  PeerCapacityPoolTimeout: '24HR',
-  PeerFailureBlacklistTimeout: '6HR',
+  ProviderCapacityPoolTimeout: '48HR',
+  ProviderFailureBlacklistTimeout: '12HR',
+  ProviderBondDepositAmount: '5',
 
-  // Directory Server
-  DirectoryEnabled: '1',
-  DirectoryPort: '4446',
-  DirectoryHostname: '127.0.0.1',
-  DirectoryUseSSL: '1',
-  DirectoryOnionServiceEnabled: '0',
-  DirectoryOnionServicePrivateKeyPath: join(datadir, 'directory_key'),
-  DirectoryServiceKeyPath: join(datadir, 'service_key.pem'),
-  DirectoryCertificatePath: join(datadir, 'certificate.pem'),
-  DirectoryAuthorityChains: [],
-  DirectoryBootstrapService: 'https://orcucqxc54fkhupb.onion:443'
+  // Wallet Options
+  WalletHostname: '127.0.0.1',
+  WalletPort: '9090',
+  WalletAuthenticationUser: 'orc',
+  WalletAuthenticationPassword: randomBytes(16).toString('hex')
 
 };
 
@@ -100,6 +77,10 @@ if (!existsSync(join(datadir, 'config'))) {
   writeFileSync(join(datadir, 'config'), ini.stringify(module.exports));
 }
 
-if (!existsSync(join(datadir, 'data'))) {
-  mkdirp.sync(join(datadir, 'data'));
+if (!existsSync(join(datadir, 'node_data'))) {
+  mkdirp.sync(join(datadir, 'node_data'));
+}
+
+if (!existsSync(join(datadir, 'provider_vault'))) {
+  mkdirp.sync(join(datadir, 'provider_vault'));
 }

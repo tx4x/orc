@@ -21,13 +21,13 @@ const { join } = require('path');
 /* istanbul ignore next */
 module.exports = function(config = {}) {
   /* eslint max-statements: [2, 20] */
-  const defaults = require('../bin/config');
+  const defaults = require('./bin/config');
   const cport = config.ControlPort || defaults.ControlPort;
   const caddr = config.ControlHostname || defaults.ControlHostname;
   const controller = new module.exports.control.Client();
 
   let envs = {};
-  let file = join(__dirname, '../bin/orcd.js');
+  let file = join(__dirname, './bin/orcd.js');
   let args = [];
   let trys = 10;
   let opts = {
@@ -40,7 +40,7 @@ module.exports = function(config = {}) {
     args = args.concat(['--config', config]);
   } else {
     for (let prop in config) {
-      envs[`orc_${prop}`] = config[prop];
+      envs[`orcd_${prop}`] = config[prop];
     }
   }
 
@@ -69,43 +69,43 @@ module.exports = function(config = {}) {
 };
 
 /** {@link Node} */
-module.exports.Node = require('./node');
+module.exports.Node = require('./lib/node');
 
 /** {@link Rules} */
-module.exports.Rules = require('./rules');
+module.exports.Rules = require('./lib/rules');
 
 /** {@link Transport} */
-module.exports.Transport = require('./transport');
+module.exports.Transport = require('./lib/transport');
 
 /** {@link Server} */
-module.exports.Server = require('./server');
+module.exports.Server = require('./lib/server');
 
 /** {@link Audit} */
-module.exports.Audit = require('./audit');
+module.exports.Audit = require('./lib/audit');
 
 /** {@link Proof} */
-module.exports.Proof = require('./proof');
+module.exports.Proof = require('./lib/proof');
 
 /** {@link Shards} */
-module.exports.Shards = require('./shards');
+module.exports.Shards = require('./lib/shards');
 
 /** {@link Bridge} */
-module.exports.Bridge = require('./bridge');
+module.exports.Bridge = require('./lib/bridge');
 
 /** {@link Directory} */
-module.exports.Directory = require('./directory');
+module.exports.Directory = require('./lib/directory');
 
 /** {@link Database} */
-module.exports.Database = require('./database');
+module.exports.Database = require('./lib/database');
 
 /** {@link module:orc/constants} */
-module.exports.constants = require('./constants');
+module.exports.constants = require('./lib/constants');
 
 /** {@link module:orc/utils} */
-module.exports.utils = require('./utils');
+module.exports.utils = require('./lib/utils');
 
 /** {@link module:orc/version} */
-module.exports.version = require('./version');
+module.exports.version = require('./lib/version');
 
-/** @see https://github.com/bookchin/boscar */
-module.exports.control = require('boscar');
+/** {@link module:orc/logger} */
+module.exports.logger = require('./lib/logger');

@@ -99,13 +99,13 @@ describe('@class Node', function() {
       req.end = sinon.stub();
       const res = new EventEmitter();
       const Node = proxyquire('../lib/node', {
-        https: {
+        http: {
           request: sinon.stub().callsArgWith(1, res).returns(req)
         }
       })
       const node = createNode({}, Node);
       node.onion = { createSecureAgent: sinon.stub() };
-      node.identifyService('https://asdfghjkl.onion:443', (err) => {
+      node.identifyService('http://asdfghjkl.onion:443', (err) => {
         expect(err.message).to.equal('Service down');
         done();
       });
@@ -121,13 +121,13 @@ describe('@class Node', function() {
       req.end = sinon.stub();
       const res = new EventEmitter();
       const Node = proxyquire('../lib/node', {
-        https: {
+        http: {
           request: sinon.stub().callsArgWith(1, res).returns(req)
         }
       })
       const node = createNode({}, Node);
       node.onion = { createSecureAgent: sinon.stub() };
-      node.identifyService('https://asdfghjkl.onion:443', (err) => {
+      node.identifyService('http://asdfghjkl.onion:443', (err) => {
         expect(err.message).to.equal('Failed to parse identity');
         done();
       });
@@ -143,13 +143,13 @@ describe('@class Node', function() {
       req.end = sinon.stub();
       const res = new EventEmitter();
       const Node = proxyquire('../lib/node', {
-        https: {
+        http: {
           request: sinon.stub().callsArgWith(1, res).returns(req)
         }
       })
       const node = createNode({}, Node);
       node.onion = { createSecureAgent: sinon.stub() };
-      node.identifyService('https://asdfghjkl.onion:443', (err, data) => {
+      node.identifyService('http://asdfghjkl.onion:443', (err, data) => {
         expect(data[0]).to.equal('identity');
         expect(data[1].contact).to.equal('data');
         done();

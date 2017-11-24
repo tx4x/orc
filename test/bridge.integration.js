@@ -16,7 +16,6 @@ const stream = require('stream');
 const { EventEmitter } = require('events');
 const bunyan = require('bunyan');
 const ws = require('ws');
-const boscar = require('boscar');
 const getDatabase = require('./fixtures/database');
 const url = require('url');
 const qs = require('querystring');
@@ -94,7 +93,6 @@ describe('@class Bridge (integration)', function() {
           user: 'orctest',
           pass: 'orctest'
         },
-        control: new boscar.Server(node),
         enableControlProxy: true
       });
       node.iterativeFindValue = function(key, callback) {
