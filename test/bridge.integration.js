@@ -146,7 +146,7 @@ describe('@class Bridge (integration)', function() {
       auth: 'orctest:orctest',
       hostname: 'localhost',
       port,
-      path: '/',
+      path: '/objects',
       headers: { Accept: 'application/json' }
     });
     req.on('response', (res) => {
@@ -186,7 +186,7 @@ describe('@class Bridge (integration)', function() {
     form.submit({
       hostname: 'localhost',
       port,
-      path: '/',
+      path: '/objects',
       method: 'POST',
       auth: 'orctest:orctest'
     }, (err, res) => {
@@ -216,7 +216,7 @@ describe('@class Bridge (integration)', function() {
       auth: 'orctest:orctest',
       hostname: 'localhost',
       port,
-      path: '/invalid/info'
+      path: '/objects/invalid/info'
     });
     req.on('response', (res) => {
       res.on('data', (data) => body += data.toString());
@@ -234,7 +234,7 @@ describe('@class Bridge (integration)', function() {
       auth: 'orctest:orctest',
       hostname: 'localhost',
       port,
-      path: '/59d2627ebb28977b0e6ab841/info'
+      path: '/objects/59d2627ebb28977b0e6ab841/info'
     });
     req.on('response', (res) => {
       res.on('data', (data) => body += data.toString());
@@ -252,7 +252,7 @@ describe('@class Bridge (integration)', function() {
       auth: 'orctest:orctest',
       hostname: 'localhost',
       port,
-      path: `/${id}/info`
+      path: `/objects/${id}/info`
     });
     req.on('response', (res) => {
       res.on('data', (data) => body += data.toString());
@@ -277,7 +277,7 @@ describe('@class Bridge (integration)', function() {
       auth: 'orctest:orctest',
       hostname: 'localhost',
       port,
-      path: `/${id}/magnet`
+      path: `/objects/${id}/magnet`
     });
     req.on('response', (res) => {
       res.on('data', (data) => body += data.toString());
@@ -304,7 +304,7 @@ describe('@class Bridge (integration)', function() {
       auth: 'orctest:orctest',
       hostname: 'localhost',
       port,
-      path: `/${id}`,
+      path: `/objects/${id}`,
       method: 'PUT'
     });
     req.on('response', (res) => {
@@ -324,7 +324,7 @@ describe('@class Bridge (integration)', function() {
       auth: 'orctest:orctest',
       hostname: 'localhost',
       port,
-      path: '/',
+      path: '/objects',
       method: 'PUT'
     });
     req.on('response', (res) => {
@@ -352,7 +352,7 @@ describe('@class Bridge (integration)', function() {
       auth: 'orctest:orctest',
       hostname: 'localhost',
       port,
-      path: '/',
+      path: '/objects',
       method: 'PUT'
     });
     req.on('response', (res) => {
@@ -381,7 +381,7 @@ describe('@class Bridge (integration)', function() {
     form.submit({
       hostname: 'localhost',
       port,
-      path: '/',
+      path: '/objects',
       method: 'POST',
       auth: 'orctest:orctest'
     }, (err, res) => {
@@ -412,7 +412,7 @@ describe('@class Bridge (integration)', function() {
     form.submit({
       hostname: 'localhost',
       port,
-      path: '/',
+      path: '/objects',
       method: 'POST',
       auth: 'orctest:orctest'
     }, (err, res) => {
@@ -433,7 +433,7 @@ describe('@class Bridge (integration)', function() {
       auth: 'orctest:orctest',
       hostname: 'localhost',
       port,
-      path: '/',
+      path: '/objects',
       headers: { Accept: 'application/json' }
     });
     req.on('response', (res) => {
@@ -468,7 +468,7 @@ describe('@class Bridge (integration)', function() {
       auth: 'orctest:orctest',
       hostname: 'localhost',
       port,
-      path: `/${queued}`,
+      path: `/objects/${queued}`,
       method: 'PUT'
     });
     req.on('response', (res) => {
@@ -494,7 +494,7 @@ describe('@class Bridge (integration)', function() {
       auth: 'orctest:orctest',
       hostname: 'localhost',
       port,
-      path: `/${queued}`,
+      path: `/objects/${queued}`,
       method: 'PUT'
     });
     req.on('response', (res) => {
@@ -524,7 +524,7 @@ describe('@class Bridge (integration)', function() {
       auth: 'orctest:orctest',
       hostname: 'localhost',
       port,
-      path: `/${id}`
+      path: `/objects/${id}`
     });
     req.on('response', (res) => {
       res.on('data', (data) => body = Buffer.concat([body, data]));
@@ -559,7 +559,7 @@ describe('@class Bridge (integration)', function() {
       auth: 'orctest:orctest',
       hostname: 'localhost',
       port,
-      path: `/${id}`
+      path: `/objects/${id}`
     });
     req.on('response', (res) => {
       res.on('data', (data) => body = Buffer.concat([body, data]));
@@ -642,7 +642,7 @@ describe('@class Bridge (integration)', function() {
       auth: 'orctest:orctest',
       hostname: 'localhost',
       port,
-      path: `/${id}`,
+      path: `/objects/${id}`,
       method: 'DELETE'
     });
     req.on('response', (res) => {
@@ -658,7 +658,7 @@ describe('@class Bridge (integration)', function() {
       auth: 'orctest:orctest',
       hostname: 'localhost',
       port,
-      path: '/',
+      path: '/objects',
       headers: { Accept: 'application/json' }
     });
     req.on('response', (res) => {

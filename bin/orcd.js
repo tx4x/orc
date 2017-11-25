@@ -13,15 +13,9 @@ const ms = require('ms');
 const bunyan = require('bunyan');
 const RotatingLogStream = require('bunyan-rotating-file-stream');
 const fs = require('fs');
+const path = require('path');
 const orc = require('../index');
 const options = require('./config');
-const config = require('rc')('orcd', options);
-const kad = require('kad');
-const mongodb = require('mongodb-bin-wrapper');
-const mongodargs = [
-  '--port', config.MongoDBPort,
-  '--dbpath', config.MongoDBDataDirectory
-];
 
 
 program.version(`
@@ -36,7 +30,22 @@ program.description(`
 `);
 
 program.option('--config <file>', 'path to a orcd configuration file');
+program.option('--datadir <path>', 'path to the default data directory');
 program.parse(process.argv);
+
+let argv;
+
+if (program.datadir && !program.config) {
+  argv = { config: path.join(program.datadir, 'config') };
+}
+
+const config = require('rc')('orcd', options(program.datadir), argv);
+const kad = require('kad');
+const mongodb = require('mongodb-bin-wrapper');
+const mongodargs = [
+  '--port', config.MongoDBPort,
+  '--dbpath', config.MongoDBDataDirectory
+];
 
 // Extend the Kad T_RESPONSETIMEOUT to 30s because Tor
 kad.constants.T_RESPONSETIMEOUT = ms('30S');
@@ -73,10 +82,12 @@ function _init() {
         })
       },
       { stream: process.stdout }
-    ]
+    ],
+    level: parseInt(config.VerboseLoggingEnabled) ? 'debug' : 'info'
   });
 
   // Start mongod
+  logger.info(`starting mongod with args ${mongodargs}`);
   mongod = mongodb('mongod', mongodargs);
 
   mongod.stdout.on('data', data => {
@@ -106,6 +117,7 @@ function _init() {
   process.on('SIGINT', killChildrenAndExit);
   process.on('uncaughtException', (err) => {
     logger.error(err.message);
+    logger.debug(err.stack);
     process.exit(1);
   });
 }
@@ -147,10 +159,11 @@ function init() {
     port: parseInt(config.NodeVirtualPort),
     xpub: parentkey.publicExtendedKey,
     index: parseInt(config.ChildDerivationIndex),
-    protocol: orc.version.protocol
+    agent: orc.version.protocol
   };
 
   // Initialize protocol implementation
+  logger.info('initializing orc node');
   const node = new orc.Node({
     database,
     shards,
@@ -181,33 +194,27 @@ function init() {
     passthroughLoggingEnabled: !!parseInt(config.TorPassthroughLoggingEnabled)
   }));
 
-  if (parseInt(config.BridgeEnabled)) {
-    let opts = {
-      stage: config.BridgeTempStagingBaseDir,
-      database,
-      providerCapacityPoolTimeout: ms(config.ProviderCapacityPoolTimeout),
-      providerFailureBlacklistTimeout: ms(config.ProviderFailureBlacklistTimeout)
+  let bridgeOpts = {
+    stage: config.BridgeTempStagingBaseDir,
+    database,
+    providerCapacityPoolTimeout: ms(config.ProviderCapacityPoolTimeout),
+    providerFailureBlacklistTimeout: ms(config.ProviderFailureBlacklistTimeout)
+  };
+
+  if (parseInt(config.BridgeAuthenticationEnabled)) {
+    bridgeOpts.auth = {
+      user: config.BridgeAuthenticationUser,
+      pass: config.BridgeAuthenticationPassword
     };
-
-    if (parseInt(config.BridgeAuthenticationEnabled)) {
-      opts.auth = {
-        user: config.BridgeAuthenticationUser,
-        pass: config.BridgeAuthenticationPassword
-      };
-    }
-
-    bridge = new orc.Bridge(node, opts);
-
-    logger.info(
-      'establishing local bridge at ' +
-      `${config.BridgeHostname}:${config.BridgePort}`
-    );
-    bridge.listen(parseInt(config.BridgePort), config.BridgeHostname);
-
-    if (parseInt(config.BridgeOnionServiceEnabled)) {
-      // TODO: Create HSv3
-    }
   }
+
+  bridge = new orc.Bridge(node, bridgeOpts);
+
+  logger.info(
+    'establishing local bridge at ' +
+    `${config.BridgeHostname}:${config.BridgePort}`
+  );
+  bridge.listen(parseInt(config.BridgePort), config.BridgeHostname);
 
   // Plugin bandwidth metering if enabled
   if (!!parseInt(config.BandwidthAccountingEnabled)) {
@@ -218,80 +225,83 @@ function init() {
     }));
   }
 
-  // TODO Move this logic somewhere else where it is better tested
   // Use verbose logging if enabled
   if (!!parseInt(config.VerboseLoggingEnabled)) {
     node.rpc.deserializer.append(new orc.logger.IncomingMessage(logger));
     node.rpc.serializer.prepend(new orc.logger.OutgoingMessage(logger));
   }
 
-  let retry = null;
-
-  function joinNetwork() {
-    return new Promise((resolve, reject) => {
-      let entry = null;
-
-      logger.info(
-        `joining network from ${config.NetworkBootstrapNodes.length} seeds`
-      );
-      async.detectSeries(config.NetworkBootstrapNodes, (seed, done) => {
-        logger.info(`requesting identity information from ${seed}`);
-        node.identifyService(seed, (err, contact) => {
-          if (err) {
-            logger.error(`failed to identify seed ${seed} (${err.message})`);
-            done(null, false);
-          } else {
-            entry = contact;
-            node.join(contact, (err) => {
-              done(null, (err ? false : true) && node.router.size > 1);
-            });
-          }
-        });
-      }, async (err, result) => {
-        if (!result) {
-          logger.error('failed to join network, will retry in 1 minute');
-          retry = setTimeout(() => join(callback), ms('1m'));
-        } else {
-          logger.info(
-            `connected to network via ${entry[0]} ` +
-            `(http://${entry[1].hostname}:${entry[1].port})`
-          );
-          logger.info(`discovered ${node.router.size} peers from seed`);
-          node.logger.info('subscribing to network capacity announcements');
-
-          node.subscribeCapacityAnnouncement((err, rs) => {
-            rs.on('data', (data) => node.updateProviderCapacity(data));
-          });
-
-          if (!ms(config.ShardCapacityAnnounceInterval)) {
-            setInterval(async () => await node.announceCapacity(),
-              ms(config.ShardCapacityAnnounceInterval));
-            await node.announceCapacity();
-          }
-
-          if (!ms(config.ShardReaperInterval)) {
-            setInterval(async () => await node.reapExpiredShards(),
-              ms(config.ShardReaperInterval));
-          }
-
-          resolve();
-        }
-      });
-    });
-  }
-
-  logger.info('bootstrapping tor and establishing hidden service');
-  node.listen(parseInt(config.NodeListenPort), async () => {
-    logger.info(
-      `node listening on local port ${config.NodeListenPort} ` +
-      `and exposed at ${node.contact.hostname}:${node.contact.port}`
-    );
+  async function joinNetwork(callback) {
+    let entry = null;
 
     config.NetworkBootstrapNodes = config.NetworkBootstrapNodes.concat(
       await node.getBootstrapCandidates()
     );
 
-    await joinNetwork();
+    logger.info(
+      `joining network from ${config.NetworkBootstrapNodes.length} seeds`
+    );
+
+    async.detectSeries(config.NetworkBootstrapNodes, (seed, done) => {
+      logger.info(`requesting identity information from ${seed}`);
+      node.identifyService(seed, (err, contact) => {
+        if (err) {
+          logger.error(`failed to identify seed ${seed} (${err.message})`);
+          done(null, false);
+        } else {
+          entry = contact;
+          node.join(contact, (err) => {
+            done(null, (err ? false : true) && node.router.size > 1);
+          });
+        }
+      });
+    }, (err, result) => {
+      if (!result) {
+        logger.error('failed to join network, will retry in 1 minute');
+        callback(new Error('Failed to join network'));
+      } else {
+        callback(null, entry);
+      }
+    });
+  }
+
+  logger.info('bootstrapping tor and establishing hidden service');
+  node.listen(parseInt(config.NodeListenPort), () => {
+    logger.info(
+      `node listening on local port ${config.NodeListenPort} ` +
+      `and exposed at http://${node.contact.hostname}:${node.contact.port}`
+    );
+    async.retry({
+      times: Infinity,
+      interval: 60000
+    }, done => joinNetwork(done), (err, entry) => {
+      if (err) {
+        logger.error(err.message);
+        process.exit(1);
+      }
+
+      logger.info(
+        `connected to network via ${entry[0]} ` +
+        `(http://${entry[1].hostname}:${entry[1].port})`
+      );
+      logger.info(`discovered ${node.router.size} peers from seed`);
+      node.logger.info('subscribing to network capacity announcements');
+
+      node.subscribeCapacityAnnouncement((err, rs) => {
+        rs.on('data', (data) => node.updateProviderCapacity(data));
+      });
+
+      if (!ms(config.ShardCapacityAnnounceInterval)) {
+        setInterval(() => node.announceCapacity(),
+          ms(config.ShardCapacityAnnounceInterval));
+        node.announceCapacity();
+      }
+
+      if (!ms(config.ShardReaperInterval)) {
+        setInterval(() => node.reapExpiredShards(),
+          ms(config.ShardReaperInterval));
+      }
+    });
   });
 }
 

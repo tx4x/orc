@@ -104,7 +104,7 @@ describe('@class Node', function() {
         }
       })
       const node = createNode({}, Node);
-      node.onion = { createSecureAgent: sinon.stub() };
+      node.onion = { createClearAgent: sinon.stub() };
       node.identifyService('http://asdfghjkl.onion:443', (err) => {
         expect(err.message).to.equal('Service down');
         done();
@@ -126,7 +126,7 @@ describe('@class Node', function() {
         }
       })
       const node = createNode({}, Node);
-      node.onion = { createSecureAgent: sinon.stub() };
+      node.onion = { createClearAgent: sinon.stub() };
       node.identifyService('http://asdfghjkl.onion:443', (err) => {
         expect(err.message).to.equal('Failed to parse identity');
         done();
@@ -148,7 +148,7 @@ describe('@class Node', function() {
         }
       })
       const node = createNode({}, Node);
-      node.onion = { createSecureAgent: sinon.stub() };
+      node.onion = { createClearAgent: sinon.stub() };
       node.identifyService('http://asdfghjkl.onion:443', (err, data) => {
         expect(data[0]).to.equal('identity');
         expect(data[1].contact).to.equal('data');

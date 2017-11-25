@@ -92,9 +92,6 @@ module.exports.Shards = require('./lib/shards');
 /** {@link Bridge} */
 module.exports.Bridge = require('./lib/bridge');
 
-/** {@link Directory} */
-module.exports.Directory = require('./lib/directory');
-
 /** {@link Database} */
 module.exports.Database = require('./lib/database');
 
