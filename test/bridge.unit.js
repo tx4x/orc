@@ -9,6 +9,7 @@ const async = require('async');
 const httpMocks = require('node-mocks-http');
 const Bridge = require('../lib/bridge');
 const EventEmitter = require('events');
+const bunyan = require('bunyan');
 
 
 describe('@class Bridge', function() {
@@ -42,7 +43,8 @@ describe('@class Bridge', function() {
         spartacus: {
           privateKey: key1.privateKey
         },
-        reportAuditResults
+        reportAuditResults,
+        logger: bunyan.createLogger({ name: '-', level: 'fatal' })
       }, {});
       bridge.listen(0);
 
@@ -422,7 +424,9 @@ describe('@class Bridge', function() {
   describe('@private @method _verifyClient', function() {
 
     it('should callback true if no creds defined', function(done) {
-      let bridge = new Bridge({});
+      let bridge = new Bridge({
+        logger: bunyan.createLogger({ name: '-', level: 'fatal' })
+      });
       bridge._verifyClient({
         req: { url: '/', headers: {} }
       }, (result) => {
@@ -432,7 +436,9 @@ describe('@class Bridge', function() {
     });
 
     it('should callback false if no creds supplied', function(done) {
-      let bridge = new Bridge({}, { auth: { user: 'user', pass: 'pass' } });
+      let bridge = new Bridge({
+        logger: bunyan.createLogger({ name: '-', level: 'fatal' })
+      }, { auth: { user: 'user', pass: 'pass' } });
       bridge._verifyClient({
         req: { url: '/', headers: {} }
       }, (result) => {
@@ -442,7 +448,9 @@ describe('@class Bridge', function() {
     });
 
     it('should callback true if creds match', function(done) {
-      let bridge = new Bridge({}, { auth: { user: 'user', pass: 'pass' } });
+      let bridge = new Bridge({
+        logger: bunyan.createLogger({ name: '-', level: 'fatal' })
+      }, { auth: { user: 'user', pass: 'pass' } });
       bridge._verifyClient({
         req: {
           headers: {
@@ -457,7 +465,9 @@ describe('@class Bridge', function() {
     });
 
     it('should callback false if creds invalid', function(done) {
-      let bridge = new Bridge({}, { auth: { user: 'user', pass: 'pass' } });
+      let bridge = new Bridge({
+        logger: bunyan.createLogger({ name: '-', level: 'fatal' })
+      }, { auth: { user: 'user', pass: 'pass' } });
       bridge._verifyClient({
         req: {
           headers: {
@@ -476,7 +486,9 @@ describe('@class Bridge', function() {
   describe('@method listen', function() {
 
     it('should start server and bridge control port', function(done) {
-      let bridge = new Bridge({}, {});
+      let bridge = new Bridge({
+        logger: bunyan.createLogger({ name: '-', level: 'fatal' })
+      }, {});
       let listen = sinon.stub(bridge.server, 'listen');
       bridge.listen(0);
       setImmediate(() => {
@@ -499,7 +511,9 @@ describe('@class Bridge', function() {
         path: '/',
         headers: {}
       }, {});
-      let bridge = new Bridge({});
+      let bridge = new Bridge({
+        logger: bunyan.createLogger({ name: '-', level: 'fatal' })
+      });
       bridge.authenticate(req, res, done);
     });
 
@@ -512,7 +526,9 @@ describe('@class Bridge', function() {
             Buffer.from('user:pass').toString('base64')
         }
       }, {});
-      let bridge = new Bridge({}, { auth: { user: 'user', pass: 'pass' } });
+      let bridge = new Bridge({
+        logger: bunyan.createLogger({ name: '-', level: 'fatal' })
+      }, { auth: { user: 'user', pass: 'pass' } });
       bridge.authenticate(req, res, done);
     });
 
@@ -525,7 +541,9 @@ describe('@class Bridge', function() {
             Buffer.from('ssap:resu').toString('base64')
         }
       }, {});
-      let bridge = new Bridge({}, { auth: { user: 'user', pass: 'pass' } });
+      let bridge = new Bridge({
+        logger: bunyan.createLogger({ name: '-', level: 'fatal' })
+      }, { auth: { user: 'user', pass: 'pass' } });
       bridge.authenticate(req, res, (err) => {
         expect(err.message).to.equal('Not authorized');
         done();
@@ -537,12 +555,16 @@ describe('@class Bridge', function() {
   describe('@method error', function() {
 
     it('should pass on if no error', function(done) {
-      let bridge = new Bridge({});
+      let bridge = new Bridge({
+        logger: bunyan.createLogger({ name: '-', level: 'fatal' })
+      });
       bridge.error(null, {}, {}, done);
     });
 
     it('should respond with error message', function(done) {
-      let bridge = new Bridge({});
+      let bridge = new Bridge({
+        logger: bunyan.createLogger({ name: '-', level: 'fatal' })
+      });
       let writeHead = sinon.stub();
       let end = sinon.stub();
       let write = sinon.stub();
