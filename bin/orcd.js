@@ -143,6 +143,7 @@ function _init() {
   process.on('SIGTERM', killChildrenAndExit);
   process.on('SIGINT', killChildrenAndExit);
   process.on('uncaughtException', (err) => {
+    npid.remove(config.DaemonPidFilePath);
     logger.error(err.message);
     logger.debug(err.stack);
     process.exit(1);
