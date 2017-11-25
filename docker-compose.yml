@@ -7,10 +7,12 @@ services:
     volumes:
       - ./bin:/root/orc/bin
       - ./lib:/root/orc/lib
+      - ./web:/root/orc/web
       - ./test:/root/orc/test
+      - ./index.js:/root/orc/index.js
       - ./node_modules:/root/orc/node_modules
       - ./package.json:/root/orc/package.json
-      - ~/.config/orc.dev:/root/.config/orc
+      - ~/.config/orcd.dev:/root/.config/orcd
     ports:
       - "127.0.0.1:9088:9088"
       - "127.0.0.1:9089:9089"
