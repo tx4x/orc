@@ -1,20 +1,19 @@
 version: '2'
 services:
-  orc:
+  orcd:
     build:
       context: .
       dockerfile: ./Dockerfile.dev
     volumes:
       - ./bin:/root/orc/bin
-      - ./gui:/root/orc/gui
       - ./lib:/root/orc/lib
       - ./test:/root/orc/test
       - ./node_modules:/root/orc/node_modules
       - ./package.json:/root/orc/package.json
       - ~/.config/orc.dev:/root/.config/orc
     ports:
-      - "127.0.0.1:4444:4444"
-      - "127.0.0.1:4445:4445"
-      - "127.0.0.1:4446:4446"
+      - "127.0.0.1:9088:9088"
+      - "127.0.0.1:9089:9089"
+      - "127.0.0.1:37017:37017"
     environment:
       - .env

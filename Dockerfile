@@ -2,13 +2,7 @@ FROM debian:8
 LABEL maintainer "gordonh@member.fsf.org"
 RUN apt-get update
 RUN DEBIAN_FRONTEND=noninteractive apt-get -yq upgrade
-RUN DEBIAN_FRONTEND=noninteractive apt-get -yq install wget apt-transport-https gnupg curl
-RUN echo "deb http://deb.torproject.org/torproject.org jessie main" >> /etc/apt/sources.list; \
-    echo "deb-src http://deb.torproject.org/torproject.org jessie main" >> /etc/apt/sources.list
-RUN gpg --keyserver keys.gnupg.net --recv A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89; \
-    gpg --export A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89 | apt-key add -
-RUN apt-get update; \
-    DEBIAN_FRONTEND=noninteractive apt-get -yq install libssl-dev git python build-essential tor deb.torproject.org-keyring
+RUN DEBIAN_FRONTEND=noninteractive apt-get -yq install wget apt-transport-https gnupg curl libssl-dev git python build-essential
 RUN set -ex \
   && for key in \
     9554F04D7259F04124DE6B476D5A82AC7E37093B \
@@ -25,7 +19,7 @@ RUN set -ex \
     gpg --keyserver ha.pool.sks-keyservers.net --recv-keys "$key" ; \
   done
 ENV NPM_CONFIG_LOGLEVEL info
-ENV NODE_VERSION 6.11.1
+ENV NODE_VERSION 8.9.1
 RUN curl -SLO "https://nodejs.org/dist/v$NODE_VERSION/node-v$NODE_VERSION-linux-x64.tar.xz" \
   && curl -SLO --compressed "https://nodejs.org/dist/v$NODE_VERSION/SHASUMS256.txt.asc" \
   && gpg --batch --decrypt --output SHASUMS256.txt SHASUMS256.txt.asc \
@@ -33,12 +27,13 @@ RUN curl -SLO "https://nodejs.org/dist/v$NODE_VERSION/node-v$NODE_VERSION-linux-
   && tar -xJf "node-v$NODE_VERSION-linux-x64.tar.xz" -C /usr/local --strip-components=1 \
   && rm "node-v$NODE_VERSION-linux-x64.tar.xz" SHASUMS256.txt.asc SHASUMS256.txt \
   && ln -s /usr/local/bin/node /usr/local/bin/nodejs
+ENV GRANAX_USE_TOR_ALPHA="1"
 RUN git clone https://github.com/orcproject/orc /root/orc; \
     git fetch --tags; \
     git checkout $(git describe --tags `git rev-list --tags --max-count=1`); \
     cd /root/orc && npm install --unsafe-perm
-ENV orc_ControlHostname="0.0.0.0" orc_BridgeHostname="0.0.0.0" orc_DirectoryHostname="0.0.0.0"
-VOLUME ["/root/.config/orc"]
-EXPOSE 4443 4444 4445 4446 37017
+ENV orc_BridgeHostname="0.0.0.0"
+VOLUME ["/root/.config/orcd"]
+EXPOSE 9088 9099 37017
 ENTRYPOINT ["node", "/root/orc/bin/orcd.js"]
 CMD []

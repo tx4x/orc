@@ -15,6 +15,9 @@ module.exports = function(datadir) {
 
   const options = {
 
+    // Process PID
+    DaemonPidFilePath: join(datadir, 'orcd.pid'),
+
     // Identity/Cryptography
     PrivateExtendedKeyPath: join(datadir, 'x_private_key'),
     ChildDerivationIndex: '0',

@@ -16,6 +16,8 @@ const fs = require('fs');
 const path = require('path');
 const orc = require('../index');
 const options = require('./config');
+const npid = require('npid');
+const daemon = require('daemon');
 
 
 program.version(`
@@ -31,6 +33,8 @@ program.description(`
 
 program.option('--config <file>', 'path to a orcd configuration file');
 program.option('--datadir <path>', 'path to the default data directory');
+program.option('--shutdown', 'sends the shutdown signal to the daemon');
+program.option('--daemon', 'sends orcd to the background');
 program.parse(process.argv);
 
 let argv;
@@ -86,6 +90,29 @@ function _init() {
     level: parseInt(config.VerboseLoggingEnabled) ? 'debug' : 'info'
   });
 
+  if (program.shutdown) {
+    try {
+      process.kill(parseInt(
+        fs.readFileSync(config.DaemonPidFilePath).toString().trim()
+      ), 'SIGTERM');
+    } catch (err) {
+      logger.error('failed to shutdown daemon, is it running?');
+      process.exit(1);
+    }
+    process.exit();
+  }
+
+  if (program.daemon) {
+    require('daemon')({ cwd: process.cwd() });
+  }
+
+  try {
+    npid.create(config.DaemonPidFilePath).removeOnExit();
+  } catch (err) {
+    logger.error('Failed to create PID file, is orcd already running?');
+    process.exit(1);
+  }
+
   // Start mongod
   logger.info(`starting mongod with args ${mongodargs}`);
   mongod = mongodb('mongod', mongodargs);
@@ -131,8 +158,7 @@ function killChildrenAndExit() {
     process.kill(mongod.pid);
   }
 
-  // TODO: Shutdown Zcash cleanly on exit
-
+  npid.remove(config.DaemonPidFilePath);
   process.removeListener('exit', killChildrenAndExit);
   process.exit(0);
 }
