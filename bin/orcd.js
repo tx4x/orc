@@ -260,8 +260,7 @@ function init() {
 
   async function joinNetwork(callback) {
     let entry = null;
-
-    config.NetworkBootstrapNodes = config.NetworkBootstrapNodes.concat(
+    let peers = config.NetworkBootstrapNodes.concat(
       await node.getBootstrapCandidates()
     );
 
@@ -269,7 +268,7 @@ function init() {
       `joining network from ${config.NetworkBootstrapNodes.length} seeds`
     );
 
-    async.detectSeries(config.NetworkBootstrapNodes, (seed, done) => {
+    async.detectSeries(peers, (seed, done) => {
       logger.info(`requesting identity information from ${seed}`);
       node.identifyService(seed, (err, contact) => {
         if (err) {
@@ -300,17 +299,16 @@ function init() {
     );
 
     if (ms(config.ShardCapacityUpdateInterval)) {
-      setInterval(() => node.updateCapacity(),
+      setInterval(() => node.updateFlags(),
         ms(config.ShardCapacityUpdateInterval));
-      node.updateCapacity(true);
     }
 
     if (ms(config.ShardReaperInterval)) {
       setInterval(() => node.reapExpiredShards(),
         ms(config.ShardReaperInterval));
-      node.reapExpiredShards();
     }
 
+    node.updateFlags(true);
     async.retry({
       times: Infinity,
       interval: 60000
