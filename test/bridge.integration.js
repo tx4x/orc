@@ -192,16 +192,16 @@ describe('@class Bridge (integration)', function() {
     }, (err, res) => {
       claimProviderCapacity.restore();
       expect(res.statusCode).to.equal(201);
-      expect(node.onion.createSecureAgent.callCount).to.equal(3);
+      expect(node.onion.createSecureAgent.callCount).to.equal(6);
       let body = '';
       res.on('data', (data) => body += data);
       res.on('end', () => {
         body = JSON.parse(body);
         id = body.id;
-        expect(body.shards).to.have.lengthOf(3);
-        expect(body.shards[0].size).to.equal(1504);
-        expect(body.shards[1].size).to.equal(1504);
-        expect(body.shards[2].size).to.equal(1504);
+        expect(body.shards).to.have.lengthOf(6);
+        expect(body.shards[0].size).to.equal(752);
+        expect(body.shards[1].size).to.equal(752);
+        expect(body.shards[2].size).to.equal(752);
         expect(body.status).to.equal('finished');
         expect(body.mimetype).to.equal('application/octet-stream');
         expect(body.name).to.equal('random');
@@ -258,10 +258,10 @@ describe('@class Bridge (integration)', function() {
       res.on('data', (data) => body += data.toString());
       res.on('end', () => {
         body = JSON.parse(body);
-        expect(body.shards).to.have.lengthOf(3);
-        expect(body.shards[0].size).to.equal(1504);
-        expect(body.shards[1].size).to.equal(1504);
-        expect(body.shards[2].size).to.equal(1504);
+        expect(body.shards).to.have.lengthOf(6);
+        expect(body.shards[0].size).to.equal(752);
+        expect(body.shards[1].size).to.equal(752);
+        expect(body.shards[2].size).to.equal(752);
         expect(body.status).to.equal('finished');
         expect(body.mimetype).to.equal('application/octet-stream');
         expect(body.name).to.equal('random');
@@ -332,11 +332,11 @@ describe('@class Bridge (integration)', function() {
       res.on('end', () => {
         body = JSON.parse(body);
         expect(body.size).to.equal(3000);
-        expect(body.shards.length).to.equal(3);
-        expect(body.shards).to.have.lengthOf(3);
-        expect(body.shards[0].size).to.equal(1504);
-        expect(body.shards[1].size).to.equal(1504);
-        expect(body.shards[2].size).to.equal(1504);
+        expect(body.shards.length).to.equal(6);
+        expect(body.shards).to.have.lengthOf(6);
+        expect(body.shards[0].size).to.equal(752);
+        expect(body.shards[1].size).to.equal(752);
+        expect(body.shards[2].size).to.equal(752);
         expect(body.status).to.equal('finished');
         expect(body.mimetype).to.equal('application/octet-stream');
         expect(body.name).to.equal('random');
@@ -442,10 +442,10 @@ describe('@class Bridge (integration)', function() {
         body = JSON.parse(body);
         id = body[0].id;
         expect(body).to.have.lengthOf(4);
-        expect(body[0].shards).to.have.lengthOf(3);
-        expect(body[0].shards[0].size).to.equal(1504);
-        expect(body[0].shards[1].size).to.equal(1504);
-        expect(body[0].shards[2].size).to.equal(1504);
+        expect(body[0].shards).to.have.lengthOf(6);
+        expect(body[0].shards[0].size).to.equal(752);
+        expect(body[0].shards[1].size).to.equal(752);
+        expect(body[0].shards[2].size).to.equal(752);
         expect(body[0].status).to.equal('finished');
         expect(body[0].mimetype).to.equal('application/octet-stream');
         expect(body[0].name).to.equal('random');
@@ -530,7 +530,7 @@ describe('@class Bridge (integration)', function() {
       res.on('data', (data) => body = Buffer.concat([body, data]));
       res.on('end', () => {
         authorizeRetrieval.restore();
-        expect(authorizeRetrieval.callCount).to.equal(3);
+        expect(authorizeRetrieval.callCount).to.equal(6);
         expect(Buffer.compare(body, file)).to.equal(0);
         done();
       });
@@ -565,7 +565,7 @@ describe('@class Bridge (integration)', function() {
       res.on('data', (data) => body = Buffer.concat([body, data]));
       res.on('end', () => {
         authorizeRetrieval.restore();
-        expect(authorizeRetrieval.callCount).to.equal(3);
+        expect(authorizeRetrieval.callCount).to.equal(6);
         expect(Buffer.compare(body, file)).to.equal(0);
         done();
       });
