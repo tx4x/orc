@@ -31,7 +31,7 @@ module.exports = function(datadir) {
     ShardStorageMaxAllocation: '0GB',
     ShardReaperInterval: '24HR',
     ShardReaperInvalidationBlocks: '432',
-    ShardCapacityAnnounceInterval: '30M',
+    ShardCapacityUpdateInterval: '30M',
 
     // Node Options
     NodeVirtualPort: '80',

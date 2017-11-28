@@ -15,7 +15,6 @@ describe('@class Transport', function() {
     it('should return a http request object', function() {
       const transport = new Transport();
       const request = transport._createRequest({});
-      console.log(request)
       expect(request).to.be.instanceOf(http.ClientRequest);
     });
 

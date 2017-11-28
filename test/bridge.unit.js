@@ -60,8 +60,7 @@ describe('@class Bridge', function() {
         },
         capacity: {
           allocated: 2000,
-          available: 1000,
-          timestamp: Date.now()
+          available: 1000
         },
         _reports: {
           missed: 0,
@@ -81,9 +80,9 @@ describe('@class Bridge', function() {
         },
         capacity: {
           allocated: 2000,
-          available: 1000,
-          timestamp: Date.now() + 1000
-        }
+          available: 1000
+        },
+        updated: Date.now() + 1000
       });
 
       let profile3 = new database.PeerProfile({
@@ -98,8 +97,7 @@ describe('@class Bridge', function() {
         },
         capacity: {
           allocated: 2000,
-          available: 1000,
-          timestamp: Date.now()
+          available: 1000
         },
         _reports: {
           missed: 2,
@@ -119,8 +117,7 @@ describe('@class Bridge', function() {
         },
         capacity: {
           allocated: 2000,
-          available: 1000,
-          timestamp: Date.now()
+          available: 1000
         }
       });
 
@@ -136,8 +133,7 @@ describe('@class Bridge', function() {
         },
         capacity: {
           allocated: 2000,
-          available: 1000,
-          timestamp: Date.now()
+          available: 1000
         }
       });
 
@@ -153,8 +149,7 @@ describe('@class Bridge', function() {
         },
         capacity: {
           allocated: 2000,
-          available: 1000,
-          timestamp: Date.now()
+          available: 1000
         }
       });
 

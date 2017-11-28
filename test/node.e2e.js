@@ -12,8 +12,8 @@ describe('@module orc (end-to-end)', function() {
   const nodes = [];
   const shard = Buffer.from('i am a test shard');
   const audit = new orc.Audit(4);
-  const capacities = [];
 
+  let capacities = [];
   let contract = null;
 
   before(function(done) {
@@ -44,44 +44,28 @@ describe('@module orc (end-to-end)', function() {
       if (i === 0) {
         next();
       } else {
-        n.join([
-          nodes[0].identity.toString('hex'),
-          nodes[0].contact
-        ], () => next());
+        n.updateFlags(true).then(() => {
+          n.join([
+            nodes[0].identity.toString('hex'),
+            nodes[0].contact
+          ], () => next());
+        });
       }
     }, () => {
+      nodes[nodes.length - 1].router.getClosestContactsToKey(
+        nodes[nodes.length - 1].identity.toString('hex'),
+        20
+      ).forEach((contact, identity) => {
+        capacities.push([
+          orc.utils.getCapacityFromFlags(contact.flags),
+          [identity, contact]
+        ]);
+      });
       nodes.forEach((n) => {
         expect(n.router.size > 0.75 / NUM_NODES).to.equal(true);
       });
       done();
     });
-  });
-
-  it('should succeed in subscribing to capacity', function(done) {
-    this.timeout(24000);
-    let received = 0;
-    const renter = nodes[0];
-    const farmer = nodes[1];
-    renter.subscribeCapacityAnnouncement((err, stream) => {
-      stream.on('data', (data) => {
-        capacities.push(data);
-        expect(capacities[0][0].available).to.equal(shard.length);
-        received++;
-        if (received === 2) {
-          done();
-        }
-      });
-    });
-    setTimeout(() => {
-      farmer.publishCapacityAnnouncement({
-        available: shard.length,
-        allocated: shard.length
-      });
-      nodes[2].publishCapacityAnnouncement({
-        available: shard.length,
-        allocated: shard.length
-      });
-    }, 2500);
   });
 
   it('should succeed in claiming the space', function(done) {

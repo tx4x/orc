@@ -298,6 +298,19 @@ function init() {
       `node listening on local port ${config.NodeListenPort} ` +
       `and exposed at http://${node.contact.hostname}:${node.contact.port}`
     );
+
+    if (ms(config.ShardCapacityUpdateInterval)) {
+      setInterval(() => node.updateCapacity(),
+        ms(config.ShardCapacityUpdateInterval));
+      node.updateCapacity(true);
+    }
+
+    if (ms(config.ShardReaperInterval)) {
+      setInterval(() => node.reapExpiredShards(),
+        ms(config.ShardReaperInterval));
+      node.reapExpiredShards();
+    }
+
     async.retry({
       times: Infinity,
       interval: 60000
@@ -312,22 +325,6 @@ function init() {
         `(http://${entry[1].hostname}:${entry[1].port})`
       );
       logger.info(`discovered ${node.router.size} peers from seed`);
-      node.logger.info('subscribing to network capacity announcements');
-
-      node.subscribeCapacityAnnouncement((err, rs) => {
-        rs.on('data', (data) => node.updateProviderCapacity(data));
-      });
-
-      if (!ms(config.ShardCapacityAnnounceInterval)) {
-        setInterval(() => node.announceCapacity(),
-          ms(config.ShardCapacityAnnounceInterval));
-        node.announceCapacity();
-      }
-
-      if (!ms(config.ShardReaperInterval)) {
-        setInterval(() => node.reapExpiredShards(),
-          ms(config.ShardReaperInterval));
-      }
     });
   });
 }
