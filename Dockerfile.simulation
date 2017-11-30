@@ -1,4 +1,4 @@
-FROM ubuntu:latest
+FROM debian:9
 LABEL maintainer "gordonh@member.fsf.org"
 
 # Install Standard Dependencies
@@ -6,34 +6,15 @@ RUN apt-get update
 RUN DEBIAN_FRONTEND=noninteractive apt-get -yq upgrade
 RUN DEBIAN_FRONTEND=noninteractive apt-get -yq install wget apt-transport-https gnupg curl libssl-dev git python build-essential
 
-# Setup and Build Shadow
-RUN DEBIAN_FRONTEND=noninteractive apt-get install -y gcc g++ libglib2.0-0 libglib2.0-dev libigraph0v5 libigraph0-dev cmake make xz-utils
-RUN DEBIAN_FRONTEND=noninteractive apt-get install libc-dbg
-RUN DEBIAN_FRONTEND=noninteractive apt-get install -y python python-matplotlib python-numpy python-scipy python-networkx python-lxml
-RUN DEBIAN_FRONTEND=noninteractive apt-get install -y git dstat screen htop
-RUN git clone https://github.com/shadow/shadow.git /root/shadow \
-  && cd /root/shadow \
-  && ./setup build --clean --debug --test \
-  && ./setup install \
-  && ./setup test
-
 # Setup Tor Alpha (for v3 Hidden Services Support)
-RUN echo "deb http://deb.torproject.org/torproject.org xenial main" >> /etc/apt/sources.list
-RUN echo "deb-src http://deb.torproject.org/torproject.org xenial main" >> /etc/apt/sources.list
-RUN echo "deb http://deb.torproject.org/torproject.org tor-experimental-0.3.2.x-xenial main" >> /etc/apt/sources.list
-RUN echo "deb-src http://deb.torproject.org/torproject.org tor-experimental-0.3.2.x-xenial main" >> /etc/apt/sources.list
+RUN echo "deb http://deb.torproject.org/torproject.org stretch main" >> /etc/apt/sources.list
+RUN echo "deb-src http://deb.torproject.org/torproject.org stretch main" >> /etc/apt/sources.list
+RUN echo "deb http://deb.torproject.org/torproject.org tor-experimental-0.3.2.x-stretch main" >> /etc/apt/sources.list
+RUN echo "deb-src http://deb.torproject.org/torproject.org tor-experimental-0.3.2.x-stretch main" >> /etc/apt/sources.list
 RUN gpg --keyserver keys.gnupg.net --recv A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89
 RUN gpg --export A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89 | apt-key add -
-RUN apt update
+RUN apt-get update
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y tor deb.torproject.org-keyring
-
-# Setup Tor Shadow Plugin
-RUN DEBIAN_FRONTEND=noninteractive apt-get install -y gcc automake autoconf zlib1g-dev liblzma5 liblzma-dev
-RUN git clone https://github.com/bookchin/shadow-plugin-tor.git /root/shadow-plugin-tor
-RUN cd /root/shadow-plugin-tor \
-  && ./setup dependencies -y \
-  && ./setup build --tor-version 0.3.2.4-alpha -y \
-  && ./setup install
 
 # Setup Node.js
 RUN set -ex \
@@ -70,10 +51,15 @@ RUN ARCH= && dpkgArch="$(dpkg --print-architecture)" \
   && rm "node-v$NODE_VERSION-linux-$ARCH.tar.xz" SHASUMS256.txt.asc SHASUMS256.txt \
   && ln -s /usr/local/bin/node /usr/local/bin/nodejs
 
+# Setup Chutney for Private Tor Network
+ENV CHUTNEY_START_TIME="-1"
+RUN git clone https://git.torproject.org/chutney.git /root/chutney
+RUN /root/chutney/chutney configure /root/chutney/networks/basic-min
+
 # Setup ORC Daemon
 ENV GRANAX_USE_TOR_ALPHA="1"
 ENV GRANAX_USE_SYSTEM_TOR="1"
-ENV GRANAX_TOR_ARGS="--GeoIPFile /root/.shadow/share/geoip --defaults-torrc /root/shadow-tor/conf/tor.common.torrc -f /root/shadow-tor/conf/tor.client.torrc"
+ENV GRANAX_TOR_ARGS="--defaults-torrc /root/chutney/net/nodes/003c/torrc"
 RUN git clone https://github.com/orcproject/orc /root/orc; \
     git fetch --tags; \
     git checkout $(git describe --tags `git rev-list --tags --max-count=1`); \
@@ -81,12 +67,11 @@ RUN git clone https://github.com/orcproject/orc /root/orc; \
 ENV orcd_BridgeHostname="0.0.0.0"
 
 # Setup Configuration Directories
-COPY .simulation/shadow-tor /root/shadow-tor
-COPY .simulation/orc-providers /root/orc-providers
+COPY .simulation/providers /root/providers
 COPY .simulation/start.sh /root/start.sh
 
 # Starting the Container
-VOLUME ["/root/.config/orcd"]
+VOLUME ["/root/.config/orcd", "/root/chutney/net", "/root/providers"]
 EXPOSE 9089
 CMD []
 ENTRYPOINT ["/bin/sh", "/root/start.sh"]
