@@ -17,4 +17,4 @@ services:
       - ~/.config/orcd.simulation/provider-2:/root/orc-providers/2
       - ~/.config/orcd.simulation/provider-3:/root/orc-providers/3
     ports:
-      - "127.0.0.1:9088:9088"
+      - "127.0.0.1:9089:9089"

@@ -87,6 +87,6 @@ COPY .simulation/start.sh /root/start.sh
 
 # Starting the Container
 VOLUME ["/root/.config/orcd"]
-EXPOSE 9088
+EXPOSE 9089
 CMD []
 ENTRYPOINT ["/bin/sh", "/root/start.sh"]
