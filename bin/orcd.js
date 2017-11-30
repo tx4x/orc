@@ -258,16 +258,18 @@ function init() {
     node.rpc.serializer.prepend(new orc.logger.OutgoingMessage(logger));
   }
 
+  // Cast network nodes to an array
+  if (typeof config.NetworkBootstrapNodes === 'string') {
+    config.NetworkBootstrapNodes = config.NetworkBootstrapNodes.trim().split();
+  }
+
   async function joinNetwork(callback) {
     let entry = null;
     let peers = config.NetworkBootstrapNodes.concat(
       await node.getBootstrapCandidates()
     );
 
-    logger.info(
-      `joining network from ${config.NetworkBootstrapNodes.length} seeds`
-    );
-
+    logger.info(`joining network from ${peers.length} seeds`);
     async.detectSeries(peers, (seed, done) => {
       logger.info(`requesting identity information from ${seed}`);
       node.identifyService(seed, (err, contact) => {

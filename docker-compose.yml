@@ -3,7 +3,7 @@ services:
   orcd:
     build:
       context: .
-      dockerfile: ./Dockerfile.dev
+      dockerfile: ./Dockerfile.simulation
     volumes:
       - ./bin:/root/orc/bin
       - ./lib:/root/orc/lib
@@ -12,10 +12,9 @@ services:
       - ./index.js:/root/orc/index.js
       - ./node_modules:/root/orc/node_modules
       - ./package.json:/root/orc/package.json
-      - ~/.config/orcd.dev:/root/.config/orcd
+      - ~/.config/orcd.simulation/main:/root/.config/orcd
+      - ~/.config/orcd.simulation/provider-1:/root/orc-providers/1
+      - ~/.config/orcd.simulation/provider-2:/root/orc-providers/2
+      - ~/.config/orcd.simulation/provider-3:/root/orc-providers/3
     ports:
       - "127.0.0.1:9088:9088"
-      - "127.0.0.1:9089:9089"
-      - "127.0.0.1:37017:37017"
-    environment:
-      - .env
