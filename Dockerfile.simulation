@@ -54,7 +54,7 @@ RUN ARCH= && dpkgArch="$(dpkg --print-architecture)" \
 # Setup Chutney for Private Tor Network
 ENV CHUTNEY_START_TIME="-1"
 RUN git clone https://git.torproject.org/chutney.git /root/chutney
-RUN /root/chutney/chutney configure /root/chutney/networks/basic-min
+RUN /root/chutney/chutney configure /root/chutney/networks/basic
 
 # Setup ORC Daemon
 ENV GRANAX_USE_TOR_ALPHA="1"
