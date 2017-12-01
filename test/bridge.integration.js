@@ -174,7 +174,7 @@ describe('@class Bridge (integration)', function() {
       complete.sign('provider', key.privateKey);
       cb(null, [complete.toObject(), 'token']);
     });
-    node.onion = { createSecureAgent: sandbox.stub() };
+    node.onion = { createClearAgent: sandbox.stub() };
     let form = new FormData();
     form.append('policy', '::RETRIEVE');
     form.append('file', file, {
@@ -192,7 +192,7 @@ describe('@class Bridge (integration)', function() {
     }, (err, res) => {
       claimProviderCapacity.restore();
       expect(res.statusCode).to.equal(201);
-      expect(node.onion.createSecureAgent.callCount).to.equal(6);
+      expect(node.onion.createClearAgent.callCount).to.equal(6);
       let body = '';
       res.on('data', (data) => body += data);
       res.on('end', () => {
@@ -370,7 +370,7 @@ describe('@class Bridge (integration)', function() {
       node.database.PeerProfile,
       'find'
     ).callsArgWith(1, new Error('Failed'));
-    node.onion = { createSecureAgent: sandbox.stub() };
+    node.onion = { createClearAgent: sandbox.stub() };
     let form = new FormData();
     form.append('file', file, {
       filename: 'random-bytes',
@@ -401,7 +401,7 @@ describe('@class Bridge (integration)', function() {
       node,
       'claimProviderCapacity'
     ).callsArgWith(2, new Error('Cannot claim capacity'));
-    node.onion = { createSecureAgent: sandbox.stub() };
+    node.onion = { createClearAgent: sandbox.stub() };
     let form = new FormData();
     form.append('file', file, {
       filename: 'random-bytes',
