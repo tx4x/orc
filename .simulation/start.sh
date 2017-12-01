@@ -9,6 +9,7 @@ echo "done."
 
 echo "waiting 30 seconds for hs descriptors to be ready..."
 sleep 30
+
 echo "starting orc provider 2 as daemon"
 node /root/orc/bin/orcd.js --datadir /root/providers/2 --daemon
 
