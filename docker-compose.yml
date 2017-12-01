@@ -13,6 +13,5 @@ services:
       - ./node_modules:/root/orc/node_modules
       - ./package.json:/root/orc/package.json
       - ~/.config/orcd.simulation/main:/root/.config/orcd
-      - ~/.config/orcd.simulation/providers:/root/providers
     ports:
       - "127.0.0.1:9089:9089"

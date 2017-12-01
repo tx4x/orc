@@ -15,4 +15,4 @@ node /root/orc/bin/orcd.js --datadir /root/providers/2 --daemon
 node /root/orc/bin/orcd.js --datadir /root/providers/3 --daemon 
 
 # start our main orc interface
-node /root/orc/bin/orcd.js 
+orcd_BridgeAuthenticationEnabled=0 orcd_NetworkBootstrapNodes="http://l466qntstik7falkkzxttgrtlu4u7g6yaxmyvjs2qamlzymsdsiqxdqd.onion:80" node /root/orc/bin/orcd.js 
