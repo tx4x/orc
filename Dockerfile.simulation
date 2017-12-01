@@ -54,12 +54,12 @@ RUN ARCH= && dpkgArch="$(dpkg --print-architecture)" \
 # Setup Chutney for Private Tor Network
 ENV CHUTNEY_START_TIME="-1"
 RUN git clone https://git.torproject.org/chutney.git /root/chutney
-RUN /root/chutney/chutney configure /root/chutney/networks/basic
+RUN /root/chutney/chutney configure /root/chutney/networks/hs-v3-intro
 
 # Setup ORC Daemon
 ENV GRANAX_USE_TOR_ALPHA="1"
 ENV GRANAX_USE_SYSTEM_TOR="1"
-ENV GRANAX_TOR_ARGS="--defaults-torrc /root/chutney/net/nodes/003c/torrc"
+ENV GRANAX_TOR_ARGS="--defaults-torrc /root/chutney/net/nodes/012c/torrc --SocksPort auto --ControlPort auto --RunAsDaemon 0"
 RUN git clone https://github.com/orcproject/orc /root/orc; \
     git fetch --tags; \
     git checkout $(git describe --tags `git rev-list --tags --max-count=1`); \
@@ -67,11 +67,12 @@ RUN git clone https://github.com/orcproject/orc /root/orc; \
 ENV orcd_BridgeHostname="0.0.0.0"
 
 # Setup Configuration Directories
+RUN mkdir -p /root/.config/orcd
 COPY .simulation/providers /root/providers
+COPY .simulation/main/config /root/.config/orcd/config
 COPY .simulation/start.sh /root/start.sh
 
 # Starting the Container
-VOLUME ["/root/.config/orcd", "/root/chutney/net", "/root/providers"]
 EXPOSE 9089
 CMD []
 ENTRYPOINT ["/bin/sh", "/root/start.sh"]

@@ -1,18 +1,16 @@
 #!/bin/sh
 
-# start chutney tor simulation
-/root/chutney/chutney start /root/chutney/networks/basic
+echo "starting chutney tor sandbox nodes"
+/root/chutney/chutney start /root/chutney/networks/hs-v3-intro
 
-# cleanup pid files
-rm /root/.config/orcd/orcd.pid
-rm /root/providers/1/orcd.pid
-rm /root/providers/2/orcd.pid
-rm /root/providers/3/orcd.pid
-
-# start some orc providers
+echo "starting orc provider 1 (seed) as daemon"
 node /root/orc/bin/orcd.js --datadir /root/providers/1 --daemon 
+echo "starting orc provider 2 as daemon"
 node /root/orc/bin/orcd.js --datadir /root/providers/2 --daemon
+echo "starting orc provider 3 as daemon"
 node /root/orc/bin/orcd.js --datadir /root/providers/3 --daemon 
 
-# start our main orc interface
+echo "waiting a moment for hs descriptors to be ready"
+sleep 30
+echo "starting orc node, exposing bridge at port 9089"
 orcd_BridgeAuthenticationEnabled=0 orcd_NetworkBootstrapNodes="http://l466qntstik7falkkzxttgrtlu4u7g6yaxmyvjs2qamlzymsdsiqxdqd.onion:80" node /root/orc/bin/orcd.js 
