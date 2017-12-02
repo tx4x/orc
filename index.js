@@ -20,8 +20,6 @@ const { join } = require('path');
  */
 /* istanbul ignore next */
 module.exports = function(config = {}) {
-  const defaults = require('./bin/config');
-
   let envs = {};
   let file = join(__dirname, './bin/orcd.js');
   let args = [];
