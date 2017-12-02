@@ -66,7 +66,7 @@ module.exports = function(datadir) {
     // Additional Bridge Options
     ProviderCapacityPoolTimeout: '48HR',
     ProviderFailureBlacklistTimeout: '12HR',
-    ProviderBondDepositAmount: '5',
+    ProviderBondDepositAmount: '0',
 
     // Wallet Options
     WalletDataDirectory: join(datadir, 'z_wallet'),

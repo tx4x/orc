@@ -8,15 +8,7 @@ the discussion in `#orc` on our [community chat](https://matrix.counterpointhack
 [![Docker Hub](https://img.shields.io/docker/pulls/orcproject/orc.svg?style=flat-square)](https://hub.docker.com/r/orcproject/orc) | 
 [![License (AGPL-3.0)](https://img.shields.io/badge/license-AGPL3.0-blue.svg?style=flat-square)](https://raw.githubusercontent.com/orcproject/orc/master/LICENSE)
 
-### Desktop Installation (Recommended)
-
-Simply [download a pre-built package](https://github.com/orcproject/orc/releases/latest) 
-for your platform from the releases page!
-
-> Note! ORC uses the system Tor package on GNU/Linux, so you must install it 
-> yourself using your distribution's package manager.
-
-### Server Installation (Advanced)
+### Installation
 
 Pull the [image from Docker Hub](https://hub.docker.com/r/orcproject/orc/).
 
@@ -27,37 +19,30 @@ docker pull orcproject/orc
 Create a data directory on the host.
 
 ```
-mkdir ~/.config/orc
+mkdir ~/.config/orcd
 ```
 
-Run the ORC container and mount the data directory.
-
-```
-docker run -v ~/.config/orc:/root/.config/orc -t orcproject/orc:latest
-```
-
-Modify the created configuration at `~/.config/orc/config` as desired (see 
-the {@tutorial config}) and restart the container for the changes to take 
-effect. Be sure to expose `BridgePort` and map it to the host if you want to 
-use the API.
+Run the ORC container, publish API port, and mount directory for persistence.
 
 ```
 docker run \
-  --publish 127.0.0.1:4445:4445 \
-  --volume ~/.config/orc:/root/.config/orc \
+  --publish 127.0.0.1:9089:9089 \
+  --volume ~/.config/orcd:/root/.config/orcd \
   --tty orcproject/orc:latest
 ```
 
-See the [`docker run` documentation](https://docs.docker.com/engine/reference/commandline/run/) 
-for more information. If you prefer to install ORC manually, see the guide for 
-{@tutorial install}. Once installed, simply run `orc` with an optional 
-configuration file using the `--config <path/to/config>` option.
-
-Once the container has started, you can navigate in your browser to 
-`http://127.0.0.1:4445` to access your node's dashboard! 
+Modify the created configuration at `~/.config/orcd/config` as desired (see 
+the {@tutorial config}) and restart the container for the changes to take 
+effect. Once the container has started, you can navigate in your browser to 
+`http://127.0.0.1:9089` to access your node's dashboard! 
 
 > If you did not disable `BridgeAuthenticationEnabled`, you will be asked to supply the 
 > credentials in your configuration file.
+
+See the [`docker run` documentation](https://docs.docker.com/engine/reference/commandline/run/) 
+for more information. If you prefer to install ORC manually, see the guide for 
+{@tutorial install}. Once installed, simply run `orcd` with an optional 
+configuration file using the `--config <path/to/config>` option.
 
 #### Automatic Security Updates
 
@@ -87,12 +72,11 @@ docker-compose up
 ```
 
 This will volume mount the the appropriate directories for development, and 
-then boots up the ORC container. Note that stable releases are tagged and 
-the `master` branch may contain unstable or bleeding-edge code.
-
-> Alternatively, you can run directly on your host. Use `npm install` and 
-> `npm link` to install dependencies. Start the daemon with `orcd` or the 
-> desktop application with `orc`.
+then boots up a complete sandboxed ORC network, including a complete sandboxed 
+Tor network and once bootstrapped, binds port `9089` to the host for full 
+end-to-end testing. The development container does not persist state between 
+runs. Note that stable releases are tagged and the `master` branch may contain 
+unstable or bleeding-edge code.
 
 Happy hacking!
 
@@ -105,6 +89,7 @@ Happy hacking!
 
 ORC - Distributed Anonymous Cloud  
 Copyright (C) 2017  Counterpoint Hackerspace, Ltd.  
+Copyright (C) 2017  Gordon Hall  
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published

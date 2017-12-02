@@ -1,16 +1,16 @@
 ### Package Version
 
-Replace the value below using the output from `orc --version`.
+Replace the value below using the output from `orcd --version`.
 
 ```
-orc      9.1.0
+orc      10.0.0
 protocol 4.0.0
 ```
 
 Replace the value below using the output from `node --version`.
 
 ```
-v6.10.3
+v8.9.1
 ```
 
 ### Expected Behavior

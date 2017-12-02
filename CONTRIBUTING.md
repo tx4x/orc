@@ -2,10 +2,10 @@ Contributing
 ============
 
 Want to contribute, but not sure where to start? Check out our [issue
-board](http://waffle.io/orcproject/orc)!
+board](https://github.com/orcproject/orc/projects/1)!
 
 This document outlines general patterns and conventions for contributing
-to the project. For in-depth documentation on ORC, [read the
+to the project. For more depth, [read the
 documentation](http://orcproject.github.io/orc).
 
 Contributor License Agreement
@@ -36,6 +36,8 @@ Please take the time to review the style guide and take care to follow it.
 * `doc/` - Markdown documentation on various topics not covered by JSDoc
 * `lib/` - All core classes and modules
 * `test/` - Unit and integration tests for core classes and modules
+* `script/` - Utilities for development
+* `web/` - Web front-end assets
 
 ### Inline Documentation
 

@@ -5,16 +5,7 @@
   "config": {
     "title": "Configuration Guide"
   },
-  "directory": {
-    "title": "Using the Local Directory"
-  },
-  "usage": {
-    "title": "Using the Node.js Library"
-  },
-  "transfers": {
-    "title": "Using the Local Bridge"
-  },
-  "control": {
-    "title": "Using the Control Port"
+  "api": {
+    "title": "Using the REST API"
   }
 }

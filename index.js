@@ -20,16 +20,11 @@ const { join } = require('path');
  */
 /* istanbul ignore next */
 module.exports = function(config = {}) {
-  /* eslint max-statements: [2, 20] */
   const defaults = require('./bin/config');
-  const cport = config.ControlPort || defaults.ControlPort;
-  const caddr = config.ControlHostname || defaults.ControlHostname;
-  const controller = new module.exports.control.Client();
 
   let envs = {};
   let file = join(__dirname, './bin/orcd.js');
   let args = [];
-  let trys = 10;
   let opts = {
     env: envs,
     execPath: process.execPath,
@@ -44,28 +39,7 @@ module.exports = function(config = {}) {
     }
   }
 
-  const child = fork(file, args, opts);
-
-  function connect() {
-    function handleError() {
-      controller.removeAllListeners();
-      if (trys !== 0) {
-        trys--;
-        setTimeout(connect, 1000);
-      }
-    }
-
-    controller
-      .once('error', handleError)
-      .once('ready', () => controller.removeListener('error', handleError))
-      .connect(cport, caddr);
-  }
-
-  process.on('exit', () => child.kill());
-  child.stdout.once('data', () => setTimeout(() => connect(), 1000));
-  child.stderr.once('data', (msg) => child.emit('error', new Error(msg)));
-
-  return { child, controller };
+  return fork(file, args, opts);
 };
 
 /** {@link Node} */

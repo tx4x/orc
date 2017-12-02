@@ -60,7 +60,7 @@ This package exposes 3 programs: `orc`, `orcd`,  and `orctool`. To install
 these, use the `--global` flag.
 
 ```
-npm install -g @orcproject/orc
+GRANAX_USE_TOR_ALPHA=1 npm install -g @orcproject/orc
 ```
 
 ### Core Library
@@ -70,27 +70,11 @@ protocol. To use it in your project, from your project's root directory,
 install as a dependency.
 
 ```
-npm install @orcproject/orc --save
+GRANAX_USE_TOR_ALPHA=1 npm install @orcproject/orc --save
 ```
 
 Then you can require the library with:
 
 ```
-const orc = require('@orcproject/orc/lib');
-```
-
-### Building Packages
-
-To build a distributable package for your platform, clone the repository and 
-follow the steps above for your platform, then run:
-
-```
-npm run make # linux/osx
-npm run make-win # windows
-```
-
-On Mac OS, you'll want to remove this package before building:
-
-```
-npm remove dtrace-provider
+const orc = require('@orcproject/orc');
 ```
