@@ -85,7 +85,6 @@
     "rimraf": "^2.6.1",
     "secp256k1": "^3.2.2",
     "semver": "^5.1.0",
-    "serve-static": "^1.13.1",
     "stream-slice": "^0.1.2",
     "ws": "^3.0.0",
     "zcash": "^0.1.0"

@@ -37,7 +37,6 @@ Please take the time to review the style guide and take care to follow it.
 * `lib/` - All core classes and modules
 * `test/` - Unit and integration tests for core classes and modules
 * `script/` - Utilities for development
-* `web/` - Web front-end assets
 
 ### Inline Documentation
 

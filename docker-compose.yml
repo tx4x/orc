@@ -7,7 +7,6 @@ services:
     volumes:
       - ./bin:/root/orc/bin
       - ./lib:/root/orc/lib
-      - ./web:/root/orc/web
       - ./test:/root/orc/test
       - ./index.js:/root/orc/index.js
       - ./node_modules:/root/orc/node_modules

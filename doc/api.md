@@ -40,38 +40,102 @@ get the progress data about a pending upload or download.
 
 ### `GET /`
 
-Serves the web front-end client application.
-
-### `GET /statuses`
-
-Fetches general status information about the running node
+Fetches general status information about the running node.
 
 ```
-$ curl http://127.0.0.1:4445/statuses | jq
+$ curl http://127.0.0.1:4445 | jq
 {
-  "identity": "8ea323ee883729615dcbb87a4b6b934aaadf36c1",
+  "identity": "96fecf94aadc37b73955d991a4d4b27586a1090e",
   "contact": {
-    "hostname": "qdtyzrwositobndxrfwa5xnym6lk4vjs2qop2aapffr2bxvae2lmb6yd.onion",
+    "hostname": "wwv6224ikwi72alxt5dt6o3flawgcqk6aywerqk6dlcl4nsrdguihvyd.onion",
     "protocol": "http:",
     "port": "80",
-    "xpub": "xpub69r1RjczP47n7vkfEcCjhvKNB1zgYw7YZ9SteMgTsnMYriPRNVrNt6MMhk1tEobQ9QHRKM5ExnMkGfjJNgc7anZppJQavLvhN4zfcmzvUdJ",
+    "xpub": "xpub6AfC24JPejm52SjzZBc873mFkpugSTaaDd7sRw294h9ZSkoFeWwLg9WoqYdrVsPDHhrrc9doE257ZVSDEeguJU1jS97h1agZAsot3bLMqeV",
     "index": 0,
     "agent": "4.0.0",
     "flags": [
       [
         "ALLOCATED",
-        1000000
+        0
       ],
       [
         "AVAILABLE",
-        1000000
+        0
       ]
     ]
   },
-  "peers": 42,
-  "capacity": {
-    "allocated": 1000000,
-    "available": 1000000
+  "peers": [
+    [
+      "02e1829bc163f87f7e0493fbdf716445d4be9501",
+      {
+        "hostname": "l466qntstik7falkkzxttgrtlu4u7g6yaxmyvjs2qamlzymsdsiqxdqd.onion",
+        "protocol": "http:",
+        "port": "80",
+        "xpub": "xpub6BQnZfspXVdRB8y9DrWV1oS9XxAMKsyZCazYxfaxhNbVaM9vtbtEmQTeCBkhizHX8gutN3bvJBzoucZ2SsANaeikXJdiLQNJj7W7Wf1uhje",
+        "index": 0,
+        "agent": "4.0.0",
+        "flags": [
+          [
+            "ALLOCATED",
+            1073741824
+          ],
+          [
+            "AVAILABLE",
+            1073737728
+          ]
+        ]
+      }
+    ],
+    [
+      "75052f451c7250a7b82cb31009bdcf776daed45d",
+      {
+        "hostname": "dah2cohegwnmbipbdd5rkbdc2m5tfabvtuukqjvlcvoul2bxwtb6ggid.onion",
+        "protocol": "http:",
+        "port": "80",
+        "xpub": "xpub6BUktL3tg7yjsJE6hNiXXEARN7TkCp6Zq6D6K9Y7uMBQFc2zBjFgsZtDynG3557K4w2weUbNgHue52x1tUYXMkzh4NRhmxnqdvCrkexH9UE",
+        "index": 0,
+        "agent": "4.0.0",
+        "flags": [
+          [
+            "ALLOCATED",
+            1073741824
+          ],
+          [
+            "AVAILABLE",
+            1073737728
+          ]
+        ]
+      }
+    ],
+    [
+      "6605c168587c5ca7a85203e1609054b1e981dba1",
+      {
+        "hostname": "zibvvc4jh3j2czhpwklpa3dphvltad4vsb3cziym7z2smep5sc2bfdad.onion",
+        "protocol": "http:",
+        "port": "80",
+        "xpub": "xpub6AjnKeVDsSPM9v4KMyRLrsyWqH2L2sJywBP3BM21EBdTMEd2nccW6bxTrpiaoBko5yYHEhAReTCL6pUk1jheAfeHuHy58sJ9L7C1kyUW5cd",
+        "index": 0,
+        "agent": "4.0.0",
+        "flags": [
+          [
+            "ALLOCATED",
+            1073741824
+          ],
+          [
+            "AVAILABLE",
+            1073737728
+          ]
+        ]
+      }
+    ]
+  ],
+  "providing": {
+    "allocated": 0,
+    "available": 0
+  },
+  "versions": {
+    "protocol": "4.0.0",
+    "software": "10.0.0"
   }
 }
 ```
