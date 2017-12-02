@@ -40,11 +40,14 @@ get the progress data about a pending upload or download.
 
 ### `GET /`
 
-Fetches general status information about the running node (or serves the web
-dashboard).
+Serves the web front-end client application.
+
+### `GET /statuses`
+
+Fetches general status information about the running node
 
 ```
-$ curl -H "Accept: application/json" http://127.0.0.1:4445 | jq
+$ curl http://127.0.0.1:4445/statuses | jq
 {
   "identity": "8ea323ee883729615dcbb87a4b6b934aaadf36c1",
   "contact": {
