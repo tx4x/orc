@@ -310,6 +310,18 @@ function init() {
         ms(config.ShardReaperInterval));
     }
 
+    database.PeerProfile.findOneAndUpdate(
+      { identity: identity.toString('hex') },
+      {
+        identity: identity.toString('hex'),
+        contact: contact,
+        updated: Date.now(),
+        capacity: orc.utils.getCapacityFromFlags(contact.flags)
+      },
+      { upsert: true },
+      () => null
+    );
+
     node.updateFlags(true);
     async.retry({
       times: Infinity,
