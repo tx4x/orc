@@ -269,6 +269,21 @@ function init() {
       await node.getBootstrapCandidates()
     );
 
+    if (peers.length === 0) {
+      logger.info('no bootstrap seeds provided and no known profiles');
+      logger.info('running in seed mode (waiting for connections)');
+
+      return node.router.events.once('add', (identity) => {
+        config.NetworkBootstrapNodes = [
+          orc.utils.getContactURL([
+            identity,
+            node.router.getContactByNodeId(identity)
+          ])
+        ];
+        joinNetwork(callback)
+      });
+    }
+
     logger.info(`joining network from ${peers.length} seeds`);
     async.detectSeries(peers, (seed, done) => {
       logger.info(`requesting identity information from ${seed}`);

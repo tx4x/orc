@@ -300,7 +300,7 @@ describe('@module utils', function() {
         hostname: 'my.farmer.hostname',
         port: 8080,
         protocol: 'http:'
-      }])).to.equal('http://my.farmer.hostname:8080/identitykey')
+      }])).to.equal('http://my.farmer.hostname:8080')
     });
 
   });
