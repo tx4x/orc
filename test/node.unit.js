@@ -436,6 +436,16 @@ describe('@class Node', function() {
 
   });
 
+  describe('@method getBootstrapCandidates', function() {
 
+
+
+  });
+
+  describe('@method reapExpiredShards', function() {
+
+
+
+  });
 
 });
