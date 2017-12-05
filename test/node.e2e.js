@@ -129,22 +129,6 @@ describe('@module orc (end-to-end)', function() {
     });
   });
 
-  it('should succeed in mirroring the shard', function(done) {
-    this.timeout(6000);
-    const renter = nodes[0];
-    const source = capacities[0][1];
-    const destination = capacities[1][1];
-    const hash = orc.utils.rmd160sha256(shard).toString('hex');
-    renter.authorizeConsignment(destination, [hash], (err, result) => {
-      expect(err).to.equal(null);
-      const [token] = result;
-      renter.createShardMirror(source, { destination, hash, token }, (err) => {
-        expect(err).to.equal(null);
-        done();
-      });
-    });
-  });
-
   it('should succeed in retrieving the shard from mirror', function(done) {
     this.timeout(6000);
     const renter = nodes[0];

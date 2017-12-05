@@ -84,9 +84,9 @@ describe('@class Node', function() {
       node.listen(0);
       expect(use.calledWithMatch('AUDIT')).to.equal(true);
       expect(use.calledWithMatch('CONSIGN')).to.equal(true);
-      expect(use.calledWithMatch('MIRROR')).to.equal(true);
       expect(use.calledWithMatch('RETRIEVE')).to.equal(true);
       expect(use.calledWithMatch('RENEW')).to.equal(true);
+      expect(use.calledWithMatch('CLAIM')).to.equal(true);
       expect(listen.called).to.equal(true);
     });
 
@@ -438,13 +438,46 @@ describe('@class Node', function() {
 
   describe('@method getBootstrapCandidates', function() {
 
+    it('should error if database call fails', function(done) {
+      let node = createNode({});
+      node.logger.warn = sinon.stub();
+      let PeerProfile = database.PeerProfile;
+      let _PeerProfile = {
+        find: () => {
+          return {
+            sort: function() {
+              return {
+                limit: function() {
+                  return {
+                    exec: sinon.stub().callsArgWith(0, new Error('Failed'))
+                  };
+                }
+              }
+            }
+          }
+        }
+      };
+      database.PeerProfile = _PeerProfile;
+      node.getBootstrapCandidates().catch(err => {
+        database.PeerProfile = PeerProfile;
+        expect(err.message).to.equal('Failed');
+        done();
+      })
+    });
 
+    it('should return a list of profiles', function(done) {
+      let node = createNode({});
+      node.getBootstrapCandidates().then(result => {
+        expect(Array.isArray(result)).to.equal(true);
+        done();
+      })
+    });
 
   });
 
   describe('@method reapExpiredShards', function() {
 
-
+    // TODO: Not implemented
 
   });
 
