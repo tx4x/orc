@@ -34,14 +34,14 @@
 			<li class="dropdown">
 				<a href="modules.list.html" class="dropdown-toggle" data-toggle="dropdown">Modules<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="module-orc.html">orc</a></li><li><a href="module-orc_constants.html">orc/constants</a></li><li><a href="module-orc_utils.html">orc/utils</a></li><li><a href="module-orc_version.html">orc/version</a></li>
+					<li><a href="module-orc_constants.html">orc/constants</a></li><li><a href="module-orc_logger.html">orc/logger</a></li><li><a href="module-orc_utils.html">orc/utils</a></li><li><a href="module-orc_version.html">orc/version</a></li>
 				</ul>
 			</li>
 			
 			<li class="dropdown">
 				<a href="classes.list.html" class="dropdown-toggle" data-toggle="dropdown">Classes<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="Audit.html">Audit</a></li><li><a href="Bridge.html">Bridge</a></li><li><a href="Database.html">Database</a></li><li><a href="Database.AuditReport.html">Database.AuditReport</a></li><li><a href="Database.NetworkBlob.html">Database.NetworkBlob</a></li><li><a href="Database.ObjectPointer.html">Database.ObjectPointer</a></li><li><a href="Database.PeerProfile.html">Database.PeerProfile</a></li><li><a href="Database.ShardContract.html">Database.ShardContract</a></li><li><a href="Directory.html">Directory</a></li><li><a href="KadStorageAdapter.html">KadStorageAdapter</a></li><li><a href="Node.html">Node</a></li><li><a href="Proof.html">Proof</a></li><li><a href="Rules.html">Rules</a></li><li><a href="Server.html">Server</a></li><li><a href="Shards.html">Shards</a></li><li><a href="Transport.html">Transport</a></li>
+					<li><a href="Audit.html">Audit</a></li><li><a href="Bridge.html">Bridge</a></li><li><a href="Database.html">Database</a></li><li><a href="Database.AuditReport.html">Database.AuditReport</a></li><li><a href="Database.NetworkBlob.html">Database.NetworkBlob</a></li><li><a href="Database.ObjectPointer.html">Database.ObjectPointer</a></li><li><a href="Database.PeerProfile.html">Database.PeerProfile</a></li><li><a href="Database.ShardContract.html">Database.ShardContract</a></li><li><a href="KadStorageAdapter.html">KadStorageAdapter</a></li><li><a href="Node.html">Node</a></li><li><a href="Proof.html">Proof</a></li><li><a href="Rules.html">Rules</a></li><li><a href="Server.html">Server</a></li><li><a href="Shards.html">Shards</a></li><li><a href="Transport.html">Transport</a></li>
 				</ul>
 			</li>
 			
@@ -55,7 +55,7 @@
 			<li class="dropdown">
 				<a href="tutorials.list.html" class="dropdown-toggle" data-toggle="dropdown">Tutorials<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="tutorial-config.html">Configuration Guide</a></li><li><a href="tutorial-control.html">Using the Control Port</a></li><li><a href="tutorial-directory_.html">Using the Local Directory</a></li><li><a href="tutorial-install.html">Manual Installation</a></li><li><a href="tutorial-transfers.html">Using the Local Bridge</a></li><li><a href="tutorial-usage.html">Using the Node.js Library</a></li>
+					<li><a href="tutorial-api.html">Using the REST API</a></li><li><a href="tutorial-config.html">Configuration Guide</a></li><li><a href="tutorial-install.html">Manual Installation</a></li>
 				</ul>
 			</li>
 			
@@ -2050,6 +2050,117 @@ proof-of-storage
             
 <hr>
 <dt>
+    <h4 class="name" id="getBootstrapCandidates"><span class="type-signature"></span>getBootstrapCandidates()</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        Returns a list of bootstrap nodes from local profiles
+    </div>
+    
+
+    
+
+    
+
+    
+    
+
+    
+<dl class="details">
+    
+
+	
+
+	
+
+	
+
+    
+
+    
+
+    
+
+    
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
+	<dd class="tag-source">
+		<ul class="dummy">
+			<li>
+				<a href="node.js.html">node.js</a>
+			</li>
+		</ul>
+	</dd>
+	
+
+	
+
+	
+
+	
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <h5>Returns:</h5>
+    
+            
+<div class="param-desc">
+    urls
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Array.&lt;string></span>
+
+
+
+    </dd>
+</dl>
+
+
+        
+
+    
+</dd>
+
+        
+            
+<hr>
+<dt>
     <h4 class="name" id="identifyService"><span class="type-signature"></span>identifyService(url, callback)</h4>
     
     
@@ -2299,7 +2410,7 @@ contact object with identity
             
 <hr>
 <dt>
-    <h4 class="name" id="publishCapacityAnnouncement"><span class="type-signature"></span>publishCapacityAnnouncement(data, callback)</h4>
+    <h4 class="name" id="reapExpiredShards"><span class="type-signature"></span>reapExpiredShards()</h4>
     
     
 </dt>
@@ -2307,8 +2418,7 @@ contact object with identity
 
     
     <div class="description">
-        Announces to interested renter nodes that this node has capacity
-available for renting.
+        Scans the contract database for stale contracts to reap
     </div>
     
 
@@ -2317,154 +2427,6 @@ available for renting.
     
 
     
-    
-        <h5>Parameters:</h5>
-        
-
-<table class="params table table-striped">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>data</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">number</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">
-                <h6 class="method-params-label method-subparams-label">Properties</h6>
-                
-
-<table class="params table table-striped">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>available</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">number</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Total bytes capacity available</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>allocated</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">number</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Total bytes capacity allocated</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-            </td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>callback</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="Node.html#~publishCapacityAnnouncementCallback">Node~publishCapacityAnnouncementCallback</a></span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
     
 
     
@@ -2957,7 +2919,7 @@ respond with an error or their updated, signed record of the renewal.
             
 <hr>
 <dt>
-    <h4 class="name" id="subscribeCapacityAnnouncement"><span class="type-signature"></span>subscribeCapacityAnnouncement(callback)</h4>
+    <h4 class="name" id="updateFlags"><span class="type-signature"></span>updateFlags(soft)</h4>
     
     
 </dt>
@@ -2965,8 +2927,8 @@ respond with an error or their updated, signed record of the renewal.
 
     
     <div class="description">
-        Subscribes to capacity announcements for the given topic codes
-and exposes announcements as a stream.
+        Performs any periodic updates to the contact flags we include
+in every message
     </div>
     
 
@@ -3001,13 +2963,13 @@ and exposes announcements as a stream.
 
         <tr>
             
-                <td class="name"><code>callback</code></td>
+                <td class="name"><code>soft</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type"><a href="Node.html#~subscribeCapacityAnnouncementCallback">Node~subscribeCapacityAnnouncementCallback</a></span>
+<span class="param-type">boolean</span>
 
 
 
@@ -3018,7 +2980,7 @@ and exposes announcements as a stream.
 
             
 
-            <td class="description last"></td>
+            <td class="description last">Don't do iterativeFindNode on update</td>
         </tr>
 
     
@@ -4185,142 +4147,6 @@ and exposes announcements as a stream.
                 
 <hr>
 <dt>
-    <h4 class="name" id="~publishCapacityAnnouncementCallback"><span class="type-signature"></span>publishCapacityAnnouncementCallback(error)</h4>
-    
-    
-</dt>
-<dd>
-
-    
-
-    
-
-    
-
-    
-    
-        <h5>Parameters:</h5>
-        
-
-<table class="params table table-striped">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>error</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">error</span>
-|
-
-<span class="param-type">null</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-    
-
-    
-<dl class="details">
-    
-
-	
-
-	
-
-	
-
-    
-
-    
-
-    
-
-    
-
-	
-
-	
-
-	
-
-	
-
-	
-
-
-
-	
-	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
-	<dd class="tag-source">
-		<ul class="dummy">
-			<li>
-				<a href="node.js.html">node.js</a>
-			</li>
-		</ul>
-	</dd>
-	
-
-	
-
-	
-
-	
-</dl>
-
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dd>
-
-            
-                
-<hr>
-<dt>
     <h4 class="name" id="~requestContractRenewalCallback"><span class="type-signature"></span>requestContractRenewalCallback(error, contract)</h4>
     
     
@@ -4405,166 +4231,6 @@ and exposes announcements as a stream.
             
 
             <td class="description last">See storage-contracts</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-    
-
-    
-<dl class="details">
-    
-
-	
-
-	
-
-	
-
-    
-
-    
-
-    
-
-    
-
-	
-
-	
-
-	
-
-	
-
-	
-
-
-
-	
-	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
-	<dd class="tag-source">
-		<ul class="dummy">
-			<li>
-				<a href="node.js.html">node.js</a>
-			</li>
-		</ul>
-	</dd>
-	
-
-	
-
-	
-
-	
-</dl>
-
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dd>
-
-            
-                
-<hr>
-<dt>
-    <h4 class="name" id="~subscribeCapacityAnnouncementCallback"><span class="type-signature"></span>subscribeCapacityAnnouncementCallback(error, capacityStream)</h4>
-    
-    
-</dt>
-<dd>
-
-    
-
-    
-
-    
-
-    
-    
-        <h5>Parameters:</h5>
-        
-
-<table class="params table table-striped">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>error</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">error</span>
-|
-
-<span class="param-type">null</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>capacityStream</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">ReadableStream</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"></td>
         </tr>
 
     

@@ -34,14 +34,14 @@
 			<li class="dropdown">
 				<a href="modules.list.html" class="dropdown-toggle" data-toggle="dropdown">Modules<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="module-orc.html">orc</a></li><li><a href="module-orc_constants.html">orc/constants</a></li><li><a href="module-orc_utils.html">orc/utils</a></li><li><a href="module-orc_version.html">orc/version</a></li>
+					<li><a href="module-orc_constants.html">orc/constants</a></li><li><a href="module-orc_logger.html">orc/logger</a></li><li><a href="module-orc_utils.html">orc/utils</a></li><li><a href="module-orc_version.html">orc/version</a></li>
 				</ul>
 			</li>
 			
 			<li class="dropdown">
 				<a href="classes.list.html" class="dropdown-toggle" data-toggle="dropdown">Classes<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="Audit.html">Audit</a></li><li><a href="Bridge.html">Bridge</a></li><li><a href="Database.html">Database</a></li><li><a href="Database.AuditReport.html">Database.AuditReport</a></li><li><a href="Database.NetworkBlob.html">Database.NetworkBlob</a></li><li><a href="Database.ObjectPointer.html">Database.ObjectPointer</a></li><li><a href="Database.PeerProfile.html">Database.PeerProfile</a></li><li><a href="Database.ShardContract.html">Database.ShardContract</a></li><li><a href="Directory.html">Directory</a></li><li><a href="KadStorageAdapter.html">KadStorageAdapter</a></li><li><a href="Node.html">Node</a></li><li><a href="Proof.html">Proof</a></li><li><a href="Rules.html">Rules</a></li><li><a href="Server.html">Server</a></li><li><a href="Shards.html">Shards</a></li><li><a href="Transport.html">Transport</a></li>
+					<li><a href="Audit.html">Audit</a></li><li><a href="Bridge.html">Bridge</a></li><li><a href="Database.html">Database</a></li><li><a href="Database.AuditReport.html">Database.AuditReport</a></li><li><a href="Database.NetworkBlob.html">Database.NetworkBlob</a></li><li><a href="Database.ObjectPointer.html">Database.ObjectPointer</a></li><li><a href="Database.PeerProfile.html">Database.PeerProfile</a></li><li><a href="Database.ShardContract.html">Database.ShardContract</a></li><li><a href="KadStorageAdapter.html">KadStorageAdapter</a></li><li><a href="Node.html">Node</a></li><li><a href="Proof.html">Proof</a></li><li><a href="Rules.html">Rules</a></li><li><a href="Server.html">Server</a></li><li><a href="Shards.html">Shards</a></li><li><a href="Transport.html">Transport</a></li>
 				</ul>
 			</li>
 			
@@ -55,7 +55,7 @@
 			<li class="dropdown">
 				<a href="tutorials.list.html" class="dropdown-toggle" data-toggle="dropdown">Tutorials<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="tutorial-config.html">Configuration Guide</a></li><li><a href="tutorial-control.html">Using the Control Port</a></li><li><a href="tutorial-directory_.html">Using the Local Directory</a></li><li><a href="tutorial-install.html">Manual Installation</a></li><li><a href="tutorial-transfers.html">Using the Local Bridge</a></li><li><a href="tutorial-usage.html">Using the Node.js Library</a></li>
+					<li><a href="tutorial-api.html">Using the REST API</a></li><li><a href="tutorial-config.html">Configuration Guide</a></li><li><a href="tutorial-install.html">Manual Installation</a></li>
 				</ul>
 			</li>
 			
@@ -93,6 +93,7 @@
             class="sunlight-highlight-javascript ">'use strict';
 
 const { randomBytes } = require('crypto');
+const assert = require('assert');
 const async = require('async');
 const utils = require('./utils');
 const ProofStream = require('./proof');
@@ -110,6 +111,22 @@ class Rules {
    */
   constructor(node) {
     this.node = node;
+  }
+
+  /**
+   * Validates all incoming RPC messages
+   * @param {object} request
+   * @param {object} response
+   */
+  validate(request, response, next) {
+    try {
+      assert(utils.isCompatibleVersion(request.contact[1].agent),
+        `Unsupported protocol version ${request.contact[1].agent}`);
+    } catch (err) {
+      return next(err);
+    }
+
+    return next();
   }
 
   /**
@@ -199,49 +216,6 @@ class Rules {
 
       this.node.server.accept(token, hash, contact);
       response.send([token]);
-    });
-  }
-
-  /**
-   * Upon receipt of a MIRROR message, the node must verify that it is in
-   * possesion of the shard on behalf of the identity or the message
-   * originator. If so, given the token-hash pair, it must attempt to upload
-   * it's copy of the shard to the target to establish a mirror.
-   * @param {object} request
-   * @param {object} response
-   */
-  mirror(request, response, next) {
-    const [hash, token, target] = request.params;
-
-    this.node.database.ShardContract.findOne({
-      shardHash: hash
-    }, (err, contract) => {
-      if (err || !contract) {
-        return next(err || new Error('Contract not found'));
-      }
-
-      this.node.shards.createReadStream(hash, (err, shardStream) => {
-        if (err) {
-          return next(err);
-        }
-
-        const uploader = utils.createShardUploader(target, hash, token);
-
-        uploader.on('response', (res) => {
-          let result = '';
-
-          res.on('data', (data) => result += data.toString());
-          res.on('end', () => {
-            if (res.statusCode !== 200) {
-              return next(new Error(result));
-            }
-
-            response.send([result]);
-          });
-        });
-
-        shardStream.pipe(uploader).once('error', next);
-      });
     });
   }
 
@@ -376,33 +350,6 @@ class Rules {
         response.send([contract.toObject(), token]);
       });
     });
-  }
-
-  /**
-   * Handles the receipt of a REPORT message containing audit results for N
-   * total peers
-   * @param {object} request
-   * @param {object} response
-   * @param {function} next
-   */
-  report(request, response) {
-    let reports = request.params
-      .filter((compressed) => {
-        return this.node.database.AuditReport
-          .verifyCompressedAuthenticated(compressed);
-      })
-      .map(([reporter, provider, challenge, expected, actual]) => {
-        return new this.node.database.AuditReport({
-          reporter, provider, challenge, expected, actual
-        });
-      });
-
-    async.filterLimit(
-      reports,
-      6,
-      (report, next) => report.save(err => next(null, err ? false : true)),
-      (err, accepted) => response.send(accepted.map(a => a.challenge))
-    );
   }
 
 }

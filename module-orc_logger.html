@@ -4,7 +4,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width">
-	<title>ORC Source: index.js</title>
+	<title>ORC Module: orc/logger</title>
 
 	<!--[if lt IE 9]>
 	<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
@@ -34,14 +34,14 @@
 			<li class="dropdown">
 				<a href="modules.list.html" class="dropdown-toggle" data-toggle="dropdown">Modules<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="module-orc.html">orc</a></li><li><a href="module-orc_constants.html">orc/constants</a></li><li><a href="module-orc_utils.html">orc/utils</a></li><li><a href="module-orc_version.html">orc/version</a></li>
+					<li><a href="module-orc_constants.html">orc/constants</a></li><li><a href="module-orc_logger.html">orc/logger</a></li><li><a href="module-orc_utils.html">orc/utils</a></li><li><a href="module-orc_version.html">orc/version</a></li>
 				</ul>
 			</li>
 			
 			<li class="dropdown">
 				<a href="classes.list.html" class="dropdown-toggle" data-toggle="dropdown">Classes<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="Audit.html">Audit</a></li><li><a href="Bridge.html">Bridge</a></li><li><a href="Database.html">Database</a></li><li><a href="Database.AuditReport.html">Database.AuditReport</a></li><li><a href="Database.NetworkBlob.html">Database.NetworkBlob</a></li><li><a href="Database.ObjectPointer.html">Database.ObjectPointer</a></li><li><a href="Database.PeerProfile.html">Database.PeerProfile</a></li><li><a href="Database.ShardContract.html">Database.ShardContract</a></li><li><a href="Directory.html">Directory</a></li><li><a href="KadStorageAdapter.html">KadStorageAdapter</a></li><li><a href="Node.html">Node</a></li><li><a href="Proof.html">Proof</a></li><li><a href="Rules.html">Rules</a></li><li><a href="Server.html">Server</a></li><li><a href="Shards.html">Shards</a></li><li><a href="Transport.html">Transport</a></li>
+					<li><a href="Audit.html">Audit</a></li><li><a href="Bridge.html">Bridge</a></li><li><a href="Database.html">Database</a></li><li><a href="Database.AuditReport.html">Database.AuditReport</a></li><li><a href="Database.NetworkBlob.html">Database.NetworkBlob</a></li><li><a href="Database.ObjectPointer.html">Database.ObjectPointer</a></li><li><a href="Database.PeerProfile.html">Database.PeerProfile</a></li><li><a href="Database.ShardContract.html">Database.ShardContract</a></li><li><a href="KadStorageAdapter.html">KadStorageAdapter</a></li><li><a href="Node.html">Node</a></li><li><a href="Proof.html">Proof</a></li><li><a href="Rules.html">Rules</a></li><li><a href="Server.html">Server</a></li><li><a href="Shards.html">Shards</a></li><li><a href="Transport.html">Transport</a></li>
 				</ul>
 			</li>
 			
@@ -55,7 +55,7 @@
 			<li class="dropdown">
 				<a href="tutorials.list.html" class="dropdown-toggle" data-toggle="dropdown">Tutorials<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="tutorial-config.html">Configuration Guide</a></li><li><a href="tutorial-control.html">Using the Control Port</a></li><li><a href="tutorial-directory_.html">Using the Local Directory</a></li><li><a href="tutorial-install.html">Manual Installation</a></li><li><a href="tutorial-transfers.html">Using the Local Bridge</a></li><li><a href="tutorial-usage.html">Using the Node.js Library</a></li>
+					<li><a href="tutorial-api.html">Using the REST API</a></li><li><a href="tutorial-config.html">Configuration Guide</a></li><li><a href="tutorial-install.html">Manual Installation</a></li>
 				</ul>
 			</li>
 			
@@ -80,131 +80,97 @@
 <div class="row">
 
 	
-	<div class="col-md-12">
+	<div class="col-md-8">
 	
 		<div id="main">
 			
 
-		<h1 class="page-title">Source: index.js</h1>
-    
+	<h1 class="page-title">Module: orc/logger</h1>
 <section>
-    <article>
-        <pre
-            class="sunlight-highlight-javascript ">/**
- * @module orc
- * @license AGPL-3.0
- */
 
-'use strict';
-
-const { fork } = require('child_process');
-const { join } = require('path');
+<header>
+    
+</header>
 
 
-/**
- * Forks a child orc process and returns the child process and a controller
- * client for sending commands to it
- * @function
- * @param {object|string} config - Configuration properties as object or path
- * to a configuration file. See {@tutorial config} for details.
- * connect to the control port
- * @returns {object}
- */
-/* istanbul ignore next */
-module.exports = function(config = {}) {
-  /* eslint max-statements: [2, 20] */
-  const defaults = require('../bin/config');
-  const cport = config.ControlPort || defaults.ControlPort;
-  const caddr = config.ControlHostname || defaults.ControlHostname;
-  const controller = new module.exports.control.Client();
+<article>
+    <div class="container-overview">
+    
+        
 
-  let envs = {};
-  let file = join(__dirname, '../bin/orcd.js');
-  let args = [];
-  let trys = 10;
-  let opts = {
-    env: envs,
-    execPath: process.execPath,
-    stdio: ['pipe', 'pipe', 'pipe', 'ipc']
-  };
+        
+<dl class="details">
+    
 
-  if (typeof config === 'string') {
-    args = args.concat(['--config', config]);
-  } else {
-    for (let prop in config) {
-      envs[`orc_${prop}`] = config[prop];
-    }
-  }
+	
 
-  const child = fork(file, args, opts);
+	
 
-  function connect() {
-    function handleError() {
-      controller.removeAllListeners();
-      if (trys !== 0) {
-        trys--;
-        setTimeout(connect, 1000);
-      }
-    }
+	
 
-    controller
-      .once('error', handleError)
-      .once('ready', () => controller.removeListener('error', handleError))
-      .connect(cport, caddr);
-  }
+    
 
-  process.on('exit', () => child.kill());
-  child.stdout.once('data', () => setTimeout(() => connect(), 1000));
-  child.stderr.once('data', (msg) => child.emit('error', new Error(msg)));
+    
 
-  return { child, controller };
-};
+    
 
-/** {@link Node} */
-module.exports.Node = require('./node');
+    
 
-/** {@link Rules} */
-module.exports.Rules = require('./rules');
+	
 
-/** {@link Transport} */
-module.exports.Transport = require('./transport');
+	
 
-/** {@link Server} */
-module.exports.Server = require('./server');
+	
 
-/** {@link Audit} */
-module.exports.Audit = require('./audit');
+	
 
-/** {@link Proof} */
-module.exports.Proof = require('./proof');
+	
 
-/** {@link Shards} */
-module.exports.Shards = require('./shards');
 
-/** {@link Bridge} */
-module.exports.Bridge = require('./bridge');
 
-/** {@link Directory} */
-module.exports.Directory = require('./directory');
+	
+	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
+	<dd class="tag-source">
+		<ul class="dummy">
+			<li>
+				<a href="logger.js.html">logger.js</a>
+			</li>
+		</ul>
+	</dd>
+	
 
-/** {@link Database} */
-module.exports.Database = require('./database');
+	
 
-/** {@link module:orc/constants} */
-module.exports.constants = require('./constants');
+	
 
-/** {@link module:orc/utils} */
-module.exports.utils = require('./utils');
+	
+</dl>
 
-/** {@link module:orc/version} */
-module.exports.version = require('./version');
 
-/** @see https://github.com/bookchin/boscar */
-module.exports.control = require('boscar');
-</pre>
-    </article>
+        
+    
+    </div>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</article>
+
 </section>
-
 
 
 
@@ -214,6 +180,10 @@ module.exports.control = require('boscar');
 
 	<div class="clearfix"></div>
 
+	
+		<div class="col-md-3">
+			<div id="toc" class="col-md-3 hidden-xs hidden-sm hidden-md"></div>
+		</div>
 	
 
 </div>

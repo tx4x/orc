@@ -34,14 +34,14 @@
 			<li class="dropdown">
 				<a href="modules.list.html" class="dropdown-toggle" data-toggle="dropdown">Modules<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="module-orc.html">orc</a></li><li><a href="module-orc_constants.html">orc/constants</a></li><li><a href="module-orc_utils.html">orc/utils</a></li><li><a href="module-orc_version.html">orc/version</a></li>
+					<li><a href="module-orc_constants.html">orc/constants</a></li><li><a href="module-orc_logger.html">orc/logger</a></li><li><a href="module-orc_utils.html">orc/utils</a></li><li><a href="module-orc_version.html">orc/version</a></li>
 				</ul>
 			</li>
 			
 			<li class="dropdown">
 				<a href="classes.list.html" class="dropdown-toggle" data-toggle="dropdown">Classes<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="Audit.html">Audit</a></li><li><a href="Bridge.html">Bridge</a></li><li><a href="Database.html">Database</a></li><li><a href="Database.AuditReport.html">Database.AuditReport</a></li><li><a href="Database.NetworkBlob.html">Database.NetworkBlob</a></li><li><a href="Database.ObjectPointer.html">Database.ObjectPointer</a></li><li><a href="Database.PeerProfile.html">Database.PeerProfile</a></li><li><a href="Database.ShardContract.html">Database.ShardContract</a></li><li><a href="Directory.html">Directory</a></li><li><a href="KadStorageAdapter.html">KadStorageAdapter</a></li><li><a href="Node.html">Node</a></li><li><a href="Proof.html">Proof</a></li><li><a href="Rules.html">Rules</a></li><li><a href="Server.html">Server</a></li><li><a href="Shards.html">Shards</a></li><li><a href="Transport.html">Transport</a></li>
+					<li><a href="Audit.html">Audit</a></li><li><a href="Bridge.html">Bridge</a></li><li><a href="Database.html">Database</a></li><li><a href="Database.AuditReport.html">Database.AuditReport</a></li><li><a href="Database.NetworkBlob.html">Database.NetworkBlob</a></li><li><a href="Database.ObjectPointer.html">Database.ObjectPointer</a></li><li><a href="Database.PeerProfile.html">Database.PeerProfile</a></li><li><a href="Database.ShardContract.html">Database.ShardContract</a></li><li><a href="KadStorageAdapter.html">KadStorageAdapter</a></li><li><a href="Node.html">Node</a></li><li><a href="Proof.html">Proof</a></li><li><a href="Rules.html">Rules</a></li><li><a href="Server.html">Server</a></li><li><a href="Shards.html">Shards</a></li><li><a href="Transport.html">Transport</a></li>
 				</ul>
 			</li>
 			
@@ -55,7 +55,7 @@
 			<li class="dropdown">
 				<a href="tutorials.list.html" class="dropdown-toggle" data-toggle="dropdown">Tutorials<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="tutorial-config.html">Configuration Guide</a></li><li><a href="tutorial-control.html">Using the Control Port</a></li><li><a href="tutorial-directory_.html">Using the Local Directory</a></li><li><a href="tutorial-install.html">Manual Installation</a></li><li><a href="tutorial-transfers.html">Using the Local Bridge</a></li><li><a href="tutorial-usage.html">Using the Node.js Library</a></li>
+					<li><a href="tutorial-api.html">Using the REST API</a></li><li><a href="tutorial-config.html">Configuration Guide</a></li><li><a href="tutorial-install.html">Manual Installation</a></li>
 				</ul>
 			</li>
 			
@@ -97,68 +97,41 @@ node requires a configuration file to get up and running. The path to this
 file is given to <code>orcd</code> when starting a node.</p>
 <pre class="prettyprint source"><code>orcd --config path/to/orc.config</code></pre><p>If a configuration file is not supplied, a minimal default configuration is 
 automatically created and used, which will generate a private extended key, 
-self-signed SSL certificate, and storage for shards, contracts, and directory 
-information. All of this data will be created and stored in 
-<code>$HOME/.config/orc</code>, yielding a directory structure like this:</p>
-<pre class="prettyprint source"><code>+- ~/.config/orc
+storage for shards, contracts, and network information. All of this data will 
+be created and stored in <code>$HOME/.config/orcd</code>, yielding a directory structure 
+like this:</p>
+<pre class="prettyprint source"><code>+- ~/.config/orcd
   + - x_private_key    (Root/Parent HD identity key)
-  + - onion_key        (RSA1024 private key for RPC onion service)
-  + - bridge_key       (RSA1024 private key for bridge onion service)
-  + - directory_key    (RSA1024 private key for directory onion service)
   + - config           (INI configuration file)
-  + - service_key.pem  (SSL private key used for all services)
-  + - certificate.pem  (SSL certificate used for all services)
-  + - /shards          (Directory containing encrypted shards named by hash)
-  + - /data            (MongoDB data directory)</code></pre><p>The locations of all of these files is defined in your configuration file. 
+  + - orcd.log         (Daemon log file, rotated periodically)
+  + - /provider_vault  (Directory containing encrypted shards named by hash)
+  + - /node_data       (MongoDB data directory)
+  + - /node_hs         (Tor + hidden service data directory)</code></pre><p>The locations of all of these files is defined in your configuration file. 
 Below is an complete outline of each valid configuration property name, it's 
 behavior, and default value(s). Valid configuration files may be in either INI 
 or JSON format.</p>
-<h4>PrivateExtendedKeyPath</h4><h5>Default: <code>$HOME/.config/orc/x_private_key</code></h5><p>Path to private extended key file to use for master identity.
-Generate one with:</p>
-<pre class="prettyprint source"><code>orctool generate-key --extended >> x_private_key</code></pre><h4>ChildDerivationIndex</h4><h5>Default: <code>0</code></h5><p>The index for deriving this child node's identity. This allows you to run 
+<h4>DaemonPidFilePath</h4><h5>Default: <code>$HOME/.config/orcd/orcd.pid</code></h5><p>The location to write the PID file for the daemon.</p>
+<h4>PrivateExtendedKeyPath</h4><h5>Default: <code>$HOME/.config/orcd/x_private_key</code></h5><p>Path to private extended key file to use for master identity.</p>
+<h4>ChildDerivationIndex</h4><h5>Default: <code>0</code></h5><p>The index for deriving this child node's identity. This allows you to run 
 multiple nodes with the same private extended key. If your private extended 
 key was converted from an old non-hierarchically-deterministic private key,
 you must set the value to <code>-1</code>.</p>
-<h4>MongoDBDataDirectory</h4><h5>Default: <code>$HOME/.config/orc/data</code></h5><p>Sets the directory to store MongoDB database files.</p>
+<h4>MongoDBDataDirectory</h4><h5>Default: <code>$HOME/.config/orcd/node_data</code></h5><p>Sets the directory to store MongoDB database files.</p>
 <h4>MongoDBPort</h4><h5>Default: <code>37017</code></h5><p>Sets the TCP port to binding the <code>mongod</code> process.</p>
-<h4>ShardStorageBaseDir</h4><h5>Default: <code>$HOME/.config/orc</code></h5><p>Set the base directory (parent) for where the <code>shards</code> folder will be 
-placed. This directory stores other nodes' data shards, so be sure you set 
-this to where you intend to provide capacity.</p>
+<h4>ShardStorageDataDirectory</h4><h5>Default: <code>$HOME/.config/orcd/provider_vault</code></h5><p>Set the base directory (parent) for where shards will be placed. This directory 
+stores other nodes' data shards, so be sure you set this to where you intend to 
+provide capacity.</p>
 <h4>ShardReaperInterval</h4><h5>Default: <code>24HR</code></h5><p>How often we should scan contract database to reap expired shards it is 
 storing. Accepts human-readable strings like <code>3DAYS</code> or <code>72HOURS</code></p>
-<h4>ShardCapacityAnnounceInterval</h4><h5>Default: <code>15M</code></h5><p>How often we should publish a capacity announcement to neighboring nodes.</p>
-<h4>ShardStorageMaxAllocation</h4><h5>Default: <code>5GB</code></h5><p>Define the maximum size you wish to allocate for farming shards. This can be 
+<h4>ShardStorageMaxAllocation</h4><h5>Default: <code>0GB</code></h5><p>Define the maximum size you wish to allocate for farming shards. This can be 
 increased later, but decreasing it will not delete existing data.</p>
-<h4>DirectoryEnabled</h4><h5>Default: <code>1</code></h5><p>When enabled, runs the directory service (see <a href="tutorial-directory_.html">Using the Local Directory</a>). This 
-service is responsible for tracking peers over time and scoring audit reports 
-for reputation consensus with other directories. Set to <code>0</code> to disable.</p>
-<h4>DirectoryPort</h4><h5>Default: <code>4446</code></h5><p>The TCP port to which the directory service should be bound.</p>
-<h4>DirectoryHostname</h4><h5>Default: <code>127.0.0.1</code></h5><p>The hostname or IP address to which the directory service should be bound.</p>
-<h4>DirectoryUseSSL</h4><h5>Default: <code>1</code></h5><p>Enables the use of SSL for the service's HTTP API.</p>
-<h4>DirectoryServiceKeyPath</h4><h5>Default: <code>$HOME/.config/orc/directory_key.pem</code></h5><p>Path on the filesystem to the PEM formatted SSL private key for the directory
-service. If this path does not exist, it will be created.</p>
-<h4>DirectoryCertificatePath</h4><h5>Default: <code>$HOME/.config/orc/directory_cert.pem</code></h5><p>Path on the filesystem to the PEM formatted SSL certificate for the directory 
-service. If this path does not exist it will be created.</p>
-<h4>DirectoryAuthorityChains[]</h4><h5>Default: <code> </code></h5><p>A list of paths on the filesystem to PEM formatted certificate authorities for 
-the directory service.</p>
-<h4>DirectoryOnionServiceEnabled</h4><h5>Default: <code>0</code></h5><p>Establish a Tor Hidden Service for the directory service's HTTP API.</p>
-<h4>DirectoryOnionServicePrivateKeyPath</h4><h5>Default: <code>$HOME/.config/orc/directory_key</code></h5><p>Path to the RSA-1024 private key used for the onion service. If this path does 
-not exist, it will be created.</p>
-<h4>DirectoryBootstrapService</h4><h5>Default: <code>https://orcucqxc54fkhupb.onion:443</code></h5><p>URL for an accessible directory service to use for initial directory 
-bootstrapping.</p>
-<h4>TransportMessageResponseTimeout</h4><h5>Default: <code>10S</code></h5><p>How long we should wait on a response back from a peer for any given message.</p>
-<h4>TransportServiceKeyPath</h4><h5>Default: <code>$HOME/.config/orc/service_key.pem</code></h5><p>Path to this node's RPC service's SSL private key. If this path does 
-not exist, it will be created. You can also manually generate one with the 
-following:</p>
-<pre class="prettyprint source"><code>orctool generate-cert | csplit - 28
-mv xx00 service_key.pem
-mv xx01 certificate.pem</code></pre><h4>TransportCertificatePath</h4><h5>Default: <code>$HOME/.config/orc/certificate.pem</code></h5><p>Path to this node's RPC service's SSL certificate. If this path does 
-not exist, it will be created.</p>
-<h4>OnionServicePrivateKeyPath</h4><h5>Default: <code>$HOME/.config/orc/onion_key</code></h5><p>Path to this node's RSA1024 Tor hidden service private key. If this path does 
-not exist, it will be automatically generated for you. If you'd like to 
-generate one yourself, you can use:</p>
-<pre class="prettyprint source"><code>orctool generate-onion >> onion_key</code></pre><h4>PublicPort</h4><h5>Default: <code>443</code></h5><p>Sets the virtual port number for your node's RPC onion service.</p>
-<h4>ListenPort</h4><h5>Default: <code>4443</code></h5><p>Sets the local port to bind the node's RPC service.</p>
+<h4>ShardReaperInvalidationBlocks</h4><h5>Default: <code>240</code></h5><p>The number of blocks added to chain without payment since a contract was stored
+to determine whether or not the data should be reaped.</p>
+<h4>ShardCapacityUpdateInterval</h4><h5>Default: <code>30M</code></h5><p>The frequency interval we update our flags to reflect our available capacity.</p>
+<h4>NodeOnionServiceDataDirectory</h4><h5>Default: <code>$HOME/.config/orcd/node_hs</code></h5><p>The path to the directory to instruct Tor to use for storing hidden service 
+keys and other information.</p>
+<h4>NodeVirtualPort</h4><h5>Default: <code>80</code></h5><p>Sets the virtual port number for your node's RPC onion service.</p>
+<h4>NodeListenPort</h4><h5>Default: <code>9088</code></h5><p>Sets the local port to bind the node's RPC service.</p>
 <h4>BandwidthAccountingEnabled</h4><h5>Default: <code>0</code></h5><p>Enables bandwidth metering and hibernation mode. When the property 
 BandwidthAccountingEnabled is <code>1</code>, we will enter low-bandwidth mode if the we
 exceed <code>BandwidthAccountingMax</code> within the period defined by 
@@ -170,54 +143,30 @@ transfer. Low-bandwidth RPC messages will still be allowed.</p>
 <h4>LogFilePath</h4><h5>Default: <code>$HEAD/.config/orcd.log</code></h5><p>Path to write the daemon's log file. Log file will rotate either every 24 hours 
 or when it exceeds 10MB, whichever happens first.</p>
 <h4>LogFileMaxBackCopies</h4><h5>Default: <code>3</code></h5><p>Maximum number of rotated log files to keep.</p>
-<h4>ControlPort</h4><h5>Default: <code>4444</code></h5><p>Sets the port to bind the control interface. Used for controlling the 
-node from other applications. Be sure that <code>ControlHostname</code> is kept set to 
-a loopback address, unless you have taken other measures to prevent others 
-from controlling your node.</p>
-<blockquote>
-<p><strong>Protip!</strong> You can change this to an absolute path to a UNIX domain socket 
-too (in which case <code>ControlHostname</code> is ignored).</p>
-</blockquote>
-<h4>ControlHostname</h4><h5>Default: <code>127.0.0.1</code></h5><p>The hostname or IP address to which the control socket should be bound.</p>
 <h4>NetworkBootstrapNodes[]</h4><h5>Default: <code>https://orcjfg52ty6ljv54.onion:443</code></h5><h5>Default: <code>https://orcjd7xgshpovm6i.onion:443</code></h5><h5>Default: <code>https://orce4nqoa6muz3gt.onion:443</code></h5><h5>Default: <code>https://orcwfkilxjxo63mr.onion:443</code></h5><p>Add a map of network bootstrap nodes to this section to use for discovering 
 other peers. Default configuration should come with a list of known and 
 trusted contacts.</p>
-<h4>ServiceAvailabilityCheckInterval</h4><h5>Default: <code>10M</code></h5><p>Perform a self test for service availability every so often. If the check 
-fails, re-establish service and switch to new Tor circuits</p>
-<h4>BridgeEnabled</h4><h5>Default: <code>1</code></h5><p>Enables the local bridge service, allowing other applications to manage, store, 
-retrieve, and share objects on the ORC network. This is the primary programming 
-interface exposed by ORC. See <a href="tutorial-transfers.html">Using the Local Bridge</a> for more information.</p>
 <h4>BridgeHostname</h4><h5>Default: <code>127.0.0.1</code></h5><p>Sets the hostname or IP address to which the bridge service should be bound. It 
 is important to set this value to a loopback address if authentication is 
 disabled to prevent others from accessing your objects.</p>
-<h4>BridgePort</h4><h5>Default: <code>4445</code></h5><p>Set the TCP port to which the bridge service's HTTP API should be bound.</p>
-<h4>BridgeUseSSL</h4><h5>Default: <code>1</code></h5><p>Enables the use of SSL to secure the bridge service's HTTP API.</p>
-<h4>BridgeServiceKeyPath</h4><h5>Default: <code>$HOME/.config/orc/service_key.pem</code></h5><p>Path to this bridge service's SSL private key. If this path does not exist, it 
-will be created. </p>
-<h4>BridgeCertificatePath</h4><h5>Default: <code>$HOME/.config/orc/certificate.pem</code></h5><p>Path to this bridge service's SSL certificate. If this path does not exist, it 
-will be created. </p>
-<h4>BridgeAuthorityChains[]</h4><h5>Default: <code> </code></h5><p>Paths to PEM formatted SSL certificate authorities.</p>
+<h4>BridgePort</h4><h5>Default: <code>9089</code></h5><p>Set the TCP port to which the bridge service's HTTP API should be bound.</p>
 <h4>BridgeAuthenticationEnabled</h4><h5>Default: <code>1</code></h5><p>Force requests to the bridge service API to supply credentials using HTTP Basic 
 Authentication.</p>
 <h4>BridgeAuthenticationUser</h4><h5>Default: <code>orc</code></h5><p>User name to require using HTTP Basic Authentication.</p>
 <h4>BridgeAuthenticationPassword</h4><h5>Default: <code>&lt;random&gt;</code></h5><p>Password to require using HTTP Basic Authentication.</p>
-<h4>BridgeTempStagingBaseDir</h4><h5>Default: <code>$TMP</code></h5><p>Sets the path on the filesystem to a directory for storing temporary data 
+<h4>BridgeTempStagingBaseDir</h4><h5>Default: <code>$HOME/.config/orcd/tmp</code></h5><p>Sets the path on the filesystem to a directory for storing temporary data 
 for queued uploads.</p>
-<h4>BridgeOnionServiceEnabled</h4><h5>Default: <code>0</code></h5><p>Establish a Tor Hidden Service for the bridge service's HTTP API. Make sure 
-that authentication is enabled if using this option. Set to <code>1</code> to enable.</p>
-<h4>BridgeOnionServicePrivateKeyPath</h4><h5>Default: <code>$HOME/.config/orc/bridge_key</code></h5><p>Path to this bridge's RSA1024 Tor hidden service private key. If this path does 
-not exist, it will be automatically generated for you. If you'd like to 
-generate one yourself, you can use:</p>
-<pre class="prettyprint source"><code>orctool generate-onion >> bridge_key</code></pre><h4>PeerCapacityPoolTimeout</h4><h5>Default: <code>24HR</code></h5><p>If we haven't received a relayed capacity announcement from a peer within 
+<h4>ProviderCapacityPoolTimeout</h4><h5>Default: <code>24HR</code></h5><p>If we haven't received a relayed capacity announcement from a peer within 
 this defined timeframe, remove them from the provider pool until we receive 
 an announcement again. Prevents attempting to use providers that are unlikely 
 to be available.</p>
-<h4>PeerFailureBlacklistTimeout</h4><h5>Default: <code>6HR</code></h5><p>If we have tried to store a shard with a peer and a failure occurred on the 
+<h4>ProviderFailureBlacklistTimeout</h4><h5>Default: <code>6HR</code></h5><p>If we have tried to store a shard with a peer and a failure occurred on the 
 provider's end, temporarily remove them from the provider pool for this defined 
 amount of time.</p>
 <h4>TorPassthroughLoggingEnabled</h4><h5>Default: <code>0</code></h5><p>Redirects the Tor process log output through ORC's logger for the purpose of 
 debugging.</p>
 <h4>TorLoggingVerbosity</h4><h5>Default: <code>notice</code></h5><p>Defines the verbosity level of the Tor process logging. Valid options are: <code>debug</code>, <code>info</code>, <code>notice</code>.</p>
+<h4>ProviderBondDepositAmount</h4><h5>Default: <code>0</code></h5><p>Minimum tokens bonded in order to establish baseline trust with a storage provider.</p>
 </article>
 
 </section>

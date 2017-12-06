@@ -34,14 +34,14 @@
 			<li class="dropdown">
 				<a href="modules.list.html" class="dropdown-toggle" data-toggle="dropdown">Modules<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="module-orc.html">orc</a></li><li><a href="module-orc_constants.html">orc/constants</a></li><li><a href="module-orc_utils.html">orc/utils</a></li><li><a href="module-orc_version.html">orc/version</a></li>
+					<li><a href="module-orc_constants.html">orc/constants</a></li><li><a href="module-orc_logger.html">orc/logger</a></li><li><a href="module-orc_utils.html">orc/utils</a></li><li><a href="module-orc_version.html">orc/version</a></li>
 				</ul>
 			</li>
 			
 			<li class="dropdown">
 				<a href="classes.list.html" class="dropdown-toggle" data-toggle="dropdown">Classes<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="Audit.html">Audit</a></li><li><a href="Bridge.html">Bridge</a></li><li><a href="Database.html">Database</a></li><li><a href="Database.AuditReport.html">Database.AuditReport</a></li><li><a href="Database.NetworkBlob.html">Database.NetworkBlob</a></li><li><a href="Database.ObjectPointer.html">Database.ObjectPointer</a></li><li><a href="Database.PeerProfile.html">Database.PeerProfile</a></li><li><a href="Database.ShardContract.html">Database.ShardContract</a></li><li><a href="Directory.html">Directory</a></li><li><a href="KadStorageAdapter.html">KadStorageAdapter</a></li><li><a href="Node.html">Node</a></li><li><a href="Proof.html">Proof</a></li><li><a href="Rules.html">Rules</a></li><li><a href="Server.html">Server</a></li><li><a href="Shards.html">Shards</a></li><li><a href="Transport.html">Transport</a></li>
+					<li><a href="Audit.html">Audit</a></li><li><a href="Bridge.html">Bridge</a></li><li><a href="Database.html">Database</a></li><li><a href="Database.AuditReport.html">Database.AuditReport</a></li><li><a href="Database.NetworkBlob.html">Database.NetworkBlob</a></li><li><a href="Database.ObjectPointer.html">Database.ObjectPointer</a></li><li><a href="Database.PeerProfile.html">Database.PeerProfile</a></li><li><a href="Database.ShardContract.html">Database.ShardContract</a></li><li><a href="KadStorageAdapter.html">KadStorageAdapter</a></li><li><a href="Node.html">Node</a></li><li><a href="Proof.html">Proof</a></li><li><a href="Rules.html">Rules</a></li><li><a href="Server.html">Server</a></li><li><a href="Shards.html">Shards</a></li><li><a href="Transport.html">Transport</a></li>
 				</ul>
 			</li>
 			
@@ -55,7 +55,7 @@
 			<li class="dropdown">
 				<a href="tutorials.list.html" class="dropdown-toggle" data-toggle="dropdown">Tutorials<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="tutorial-config.html">Configuration Guide</a></li><li><a href="tutorial-control.html">Using the Control Port</a></li><li><a href="tutorial-directory_.html">Using the Local Directory</a></li><li><a href="tutorial-install.html">Manual Installation</a></li><li><a href="tutorial-transfers.html">Using the Local Bridge</a></li><li><a href="tutorial-usage.html">Using the Node.js Library</a></li>
+					<li><a href="tutorial-api.html">Using the REST API</a></li><li><a href="tutorial-config.html">Configuration Guide</a></li><li><a href="tutorial-install.html">Manual Installation</a></li>
 				</ul>
 			</li>
 			
@@ -109,15 +109,11 @@ install Node.js (which comes with NPM):</p>
 <h4>Mac OSX</h4><pre class="prettyprint source"><code>xcode-select --install</code></pre><h4>Windows</h4><p>Run as administrator in PowerShell or cmd:</p>
 <pre class="prettyprint source"><code>npm install -g windows-build-tools</code></pre><h3>Daemon + Utilities CLI</h3><p>This package exposes 3 programs: <code>orc</code>, <code>orcd</code>,  and <code>orctool</code>. To install 
 these, use the <code>--global</code> flag.</p>
-<pre class="prettyprint source"><code>npm install -g @orcproject/orc</code></pre><h3>Core Library</h3><p>This package exposes a module providing a complete implementation of the 
+<pre class="prettyprint source"><code>GRANAX_USE_TOR_ALPHA=1 npm install -g @orcproject/orc</code></pre><h3>Core Library</h3><p>This package exposes a module providing a complete implementation of the 
 protocol. To use it in your project, from your project's root directory, 
 install as a dependency.</p>
-<pre class="prettyprint source"><code>npm install @orcproject/orc --save</code></pre><p>Then you can require the library with:</p>
-<pre class="prettyprint source"><code>const orc = require('@orcproject/orc/lib');</code></pre><h3>Building Packages</h3><p>To build a distributable package for your platform, clone the repository and 
-follow the steps above for your platform, then run:</p>
-<pre class="prettyprint source"><code>npm run make # linux/osx
-npm run make-win # windows</code></pre><p>On Mac OS, you'll want to remove this package before building:</p>
-<pre class="prettyprint source"><code>npm remove dtrace-provider</code></pre>
+<pre class="prettyprint source"><code>GRANAX_USE_TOR_ALPHA=1 npm install @orcproject/orc --save</code></pre><p>Then you can require the library with:</p>
+<pre class="prettyprint source"><code>const orc = require('@orcproject/orc');</code></pre>
 </article>
 
 </section>

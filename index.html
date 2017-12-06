@@ -34,14 +34,14 @@
 			<li class="dropdown">
 				<a href="modules.list.html" class="dropdown-toggle" data-toggle="dropdown">Modules<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="module-orc.html">orc</a></li><li><a href="module-orc_constants.html">orc/constants</a></li><li><a href="module-orc_utils.html">orc/utils</a></li><li><a href="module-orc_version.html">orc/version</a></li>
+					<li><a href="module-orc_constants.html">orc/constants</a></li><li><a href="module-orc_logger.html">orc/logger</a></li><li><a href="module-orc_utils.html">orc/utils</a></li><li><a href="module-orc_version.html">orc/version</a></li>
 				</ul>
 			</li>
 			
 			<li class="dropdown">
 				<a href="classes.list.html" class="dropdown-toggle" data-toggle="dropdown">Classes<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="Audit.html">Audit</a></li><li><a href="Bridge.html">Bridge</a></li><li><a href="Database.html">Database</a></li><li><a href="Database.AuditReport.html">Database.AuditReport</a></li><li><a href="Database.NetworkBlob.html">Database.NetworkBlob</a></li><li><a href="Database.ObjectPointer.html">Database.ObjectPointer</a></li><li><a href="Database.PeerProfile.html">Database.PeerProfile</a></li><li><a href="Database.ShardContract.html">Database.ShardContract</a></li><li><a href="Directory.html">Directory</a></li><li><a href="KadStorageAdapter.html">KadStorageAdapter</a></li><li><a href="Node.html">Node</a></li><li><a href="Proof.html">Proof</a></li><li><a href="Rules.html">Rules</a></li><li><a href="Server.html">Server</a></li><li><a href="Shards.html">Shards</a></li><li><a href="Transport.html">Transport</a></li>
+					<li><a href="Audit.html">Audit</a></li><li><a href="Bridge.html">Bridge</a></li><li><a href="Database.html">Database</a></li><li><a href="Database.AuditReport.html">Database.AuditReport</a></li><li><a href="Database.NetworkBlob.html">Database.NetworkBlob</a></li><li><a href="Database.ObjectPointer.html">Database.ObjectPointer</a></li><li><a href="Database.PeerProfile.html">Database.PeerProfile</a></li><li><a href="Database.ShardContract.html">Database.ShardContract</a></li><li><a href="KadStorageAdapter.html">KadStorageAdapter</a></li><li><a href="Node.html">Node</a></li><li><a href="Proof.html">Proof</a></li><li><a href="Rules.html">Rules</a></li><li><a href="Server.html">Server</a></li><li><a href="Shards.html">Shards</a></li><li><a href="Transport.html">Transport</a></li>
 				</ul>
 			</li>
 			
@@ -55,7 +55,7 @@
 			<li class="dropdown">
 				<a href="tutorials.list.html" class="dropdown-toggle" data-toggle="dropdown">Tutorials<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="tutorial-config.html">Configuration Guide</a></li><li><a href="tutorial-control.html">Using the Control Port</a></li><li><a href="tutorial-directory_.html">Using the Local Directory</a></li><li><a href="tutorial-install.html">Manual Installation</a></li><li><a href="tutorial-transfers.html">Using the Local Bridge</a></li><li><a href="tutorial-usage.html">Using the Node.js Library</a></li>
+					<li><a href="tutorial-api.html">Using the REST API</a></li><li><a href="tutorial-config.html">Configuration Guide</a></li><li><a href="tutorial-install.html">Manual Installation</a></li>
 				</ul>
 			</li>
 			
@@ -114,32 +114,26 @@ the discussion in <code>#orc</code> on our <a href="https://matrix.counterpointh
 <a href="https://www.npmjs.com/package/@orcproject/orc"><img src="https://img.shields.io/npm/v/@orcproject/orc.svg?style=flat-square" alt="Node Package"></a> | 
 <a href="https://hub.docker.com/r/orcproject/orc"><img src="https://img.shields.io/docker/pulls/orcproject/orc.svg?style=flat-square" alt="Docker Hub"></a> | 
 <a href="https://raw.githubusercontent.com/orcproject/orc/master/LICENSE"><img src="https://img.shields.io/badge/license-AGPL3.0-blue.svg?style=flat-square" alt="License (AGPL-3.0)"></a></p>
-<h3>Desktop Installation (Recommended)</h3><p>Simply <a href="https://github.com/orcproject/orc/releases/latest">download a pre-built package</a> 
-for your platform from the releases page!</p>
 <blockquote>
-<p>Note! ORC uses the system Tor package on GNU/Linux, so you must install it 
-yourself using your distribution's package manager.</p>
+<p><strong>Warning!</strong> ORC is <em>alpha</em> software and is still a highly experimental 
+<em>test</em> network! Be smart, keep backups, and stay safe out there! </p>
 </blockquote>
-<h3>Server Installation (Advanced)</h3><p>Pull the <a href="https://hub.docker.com/r/orcproject/orc/">image from Docker Hub</a>.</p>
+<h3>Installation</h3><p>Pull the <a href="https://hub.docker.com/r/orcproject/orc/">image from Docker Hub</a>.</p>
 <pre class="prettyprint source"><code>docker pull orcproject/orc</code></pre><p>Create a data directory on the host.</p>
-<pre class="prettyprint source"><code>mkdir ~/.config/orc</code></pre><p>Run the ORC container and mount the data directory.</p>
-<pre class="prettyprint source"><code>docker run -v ~/.config/orc:/root/.config/orc -t orcproject/orc:latest</code></pre><p>Modify the created configuration at <code>~/.config/orc/config</code> as desired (see 
-the <a href="tutorial-config.html">Configuration Guide</a>) and restart the container for the changes to take 
-effect. Be sure to expose <code>BridgePort</code> and map it to the host if you want to 
-use the API.</p>
+<pre class="prettyprint source"><code>mkdir ~/.config/orcd</code></pre><p>Run the ORC container, publish API port, and mount directory for persistence.</p>
 <pre class="prettyprint source"><code>docker run \
-  --publish 127.0.0.1:4445:4445 \
-  --volume ~/.config/orc:/root/.config/orc \
-  --tty orcproject/orc:latest</code></pre><p>See the <a href="https://docs.docker.com/engine/reference/commandline/run/"><code>docker run</code> documentation</a> 
+  --publish 127.0.0.1:9089:9089 \
+  --volume ~/.config/orcd:/root/.config/orcd \
+  --tty orcproject/orc</code></pre><p>Modify the created configuration at <code>~/.config/orcd/config</code> as desired (see 
+the <a href="tutorial-config.html">Configuration Guide</a>) and restart the container for the changes to take 
+effect. If you want to provide storage capacity to the network, be sure to 
+set your desired allocation for <code>ShardStorageMaxAllocation</code>.</p>
+<p>Once the container has started, you can use use the guide for <a href="tutorial-api.html">Using the REST API</a> 
+to interact with it! </p>
+<p>See the <a href="https://docs.docker.com/engine/reference/commandline/run/"><code>docker run</code> documentation</a> 
 for more information. If you prefer to install ORC manually, see the guide for 
-<a href="tutorial-install.html">Manual Installation</a>. Once installed, simply run <code>orc</code> with an optional 
+<a href="tutorial-install.html">Manual Installation</a>. Once installed, simply run <code>orcd</code> with an optional 
 configuration file using the <code>--config &lt;path/to/config&gt;</code> option.</p>
-<p>Once the container has started, you can navigate in your browser to 
-<code>http://127.0.0.1:4445</code> to access your node's dashboard! </p>
-<blockquote>
-<p>If you did not disable <code>BridgeAuthenticationEnabled</code>, you will be asked to supply the 
-credentials in your configuration file.</p>
-</blockquote>
 <h4>Automatic Security Updates</h4><p>When running the ORC server installation with Docker, you can configure your 
 node to periodically check for updates and automatically download the latest 
 image and restart your node to make sure you are always running the latest 
@@ -152,20 +146,18 @@ and automatically update them.</p>
 <a href="https://docs.docker.com/compose/">Docker Compose</a>:</p>
 <pre class="prettyprint source"><code>git clone https://github.com/orcproject/orc
 cd orc
-docker-compose up</code></pre><p>This will volume mount the the appropriate directories for development, and 
-then boots up the ORC container. Note that stable releases are tagged and 
-the <code>master</code> branch may contain unstable or bleeding-edge code.</p>
-<blockquote>
-<p>Alternatively, you can run directly on your host. Use <code>npm install</code> and 
-<code>npm link</code> to install dependencies. Start the daemon with <code>orcd</code> or the 
-desktop application with <code>orc</code>.</p>
-</blockquote>
+docker-compose up --force-recreate --build</code></pre><p>This will volume mount the the appropriate directories for development, and 
+then boots up a complete sandboxed ORC network, including a complete sandboxed 
+Tor network and once bootstrapped, binds port <code>9089</code> to the host for full 
+end-to-end testing. The development container does not persist state between 
+runs. Note that stable releases are tagged and the <code>master</code> branch may contain 
+unstable or bleeding-edge code.</p>
 <p>Happy hacking!</p>
 <h3>Resources</h3><ul>
 <li><a href="https://orcproject.github.io/orc/">Documentation</a></li>
 <li><a href="https://raw.githubusercontent.com/orcproject/protocol/master/protocol.pdf">Specification</a></li>
 </ul>
-<h3>License</h3><p>ORC - Distributed Anonymous Cloud<br>Copyright (C) 2017  Counterpoint Hackerspace, Ltd.  </p>
+<h3>License</h3><p>ORC - Distributed Anonymous Cloud<br>Copyright (C) 2017  Counterpoint Hackerspace, Ltd.<br>Copyright (C) 2017  Gordon Hall  </p>
 <p>This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published
 by the Free Software Foundation, either version 3 of the License, or

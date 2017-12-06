@@ -34,14 +34,14 @@
 			<li class="dropdown">
 				<a href="modules.list.html" class="dropdown-toggle" data-toggle="dropdown">Modules<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="module-orc.html">orc</a></li><li><a href="module-orc_constants.html">orc/constants</a></li><li><a href="module-orc_utils.html">orc/utils</a></li><li><a href="module-orc_version.html">orc/version</a></li>
+					<li><a href="module-orc_constants.html">orc/constants</a></li><li><a href="module-orc_logger.html">orc/logger</a></li><li><a href="module-orc_utils.html">orc/utils</a></li><li><a href="module-orc_version.html">orc/version</a></li>
 				</ul>
 			</li>
 			
 			<li class="dropdown">
 				<a href="classes.list.html" class="dropdown-toggle" data-toggle="dropdown">Classes<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="Audit.html">Audit</a></li><li><a href="Bridge.html">Bridge</a></li><li><a href="Database.html">Database</a></li><li><a href="Database.AuditReport.html">Database.AuditReport</a></li><li><a href="Database.NetworkBlob.html">Database.NetworkBlob</a></li><li><a href="Database.ObjectPointer.html">Database.ObjectPointer</a></li><li><a href="Database.PeerProfile.html">Database.PeerProfile</a></li><li><a href="Database.ShardContract.html">Database.ShardContract</a></li><li><a href="Directory.html">Directory</a></li><li><a href="KadStorageAdapter.html">KadStorageAdapter</a></li><li><a href="Node.html">Node</a></li><li><a href="Proof.html">Proof</a></li><li><a href="Rules.html">Rules</a></li><li><a href="Server.html">Server</a></li><li><a href="Shards.html">Shards</a></li><li><a href="Transport.html">Transport</a></li>
+					<li><a href="Audit.html">Audit</a></li><li><a href="Bridge.html">Bridge</a></li><li><a href="Database.html">Database</a></li><li><a href="Database.AuditReport.html">Database.AuditReport</a></li><li><a href="Database.NetworkBlob.html">Database.NetworkBlob</a></li><li><a href="Database.ObjectPointer.html">Database.ObjectPointer</a></li><li><a href="Database.PeerProfile.html">Database.PeerProfile</a></li><li><a href="Database.ShardContract.html">Database.ShardContract</a></li><li><a href="KadStorageAdapter.html">KadStorageAdapter</a></li><li><a href="Node.html">Node</a></li><li><a href="Proof.html">Proof</a></li><li><a href="Rules.html">Rules</a></li><li><a href="Server.html">Server</a></li><li><a href="Shards.html">Shards</a></li><li><a href="Transport.html">Transport</a></li>
 				</ul>
 			</li>
 			
@@ -55,7 +55,7 @@
 			<li class="dropdown">
 				<a href="tutorials.list.html" class="dropdown-toggle" data-toggle="dropdown">Tutorials<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="tutorial-config.html">Configuration Guide</a></li><li><a href="tutorial-control.html">Using the Control Port</a></li><li><a href="tutorial-directory_.html">Using the Local Directory</a></li><li><a href="tutorial-install.html">Manual Installation</a></li><li><a href="tutorial-transfers.html">Using the Local Bridge</a></li><li><a href="tutorial-usage.html">Using the Node.js Library</a></li>
+					<li><a href="tutorial-api.html">Using the REST API</a></li><li><a href="tutorial-config.html">Configuration Guide</a></li><li><a href="tutorial-install.html">Manual Installation</a></li>
 				</ul>
 			</li>
 			
@@ -96,7 +96,7 @@
 
 'use strict';
 
-const https = require('https');
+const http = require('http');
 const stream = require('stream');
 const assert = require('assert');
 const secp256k1 = require('secp256k1');
@@ -157,9 +157,9 @@ module.exports.getNextPowerOfTwo = function(num) {
  * @returns {string}
  */
 module.exports.getContactURL = function(contact) {
-  const [identity, info] = contact;
+  const [, info] = contact;
 
-  return `${info.protocol}//${info.hostname}:${info.port}/${identity}`;
+  return `${info.protocol}//${info.hostname}:${info.port}`;
 };
 
 /**
@@ -259,9 +259,8 @@ module.exports.createShardUploader = function(farmer, hash, token, agent) {
   const [, contact] = farmer;
 
   function _createUploadStream() {
-    return https.request({
+    return http.request({
       method: 'POST',
-      rejectUnauthorized: false,
       protocol: contact.protocol,
       hostname: contact.hostname,
       port: contact.port,
@@ -309,8 +308,7 @@ module.exports.createShardDownloader = function(farmer, hash, token, agent) {
   const [, contact] = farmer;
 
   function _createDownloadStream() {
-    return https.get({
-      rejectUnauthorized: false,
+    return http.get({
       protocol: contact.protocol,
       hostname: contact.hostname,
       port: contact.port,
@@ -376,8 +374,8 @@ module.exports.createDecipher = function(publicKey, privateKey) {
 module.exports.getErasureParameters = function(n) {
   let size = 8 * (1024 * 1024);
   let params = {
-    shards: 2,
-    parity: 1,
+    shards: 4,
+    parity: 2,
     get length() {
       return n + params.padding;
     },
@@ -420,6 +418,37 @@ module.exports.bufferAsReadableStream = function(buffer) {
       }
     }
   });
+};
+
+/**
+ * Returns a dictionary of capacity information from contact flags
+ * @param {array} flags
+ * @returns {object}
+ */
+module.exports.getCapacityFromFlags = function(flags = []) {
+  let capacity = {
+    allocated: 0,
+    available: 0
+  };
+
+  try {
+    for (let [flag, value] of flags) {
+      switch (flag) {
+        case 'ALLOCATED':
+          capacity.allocated = value;
+          break;
+        case 'AVAILABLE':
+          capacity.available = value;
+          break;
+        default:
+          continue;
+      }
+    }
+  } catch (err) {
+    return capacity;
+  }
+
+  return capacity;
 };
 </pre>
     </article>

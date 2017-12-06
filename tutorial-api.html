@@ -4,7 +4,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width">
-	<title>ORC Tutorial: Using the Local Bridge</title>
+	<title>ORC Tutorial: Using the REST API</title>
 
 	<!--[if lt IE 9]>
 	<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
@@ -34,14 +34,14 @@
 			<li class="dropdown">
 				<a href="modules.list.html" class="dropdown-toggle" data-toggle="dropdown">Modules<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="module-orc.html">orc</a></li><li><a href="module-orc_constants.html">orc/constants</a></li><li><a href="module-orc_utils.html">orc/utils</a></li><li><a href="module-orc_version.html">orc/version</a></li>
+					<li><a href="module-orc_constants.html">orc/constants</a></li><li><a href="module-orc_logger.html">orc/logger</a></li><li><a href="module-orc_utils.html">orc/utils</a></li><li><a href="module-orc_version.html">orc/version</a></li>
 				</ul>
 			</li>
 			
 			<li class="dropdown">
 				<a href="classes.list.html" class="dropdown-toggle" data-toggle="dropdown">Classes<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="Audit.html">Audit</a></li><li><a href="Bridge.html">Bridge</a></li><li><a href="Database.html">Database</a></li><li><a href="Database.AuditReport.html">Database.AuditReport</a></li><li><a href="Database.NetworkBlob.html">Database.NetworkBlob</a></li><li><a href="Database.ObjectPointer.html">Database.ObjectPointer</a></li><li><a href="Database.PeerProfile.html">Database.PeerProfile</a></li><li><a href="Database.ShardContract.html">Database.ShardContract</a></li><li><a href="Directory.html">Directory</a></li><li><a href="KadStorageAdapter.html">KadStorageAdapter</a></li><li><a href="Node.html">Node</a></li><li><a href="Proof.html">Proof</a></li><li><a href="Rules.html">Rules</a></li><li><a href="Server.html">Server</a></li><li><a href="Shards.html">Shards</a></li><li><a href="Transport.html">Transport</a></li>
+					<li><a href="Audit.html">Audit</a></li><li><a href="Bridge.html">Bridge</a></li><li><a href="Database.html">Database</a></li><li><a href="Database.AuditReport.html">Database.AuditReport</a></li><li><a href="Database.NetworkBlob.html">Database.NetworkBlob</a></li><li><a href="Database.ObjectPointer.html">Database.ObjectPointer</a></li><li><a href="Database.PeerProfile.html">Database.PeerProfile</a></li><li><a href="Database.ShardContract.html">Database.ShardContract</a></li><li><a href="KadStorageAdapter.html">KadStorageAdapter</a></li><li><a href="Node.html">Node</a></li><li><a href="Proof.html">Proof</a></li><li><a href="Rules.html">Rules</a></li><li><a href="Server.html">Server</a></li><li><a href="Shards.html">Shards</a></li><li><a href="Transport.html">Transport</a></li>
 				</ul>
 			</li>
 			
@@ -55,7 +55,7 @@
 			<li class="dropdown">
 				<a href="tutorials.list.html" class="dropdown-toggle" data-toggle="dropdown">Tutorials<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="tutorial-config.html">Configuration Guide</a></li><li><a href="tutorial-control.html">Using the Control Port</a></li><li><a href="tutorial-directory_.html">Using the Local Directory</a></li><li><a href="tutorial-install.html">Manual Installation</a></li><li><a href="tutorial-transfers.html">Using the Local Bridge</a></li><li><a href="tutorial-usage.html">Using the Node.js Library</a></li>
+					<li><a href="tutorial-api.html">Using the REST API</a></li><li><a href="tutorial-config.html">Configuration Guide</a></li><li><a href="tutorial-install.html">Manual Installation</a></li>
 				</ul>
 			</li>
 			
@@ -88,13 +88,13 @@
 <header>
     
 
-    <h2>Using the Local Bridge</h2>
+    <h2>Using the REST API</h2>
 </header>
 
 <article>
     <p>This guide will show you how to configure your node to expose a simple REST 
 API that applications can use to upload, download, delete, and list objects 
-you have stored in the network.</p>
+you have stored in the network as well as get status information.</p>
 <blockquote>
 <p>Make sure you've read over the <a href="tutorial-config.html">Configuration Guide</a> and understand the 
 the security implications for various settings related the the local bridge.</p>
@@ -104,7 +104,6 @@ following configuration scheme and will use <code>curl</code> for the examples:<
 <pre class="prettyprint source"><code>BridgeEnabled = 1
 BridgeHostname = 127.0.0.1
 BridgePort = 4445
-BridgeUseSSL = 0
 BridgeAuthenticationEnabled = 0</code></pre><h3>Status Updates</h3><p>You can get detailed status updates on progress of a transfer using the event 
 controller. Connect to the local bridge using a WebSocket. If you have 
 authentication enabled, be sure to send the appropriate 
@@ -114,6 +113,7 @@ JSON-RPC notification payloads including <code>[reference, message, data]</code>
 the <em>method</em> can be: </p>
 <ul>
 <li><code>CONNECT_INFO</code></li>
+<li><code>LOG_RAW</code></li>
 <li><code>TRANSFER_DOWN_INFO</code></li>
 <li><code>TRANSFER_DOWN_FAIL</code></li>
 <li><code>TRANSFER_DOWN_PASS</code></li>
@@ -124,10 +124,162 @@ the <em>method</em> can be: </p>
 <p>The <code>reference</code> parameter will be either <code>null</code> if <code>CONNECT_INFO</code> or the hash 
 of the object the status message is about if <code>TRANSFER_*</code>. This can be used to 
 get the progress data about a pending upload or download.</p>
-<h3><code>GET /</code></h3><p>Retreive a JSON list of your objects stored in the network and managed by this 
+<h3><code>GET /</code></h3><p>Fetches general status information about the running node.</p>
+<pre class="prettyprint source"><code>$ curl http://127.0.0.1:4445 | jq
+{
+  &quot;identity&quot;: &quot;96fecf94aadc37b73955d991a4d4b27586a1090e&quot;,
+  &quot;contact&quot;: {
+    &quot;hostname&quot;: &quot;wwv6224ikwi72alxt5dt6o3flawgcqk6aywerqk6dlcl4nsrdguihvyd.onion&quot;,
+    &quot;protocol&quot;: &quot;http:&quot;,
+    &quot;port&quot;: &quot;80&quot;,
+    &quot;xpub&quot;: &quot;xpub6AfC24JPejm52SjzZBc873mFkpugSTaaDd7sRw294h9ZSkoFeWwLg9WoqYdrVsPDHhrrc9doE257ZVSDEeguJU1jS97h1agZAsot3bLMqeV&quot;,
+    &quot;index&quot;: 0,
+    &quot;agent&quot;: &quot;4.0.0&quot;,
+    &quot;flags&quot;: [
+      [
+        &quot;ALLOCATED&quot;,
+        0
+      ],
+      [
+        &quot;AVAILABLE&quot;,
+        0
+      ]
+    ]
+  },
+  &quot;peers&quot;: [
+    [
+      &quot;02e1829bc163f87f7e0493fbdf716445d4be9501&quot;,
+      {
+        &quot;hostname&quot;: &quot;l466qntstik7falkkzxttgrtlu4u7g6yaxmyvjs2qamlzymsdsiqxdqd.onion&quot;,
+        &quot;protocol&quot;: &quot;http:&quot;,
+        &quot;port&quot;: &quot;80&quot;,
+        &quot;xpub&quot;: &quot;xpub6BQnZfspXVdRB8y9DrWV1oS9XxAMKsyZCazYxfaxhNbVaM9vtbtEmQTeCBkhizHX8gutN3bvJBzoucZ2SsANaeikXJdiLQNJj7W7Wf1uhje&quot;,
+        &quot;index&quot;: 0,
+        &quot;agent&quot;: &quot;4.0.0&quot;,
+        &quot;flags&quot;: [
+          [
+            &quot;ALLOCATED&quot;,
+            1073741824
+          ],
+          [
+            &quot;AVAILABLE&quot;,
+            1073737728
+          ]
+        ]
+      }
+    ],
+    [
+      &quot;75052f451c7250a7b82cb31009bdcf776daed45d&quot;,
+      {
+        &quot;hostname&quot;: &quot;dah2cohegwnmbipbdd5rkbdc2m5tfabvtuukqjvlcvoul2bxwtb6ggid.onion&quot;,
+        &quot;protocol&quot;: &quot;http:&quot;,
+        &quot;port&quot;: &quot;80&quot;,
+        &quot;xpub&quot;: &quot;xpub6BUktL3tg7yjsJE6hNiXXEARN7TkCp6Zq6D6K9Y7uMBQFc2zBjFgsZtDynG3557K4w2weUbNgHue52x1tUYXMkzh4NRhmxnqdvCrkexH9UE&quot;,
+        &quot;index&quot;: 0,
+        &quot;agent&quot;: &quot;4.0.0&quot;,
+        &quot;flags&quot;: [
+          [
+            &quot;ALLOCATED&quot;,
+            1073741824
+          ],
+          [
+            &quot;AVAILABLE&quot;,
+            1073737728
+          ]
+        ]
+      }
+    ],
+    [
+      &quot;6605c168587c5ca7a85203e1609054b1e981dba1&quot;,
+      {
+        &quot;hostname&quot;: &quot;zibvvc4jh3j2czhpwklpa3dphvltad4vsb3cziym7z2smep5sc2bfdad.onion&quot;,
+        &quot;protocol&quot;: &quot;http:&quot;,
+        &quot;port&quot;: &quot;80&quot;,
+        &quot;xpub&quot;: &quot;xpub6AjnKeVDsSPM9v4KMyRLrsyWqH2L2sJywBP3BM21EBdTMEd2nccW6bxTrpiaoBko5yYHEhAReTCL6pUk1jheAfeHuHy58sJ9L7C1kyUW5cd&quot;,
+        &quot;index&quot;: 0,
+        &quot;agent&quot;: &quot;4.0.0&quot;,
+        &quot;flags&quot;: [
+          [
+            &quot;ALLOCATED&quot;,
+            1073741824
+          ],
+          [
+            &quot;AVAILABLE&quot;,
+            1073737728
+          ]
+        ]
+      }
+    ]
+  ],
+  &quot;providing&quot;: {
+    &quot;allocated&quot;: 0,
+    &quot;available&quot;: 0
+  },
+  &quot;versions&quot;: {
+    &quot;protocol&quot;: &quot;4.0.0&quot;,
+    &quot;software&quot;: &quot;10.0.0&quot;
+  }
+}</code></pre><h3><code>GET /providers</code></h3><p>Fetches a JSON array of all identities and their associated profiles for which 
+the node has interacted with in the past 24 hours.</p>
+<pre class="prettyprint source"><code>$ curl http://127.0.0.1:4445/providers | jq
+[
+  {
+    &quot;identity&quot;: &quot;87e37cf78128e77cb489deb0f5e9d71adad9fc8d&quot;,
+    &quot;updated&quot;: &quot;2017-12-02T14:47:41.311Z&quot;,
+    &quot;reputation&quot;: {
+      &quot;timestamp&quot;: &quot;2017-12-02T14:48:17.378Z&quot;,
+      &quot;score&quot;: 0
+    },
+    &quot;capacity&quot;: {
+      &quot;available&quot;: 1073737728,
+      &quot;allocated&quot;: 1073741824
+    },
+    &quot;contact&quot;: {
+      &quot;xpub&quot;: &quot;xpub6A5t8evFXdEUrjojnKHJ8Z6ouc9Zuoj9MTW9MpvmzaLKLCF9zAtwQVu8AVDTy32BxeJWYQbw2Nc2TM1GhNzG3aYctfNZoeMNZBcxm19Emny&quot;,
+      &quot;port&quot;: 80,
+      &quot;hostname&quot;: &quot;efoe6we3k7qifabypkwrnms2wjeqm2q5x3bqomfcpp4fliazc6h2hfid.onion&quot;,
+      &quot;agent&quot;: &quot;4.0.0&quot;,
+      &quot;index&quot;: 0,
+      &quot;protocol&quot;: &quot;http:&quot;
+    }
+  }
+]</code></pre><h3><code>GET /providers/{identity}</code></h3><p>Given a known identity key, fetch the specific profile associated.</p>
+<pre class="prettyprint source"><code>$ curl http://127.0.0.1:4445/87e37cf78128e77cb489deb0f5e9d71adad9fc8d | jq
+{
+  &quot;identity&quot;: &quot;87e37cf78128e77cb489deb0f5e9d71adad9fc8d&quot;,
+  &quot;updated&quot;: &quot;2017-12-02T14:47:41.311Z&quot;,
+  &quot;reputation&quot;: {
+    &quot;timestamp&quot;: &quot;2017-12-02T14:48:17.378Z&quot;,
+    &quot;score&quot;: 0
+  },
+  &quot;capacity&quot;: {
+    &quot;available&quot;: 1073737728,
+    &quot;allocated&quot;: 1073741824
+  },
+  &quot;contact&quot;: {
+    &quot;xpub&quot;: &quot;xpub6A5t8evFXdEUrjojnKHJ8Z6ouc9Zuoj9MTW9MpvmzaLKLCF9zAtwQVu8AVDTy32BxeJWYQbw2Nc2TM1GhNzG3aYctfNZoeMNZBcxm19Emny&quot;,
+    &quot;port&quot;: 80,
+    &quot;hostname&quot;: &quot;efoe6we3k7qifabypkwrnms2wjeqm2q5x3bqomfcpp4fliazc6h2hfid.onion&quot;,
+    &quot;agent&quot;: &quot;4.0.0&quot;,
+    &quot;index&quot;: 0,
+    &quot;protocol&quot;: &quot;http:&quot;
+  }
+}</code></pre><h3><code>GET /providers/{identity}/score</code></h3><p>Given a known identity key, rank their reputation score into a percentile and 
+report their estimated utilization allowance.</p>
+<pre class="prettyprint source"><code>$ curl http://127.0.0.1:4445/87e37cf78128e77cb489deb0f5e9d71adad9fc8d/score | jq
+{
+  &quot;identity&quot;: &quot;87e37cf78128e77cb489deb0f5e9d71adad9fc8d&quot;,
+  &quot;percentile&quot;: 0,
+  &quot;allowance&quot;: null,
+  &quot;score&quot;: 0,
+  &quot;capacity&quot;: {
+    &quot;allocated&quot;: 3221225472,
+    &quot;available&quot;: 3221213184
+  }
+}</code></pre><h3><code>GET /objects</code></h3><p>Retreive a JSON list of your objects stored in the network and managed by this 
 node. Each item returned in the list contains metadata regarding the type, 
 size, name, hash, location of shards, and more.</p>
-<pre class="prettyprint source"><code>$ curl http://127.0.0.1:4445 | jq
+<pre class="prettyprint source"><code>$ curl http://127.0.0.1:4445/objects | jq
 [
   {
     &quot;encoding&quot;: &quot;7bit&quot;,
@@ -189,8 +341,8 @@ size, name, hash, location of shards, and more.</p>
     &quot;name&quot;: &quot;avatar.png&quot;,
     &quot;id&quot;: &quot;59d2627ebb28977b0e6ab841&quot;
   }
-]</code></pre><h3><code>GET /{id}/info</code></h3><p>Retrieve the metadata for a specific object by it's unique ID.</p>
-<pre class="prettyprint source"><code>$ curl http://127.0.0.1:4445/59d2627ebb28977b0e6ab841/info | jq
+]</code></pre><h3><code>GET /objects/{id}/info</code></h3><p>Retrieve the metadata for a specific object by it's unique ID.</p>
+<pre class="prettyprint source"><code>$ curl http://127.0.0.1:4445/objects/59d2627ebb28977b0e6ab841/info | jq
 {
   &quot;encoding&quot;: &quot;7bit&quot;,
   &quot;size&quot;: 43472,
@@ -250,29 +402,29 @@ size, name, hash, location of shards, and more.</p>
   &quot;mimetype&quot;: &quot;image/png&quot;,
   &quot;name&quot;: &quot;avatar.png&quot;,
   &quot;id&quot;: &quot;59d2627ebb28977b0e6ab841&quot;
-}</code></pre><h3><code>POST /</code></h3><p>You can upload a file to the network my sending a multipart/form-upload request 
+}</code></pre><h3><code>POST /objects</code></h3><p>You can upload a file to the network my sending a multipart/form-upload request 
 to <code>POST /</code>. This works the same as if using a <code>&lt;input type=&quot;file&quot;/&gt;</code> on a web
 page. You can also add <code>policy</code> fields to specify access policies as defined in 
 <a href="https://github.com/orcproject/imps/blob/master/imp-0010.md">IMP-0010</a>.</p>
-<pre class="prettyprint source"><code>$ curl -F &quot;file=@avatar.png;type=image/png;&quot; -F &quot;policy=::RETRIEVE&quot; http://127.0.0.1:5445 | jq</code></pre><p>Once the object is completely distributed, the metadata will be returned. You 
+<pre class="prettyprint source"><code>$ curl -F &quot;file=@avatar.png;type=image/png;&quot; -F &quot;policy=::RETRIEVE&quot; http://127.0.0.1:4445/objects | jq</code></pre><p>Once the object is completely distributed, the metadata will be returned. You 
 can check on the status of an object while the request is pending by listing 
 the objects using <code>GET /</code>. Statuses may be <em>finished</em>, <em>queued</em>, or <em>failed</em>.</p>
-<h3><code>PUT /{id}</code></h3><p>In the event that an upload fails due to network issues, it will end up in a 
+<h3><code>PUT /objects/{id}</code></h3><p>In the event that an upload fails due to network issues, it will end up in a 
 &quot;queued&quot; state, which allows for it to have a retry triggered by sending this 
 request. The result of this request is identical to uploading an object and 
 is functionally equivalent, except instead of first accepting the file as part 
 of the request, it will use the already encrypted copy stored locally.</p>
-<pre class="prettyprint source"><code>$ curl -X PUT http://127.0.0.1:4445/59d2627ebb28977b0e6ab841 | jq</code></pre><h3><code>GET /{id}</code></h3><p>You can download a file from the network knowing only the object's ID in the 
+<pre class="prettyprint source"><code>$ curl -X PUT http://127.0.0.1:4445/objects/59d2627ebb28977b0e6ab841 | jq</code></pre><h3><code>GET /objects/{id}</code></h3><p>You can download a file from the network knowing only the object's ID in the 
 local bridge service. The appropriate headers for content type are sent to 
 enable browsers and other applications to display the downloaded object.</p>
-<pre class="prettyprint source"><code>$ curl http://127.0.0.1:4445/59d2627ebb28977b0e6ab841 >> avatar.png</code></pre><blockquote>
+<pre class="prettyprint source"><code>$ curl http://127.0.0.1:4445/objects/59d2627ebb28977b0e6ab841 >> avatar.png</code></pre><blockquote>
 <p>Note that decryption is performed by the local bridge service, so it is very 
 important to configure your bridge to use authentication if exposing 
 as an onion service and SSL if exposing over the clearnet.</p>
 </blockquote>
-<h3><code>GET /{id}/magnet</code></h3><p>If you supplied an appropriate access <code>policy</code> field on upload, you can share a 
+<h3><code>GET /objects/{id}/magnet</code></h3><p>If you supplied an appropriate access <code>policy</code> field on upload, you can share a 
 magnet link with others to fetch the object pointer.</p>
-<pre class="prettyprint source"><code>$ curl http://127.0.0.1:4445/59d2627ebb28977b0e6ab841/magnet | jq
+<pre class="prettyprint source"><code>$ curl http://127.0.0.1:4445/objects/59d2627ebb28977b0e6ab841/magnet | jq
 {
   &quot;href&quot;: &quot;magnet:?xt=urn:orc:a3cd254243fc02579384d75cba2588a6c9e850d1&xs=43472&dn=avatar.png&x.ecprv=2daade3b5a4af3641e22cb0317cadf3115bc4b800e0eceaa1a4568c53e60911b&x.pword=17300e194a57251388e98b104411b2004223fe7a&quot;
 }</code></pre><p>This will return a magnet link that contains the hash of the encrypted pointer 
@@ -284,16 +436,16 @@ to encrypt the object. </p>
 allows anyone who is included in the object's access policy to download 
 and decrypt the object itself. </p>
 </blockquote>
-<h3><code>PUT /</code></h3><p>To fetch an object pointer shared by someone else, you can send the magnet link
+<h3><code>PUT /objects</code></h3><p>To fetch an object pointer shared by someone else, you can send the magnet link
 and get back an object pointer with an ID you can use in the download example.</p>
-<pre class="prettyprint source"><code>curl -X PUT --data &quot;magnet:?xt=...&quot; http://127.0.0.1:4445</code></pre><blockquote>
+<pre class="prettyprint source"><code>curl -X PUT --data &quot;magnet:?xt=...&quot; http://127.0.0.1:4445/objects</code></pre><blockquote>
 <p>Protip! Pipe the output of the example above through 
 <code>jq -r .href | xclip -selection clipboard</code> to copy the magnet link directly 
 to your clipboard. ;)</p>
 </blockquote>
-<h3><code>DELETE /{id}</code></h3><p>You can destroy an object, nullifying associated contracts by sending a 
+<h3><code>DELETE /objects/{id}</code></h3><p>You can destroy an object, nullifying associated contracts by sending a 
 <code>DELETE /{id}</code> request.</p>
-<pre class="prettyprint source"><code>$ curl -X &quot;DELETE&quot; http://127.0.0.1:4445/d049bff2-21b5-4f2f-bac3-efb3832a5afb</code></pre>
+<pre class="prettyprint source"><code>$ curl -X &quot;DELETE&quot; http://127.0.0.1:4445/objects/59d2627ebb28977b0e6ab841</code></pre>
 </article>
 
 </section>

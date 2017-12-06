@@ -34,14 +34,14 @@
 			<li class="dropdown">
 				<a href="modules.list.html" class="dropdown-toggle" data-toggle="dropdown">Modules<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="module-orc.html">orc</a></li><li><a href="module-orc_constants.html">orc/constants</a></li><li><a href="module-orc_utils.html">orc/utils</a></li><li><a href="module-orc_version.html">orc/version</a></li>
+					<li><a href="module-orc_constants.html">orc/constants</a></li><li><a href="module-orc_logger.html">orc/logger</a></li><li><a href="module-orc_utils.html">orc/utils</a></li><li><a href="module-orc_version.html">orc/version</a></li>
 				</ul>
 			</li>
 			
 			<li class="dropdown">
 				<a href="classes.list.html" class="dropdown-toggle" data-toggle="dropdown">Classes<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="Audit.html">Audit</a></li><li><a href="Bridge.html">Bridge</a></li><li><a href="Database.html">Database</a></li><li><a href="Database.AuditReport.html">Database.AuditReport</a></li><li><a href="Database.NetworkBlob.html">Database.NetworkBlob</a></li><li><a href="Database.ObjectPointer.html">Database.ObjectPointer</a></li><li><a href="Database.PeerProfile.html">Database.PeerProfile</a></li><li><a href="Database.ShardContract.html">Database.ShardContract</a></li><li><a href="Directory.html">Directory</a></li><li><a href="KadStorageAdapter.html">KadStorageAdapter</a></li><li><a href="Node.html">Node</a></li><li><a href="Proof.html">Proof</a></li><li><a href="Rules.html">Rules</a></li><li><a href="Server.html">Server</a></li><li><a href="Shards.html">Shards</a></li><li><a href="Transport.html">Transport</a></li>
+					<li><a href="Audit.html">Audit</a></li><li><a href="Bridge.html">Bridge</a></li><li><a href="Database.html">Database</a></li><li><a href="Database.AuditReport.html">Database.AuditReport</a></li><li><a href="Database.NetworkBlob.html">Database.NetworkBlob</a></li><li><a href="Database.ObjectPointer.html">Database.ObjectPointer</a></li><li><a href="Database.PeerProfile.html">Database.PeerProfile</a></li><li><a href="Database.ShardContract.html">Database.ShardContract</a></li><li><a href="KadStorageAdapter.html">KadStorageAdapter</a></li><li><a href="Node.html">Node</a></li><li><a href="Proof.html">Proof</a></li><li><a href="Rules.html">Rules</a></li><li><a href="Server.html">Server</a></li><li><a href="Shards.html">Shards</a></li><li><a href="Transport.html">Transport</a></li>
 				</ul>
 			</li>
 			
@@ -55,7 +55,7 @@
 			<li class="dropdown">
 				<a href="tutorials.list.html" class="dropdown-toggle" data-toggle="dropdown">Tutorials<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="tutorial-config.html">Configuration Guide</a></li><li><a href="tutorial-control.html">Using the Control Port</a></li><li><a href="tutorial-directory_.html">Using the Local Directory</a></li><li><a href="tutorial-install.html">Manual Installation</a></li><li><a href="tutorial-transfers.html">Using the Local Bridge</a></li><li><a href="tutorial-usage.html">Using the Node.js Library</a></li>
+					<li><a href="tutorial-api.html">Using the REST API</a></li><li><a href="tutorial-config.html">Configuration Guide</a></li><li><a href="tutorial-install.html">Manual Installation</a></li>
 				</ul>
 			</li>
 			
@@ -634,7 +634,7 @@ be audited
             
 <hr>
 <dt>
-    <h4 class="name" id="destroy"><span class="type-signature"></span>destroy(request, response, next)</h4>
+    <h4 class="name" id="destroyObject"><span class="type-signature"></span>destroyObject(request, response, next)</h4>
     
     
 </dt>
@@ -1050,7 +1050,7 @@ distribute the shards across the network
             
 <hr>
 <dt>
-    <h4 class="name" id="download"><span class="type-signature"></span>download(request, response, next)</h4>
+    <h4 class="name" id="downloadObject"><span class="type-signature"></span>downloadObject(request, response, next)</h4>
     
     
 </dt>
@@ -1444,7 +1444,192 @@ distribute the shards across the network
             
 <hr>
 <dt>
-    <h4 class="name" id="info"><span class="type-signature"></span>info(request, response, next)</h4>
+    <h4 class="name" id="getNodeStatus"><span class="type-signature"></span>getNodeStatus(request, response, next)</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        Returns status information about the running node
+    </div>
+    
+
+    
+
+    
+
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>request</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>response</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>next</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+    
+
+    
+<dl class="details">
+    
+
+	
+
+	
+
+	
+
+    
+
+    
+
+    
+
+    
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
+	<dd class="tag-source">
+		<ul class="dummy">
+			<li>
+				<a href="bridge.js.html">bridge.js</a>
+			</li>
+		</ul>
+	</dd>
+	
+
+	
+
+	
+
+	
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dd>
+
+        
+            
+<hr>
+<dt>
+    <h4 class="name" id="getObjectInfo"><span class="type-signature"></span>getObjectInfo(request, response, next)</h4>
     
     
 </dt>
@@ -1629,7 +1814,7 @@ distribute the shards across the network
             
 <hr>
 <dt>
-    <h4 class="name" id="list"><span class="type-signature"></span>list(request, response, next)</h4>
+    <h4 class="name" id="getObjectMagnet"><span class="type-signature"></span>getObjectMagnet(request, response, next)</h4>
     
     
 </dt>
@@ -1637,7 +1822,7 @@ distribute the shards across the network
 
     
     <div class="description">
-        Scans the object database and returns all index entries
+        Returns the magnet link for the given object
     </div>
     
 
@@ -1727,6 +1912,167 @@ distribute the shards across the network
             
                 
 <span class="param-type">function</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+    
+
+    
+<dl class="details">
+    
+
+	
+
+	
+
+	
+
+    
+
+    
+
+    
+
+    
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
+	<dd class="tag-source">
+		<ul class="dummy">
+			<li>
+				<a href="bridge.js.html">bridge.js</a>
+			</li>
+		</ul>
+	</dd>
+	
+
+	
+
+	
+
+	
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dd>
+
+        
+            
+<hr>
+<dt>
+    <h4 class="name" id="getPeerReputationScore"><span class="type-signature"></span>getPeerReputationScore(identity, callback)</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        Calculates the percentile and relative usage allowance of the given identity
+    </div>
+    
+
+    
+
+    
+
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>identity</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">160 bit node identity key</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>callback</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="Directory.html#~getPeerReputationScoreCallback">Directory~getPeerReputationScoreCallback</a></span>
 
 
 
@@ -1999,7 +2345,7 @@ distribute the shards across the network
             
 <hr>
 <dt>
-    <h4 class="name" id="magnet"><span class="type-signature"></span>magnet(request, response, next)</h4>
+    <h4 class="name" id="listObjects"><span class="type-signature"></span>listObjects(request, response, next)</h4>
     
     
 </dt>
@@ -2007,7 +2353,7 @@ distribute the shards across the network
 
     
     <div class="description">
-        Returns the magnet link for the given object
+        Scans the object database and returns all index entries
     </div>
     
 
@@ -2184,7 +2530,94 @@ distribute the shards across the network
             
 <hr>
 <dt>
-    <h4 class="name" id="resolve"><span class="type-signature"></span>resolve(request, response, next)</h4>
+    <h4 class="name" id="notifyClients"><span class="type-signature"></span>notifyClients()</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        Sends a state update payload to all connected clients via the websocket
+    </div>
+    
+
+    
+
+    
+
+    
+    
+
+    
+<dl class="details">
+    
+
+	
+
+	
+
+	
+
+    
+
+    
+
+    
+
+    
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
+	<dd class="tag-source">
+		<ul class="dummy">
+			<li>
+				<a href="bridge.js.html">bridge.js</a>
+			</li>
+		</ul>
+	</dd>
+	
+
+	
+
+	
+
+	
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dd>
+
+        
+            
+<hr>
+<dt>
+    <h4 class="name" id="resolveObject"><span class="type-signature"></span>resolveObject(request, response, next)</h4>
     
     
 </dt>
@@ -2371,7 +2804,7 @@ GET /:id to download the object
             
 <hr>
 <dt>
-    <h4 class="name" id="retry"><span class="type-signature"></span>retry(request, response, next)</h4>
+    <h4 class="name" id="retryUploadObject"><span class="type-signature"></span>retryUploadObject(request, response, next)</h4>
     
     
 </dt>
@@ -2556,7 +2989,146 @@ GET /:id to download the object
             
 <hr>
 <dt>
-    <h4 class="name" id="upload"><span class="type-signature"></span>upload(request, response, next)</h4>
+    <h4 class="name" id="scoreAndPublishAuditReports"><span class="type-signature"></span>scoreAndPublishAuditReports(callback)</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        Takes all audit reports and reaps them while applying their results to
+local peer profile reputation score, then publishes the compressed
+payload to the bootstrap directory
+    </div>
+    
+
+    
+
+    
+
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>callback</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+    
+
+    
+<dl class="details">
+    
+
+	
+
+	
+
+	
+
+    
+
+    
+
+    
+
+    
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
+	<dd class="tag-source">
+		<ul class="dummy">
+			<li>
+				<a href="bridge.js.html">bridge.js</a>
+			</li>
+		</ul>
+	</dd>
+	
+
+	
+
+	
+
+	
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dd>
+
+        
+            
+<hr>
+<dt>
+    <h4 class="name" id="uploadObject"><span class="type-signature"></span>uploadObject(request, response, next)</h4>
     
     
 </dt>
