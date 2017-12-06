@@ -8,6 +8,9 @@ the discussion in `#orc` on our [community chat](https://matrix.counterpointhack
 [![Docker Hub](https://img.shields.io/docker/pulls/orcproject/orc.svg?style=flat-square)](https://hub.docker.com/r/orcproject/orc) | 
 [![License (AGPL-3.0)](https://img.shields.io/badge/license-AGPL3.0-blue.svg?style=flat-square)](https://raw.githubusercontent.com/orcproject/orc/master/LICENSE)
 
+> **Warning!** ORC is *alpha* software and is still highly experimental! Be 
+> smart, keep backups, and stay safe out there! 
+
 ### Installation
 
 Pull the [image from Docker Hub](https://hub.docker.com/r/orcproject/orc/).
@@ -28,7 +31,7 @@ Run the ORC container, publish API port, and mount directory for persistence.
 docker run \
   --publish 127.0.0.1:9089:9089 \
   --volume ~/.config/orcd:/root/.config/orcd \
-  --tty orcproject/orc:latest
+  --tty orcproject/orc
 ```
 
 Modify the created configuration at `~/.config/orcd/config` as desired (see 
@@ -36,8 +39,8 @@ the {@tutorial config}) and restart the container for the changes to take
 effect. Once the container has started, you can navigate in your browser to 
 `http://127.0.0.1:9089` to access your node's dashboard! 
 
-> If you did not disable `BridgeAuthenticationEnabled`, you will be asked to supply the 
-> credentials in your configuration file.
+If you did not disable `BridgeAuthenticationEnabled`, you will be asked to supply the 
+credentials in your configuration file.
 
 See the [`docker run` documentation](https://docs.docker.com/engine/reference/commandline/run/) 
 for more information. If you prefer to install ORC manually, see the guide for 
