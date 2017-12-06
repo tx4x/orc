@@ -71,7 +71,7 @@ To hack on the ORC project, clone this repository and use
 ```
 git clone https://github.com/orcproject/orc
 cd orc
-docker-compose up
+docker-compose up --force-recreate --build
 ```
 
 This will volume mount the the appropriate directories for development, and 
