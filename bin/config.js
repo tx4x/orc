@@ -40,7 +40,7 @@ module.exports = function(datadir) {
 
     // Network Bootstrapping
     NetworkBootstrapNodes: [
-
+      'http://nmtebeffpimexmoyhhv2uytqixvrpcykalndagfogccbtfrizdnzprid.onion:80'
     ],
 
     // Bandwidth Metering
