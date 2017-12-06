@@ -84,9 +84,9 @@ describe('@class Node', function() {
       node.listen(0);
       expect(use.calledWithMatch('AUDIT')).to.equal(true);
       expect(use.calledWithMatch('CONSIGN')).to.equal(true);
-      expect(use.calledWithMatch('MIRROR')).to.equal(true);
       expect(use.calledWithMatch('RETRIEVE')).to.equal(true);
       expect(use.calledWithMatch('RENEW')).to.equal(true);
+      expect(use.calledWithMatch('CLAIM')).to.equal(true);
       expect(listen.called).to.equal(true);
     });
 
@@ -99,13 +99,13 @@ describe('@class Node', function() {
       req.end = sinon.stub();
       const res = new EventEmitter();
       const Node = proxyquire('../lib/node', {
-        https: {
+        http: {
           request: sinon.stub().callsArgWith(1, res).returns(req)
         }
       })
       const node = createNode({}, Node);
-      node.onion = { createSecureAgent: sinon.stub() };
-      node.identifyService('https://asdfghjkl.onion:443', (err) => {
+      node.onion = { createClearAgent: sinon.stub() };
+      node.identifyService('http://asdfghjkl.onion:443', (err) => {
         expect(err.message).to.equal('Service down');
         done();
       });
@@ -121,13 +121,13 @@ describe('@class Node', function() {
       req.end = sinon.stub();
       const res = new EventEmitter();
       const Node = proxyquire('../lib/node', {
-        https: {
+        http: {
           request: sinon.stub().callsArgWith(1, res).returns(req)
         }
       })
       const node = createNode({}, Node);
-      node.onion = { createSecureAgent: sinon.stub() };
-      node.identifyService('https://asdfghjkl.onion:443', (err) => {
+      node.onion = { createClearAgent: sinon.stub() };
+      node.identifyService('http://asdfghjkl.onion:443', (err) => {
         expect(err.message).to.equal('Failed to parse identity');
         done();
       });
@@ -143,13 +143,13 @@ describe('@class Node', function() {
       req.end = sinon.stub();
       const res = new EventEmitter();
       const Node = proxyquire('../lib/node', {
-        https: {
+        http: {
           request: sinon.stub().callsArgWith(1, res).returns(req)
         }
       })
       const node = createNode({}, Node);
-      node.onion = { createSecureAgent: sinon.stub() };
-      node.identifyService('https://asdfghjkl.onion:443', (err, data) => {
+      node.onion = { createClearAgent: sinon.stub() };
+      node.identifyService('http://asdfghjkl.onion:443', (err, data) => {
         expect(data[0]).to.equal('identity');
         expect(data[1].contact).to.equal('data');
         done();
@@ -397,47 +397,6 @@ describe('@class Node', function() {
 
   });
 
-  describe('@method subscribeCapacityAnnouncement', function() {
-
-    const sandbox = sinon.sandbox.create();
-
-    after(() => sandbox.restore());
-
-    it('should callback with capacity stream', function(done) {
-      const node = createNode({});
-      const quasarSubscribe = sandbox.stub(node, 'quasarSubscribe').callsFake(
-        (c, h) => h([4096, ['identity', { xpub: 'xpubkey' }]])
-      );
-      node.subscribeCapacityAnnouncement((err, stream) => {
-        expect(quasarSubscribe.args[0][0]).to.equal('ANNOUNCE');
-        expect(stream.read()[0]).to.equal(4096);
-        done();
-      });
-    });
-
-  });
-
-  describe('@method publishCapacityAnnouncement', function() {
-
-    const sandbox = sinon.sandbox.create();
-
-    after(() => sandbox.restore());
-
-    it('should enable claims and publish bytes available', function(done) {
-      const node = createNode({});
-      const quasarPublish = sandbox.stub(node, 'quasarPublish').callsArg(2);
-      node.publishCapacityAnnouncement(4096, () => {
-        expect(quasarPublish.args[0][0]).to.equal('ANNOUNCE');
-        expect(quasarPublish.args[0][1][0]).to.equal(4096);
-        expect(quasarPublish.args[0][1][1][0]).to.equal(
-          node.identity.toString('hex')
-        );
-        done();
-      });
-    });
-
-  });
-
   describe('@method claimProviderCapacity', function() {
 
     const sandbox = sinon.sandbox.create();
@@ -474,6 +433,51 @@ describe('@class Node', function() {
         done();
       });
     });
+
+  });
+
+  describe('@method getBootstrapCandidates', function() {
+
+    it('should error if database call fails', function(done) {
+      let node = createNode({});
+      node.logger.warn = sinon.stub();
+      let PeerProfile = database.PeerProfile;
+      let _PeerProfile = {
+        find: () => {
+          return {
+            sort: function() {
+              return {
+                limit: function() {
+                  return {
+                    exec: sinon.stub().callsArgWith(0, new Error('Failed'))
+                  };
+                }
+              }
+            }
+          }
+        }
+      };
+      database.PeerProfile = _PeerProfile;
+      node.getBootstrapCandidates().catch(err => {
+        database.PeerProfile = PeerProfile;
+        expect(err.message).to.equal('Failed');
+        done();
+      })
+    });
+
+    it('should return a list of profiles', function(done) {
+      let node = createNode({});
+      node.getBootstrapCandidates().then(result => {
+        expect(Array.isArray(result)).to.equal(true);
+        done();
+      })
+    });
+
+  });
+
+  describe('@method reapExpiredShards', function() {
+
+    // TODO: Not implemented
 
   });
 

@@ -206,7 +206,7 @@ describe('@module utils', function() {
     it('should return a readable stream object', function(done) {
       const requestObj = new EventEmitter();
       const utils = proxyquire('../lib/utils', {
-        https: {
+        http: {
           get: function(opts) {
             expect(opts.path).to.equal('/shards/hash?token=token');
             return requestObj;
@@ -237,7 +237,7 @@ describe('@module utils', function() {
       const requestObj = new EventEmitter();
       requestObj.write = sinon.stub();
       const utils = proxyquire('../lib/utils', {
-        https: {
+        http: {
           request: function(opts) {
             expect(opts.method).to.equal('POST');
             expect(opts.path).to.equal(
@@ -268,7 +268,7 @@ describe('@module utils', function() {
       requestObj.write = sinon.stub().callsArg(2);
       requestObj.end = sinon.stub();
       const utils = proxyquire('../lib/utils', {
-        https: {
+        http: {
           request: function(opts) {
             expect(opts.method).to.equal('POST');
             expect(opts.path).to.equal(
@@ -299,8 +299,8 @@ describe('@module utils', function() {
       expect(utils.getContactURL(['identitykey', {
         hostname: 'my.farmer.hostname',
         port: 8080,
-        protocol: 'https:'
-      }])).to.equal('https://my.farmer.hostname:8080/identitykey')
+        protocol: 'http:'
+      }])).to.equal('http://my.farmer.hostname:8080')
     });
 
   });
@@ -313,22 +313,22 @@ describe('@module utils', function() {
       let params3 = utils.getErasureParameters(128 * (1024 * 1024));
       let params4 = utils.getErasureParameters(512 * (1024 * 1024));
       let params5 = utils.getErasureParameters(100000001);
-      expect(params1.shards).to.equal(2);
-      expect(params1.parity).to.equal(1);
-      expect(params1.size).to.equal(4194304);
-      expect(params2.shards).to.equal(4);
-      expect(params2.parity).to.equal(2);
-      expect(params2.size).to.equal(8388608);
-      expect(params3.shards).to.equal(8);
-      expect(params3.parity).to.equal(4);
-      expect(params3.size).to.equal(16777216);
-      expect(params4.shards).to.equal(8);
-      expect(params4.parity).to.equal(4);
-      expect(params4.size).to.equal(67108864);
-      expect(params5.shards).to.equal(8);
-      expect(params5.parity).to.equal(4);
-      expect(params5.size).to.equal(12500001);
-      expect(params5.padding).to.equal(7);
+      expect(params1.shards).to.equal(4);
+      expect(params1.parity).to.equal(2);
+      expect(params1.size).to.equal(2097152);
+      expect(params2.shards).to.equal(8);
+      expect(params2.parity).to.equal(4);
+      expect(params2.size).to.equal(4194304);
+      expect(params3.shards).to.equal(16);
+      expect(params3.parity).to.equal(8);
+      expect(params3.size).to.equal(8388608);
+      expect(params4.shards).to.equal(16);
+      expect(params4.parity).to.equal(8);
+      expect(params4.size).to.equal(33554432);
+      expect(params5.shards).to.equal(16);
+      expect(params5.parity).to.equal(8);
+      expect(params5.size).to.equal(6250001);
+      expect(params5.padding).to.equal(15);
     });
 
   });

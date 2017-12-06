@@ -16,7 +16,6 @@ const stream = require('stream');
 const { EventEmitter } = require('events');
 const bunyan = require('bunyan');
 const ws = require('ws');
-const boscar = require('boscar');
 const getDatabase = require('./fixtures/database');
 const url = require('url');
 const qs = require('querystring');
@@ -94,7 +93,6 @@ describe('@class Bridge (integration)', function() {
           user: 'orctest',
           pass: 'orctest'
         },
-        control: new boscar.Server(node),
         enableControlProxy: true
       });
       node.iterativeFindValue = function(key, callback) {
@@ -148,7 +146,7 @@ describe('@class Bridge (integration)', function() {
       auth: 'orctest:orctest',
       hostname: 'localhost',
       port,
-      path: '/',
+      path: '/objects',
       headers: { Accept: 'application/json' }
     });
     req.on('response', (res) => {
@@ -176,7 +174,7 @@ describe('@class Bridge (integration)', function() {
       complete.sign('provider', key.privateKey);
       cb(null, [complete.toObject(), 'token']);
     });
-    node.onion = { createSecureAgent: sandbox.stub() };
+    node.onion = { createClearAgent: sandbox.stub() };
     let form = new FormData();
     form.append('policy', '::RETRIEVE');
     form.append('file', file, {
@@ -188,22 +186,22 @@ describe('@class Bridge (integration)', function() {
     form.submit({
       hostname: 'localhost',
       port,
-      path: '/',
+      path: '/objects',
       method: 'POST',
       auth: 'orctest:orctest'
     }, (err, res) => {
       claimProviderCapacity.restore();
       expect(res.statusCode).to.equal(201);
-      expect(node.onion.createSecureAgent.callCount).to.equal(3);
+      expect(node.onion.createClearAgent.callCount).to.equal(6);
       let body = '';
       res.on('data', (data) => body += data);
       res.on('end', () => {
         body = JSON.parse(body);
         id = body.id;
-        expect(body.shards).to.have.lengthOf(3);
-        expect(body.shards[0].size).to.equal(1504);
-        expect(body.shards[1].size).to.equal(1504);
-        expect(body.shards[2].size).to.equal(1504);
+        expect(body.shards).to.have.lengthOf(6);
+        expect(body.shards[0].size).to.equal(752);
+        expect(body.shards[1].size).to.equal(752);
+        expect(body.shards[2].size).to.equal(752);
         expect(body.status).to.equal('finished');
         expect(body.mimetype).to.equal('application/octet-stream');
         expect(body.name).to.equal('random');
@@ -218,7 +216,7 @@ describe('@class Bridge (integration)', function() {
       auth: 'orctest:orctest',
       hostname: 'localhost',
       port,
-      path: '/invalid/info'
+      path: '/objects/invalid/info'
     });
     req.on('response', (res) => {
       res.on('data', (data) => body += data.toString());
@@ -236,7 +234,7 @@ describe('@class Bridge (integration)', function() {
       auth: 'orctest:orctest',
       hostname: 'localhost',
       port,
-      path: '/59d2627ebb28977b0e6ab841/info'
+      path: '/objects/59d2627ebb28977b0e6ab841/info'
     });
     req.on('response', (res) => {
       res.on('data', (data) => body += data.toString());
@@ -254,16 +252,16 @@ describe('@class Bridge (integration)', function() {
       auth: 'orctest:orctest',
       hostname: 'localhost',
       port,
-      path: `/${id}/info`
+      path: `/objects/${id}/info`
     });
     req.on('response', (res) => {
       res.on('data', (data) => body += data.toString());
       res.on('end', () => {
         body = JSON.parse(body);
-        expect(body.shards).to.have.lengthOf(3);
-        expect(body.shards[0].size).to.equal(1504);
-        expect(body.shards[1].size).to.equal(1504);
-        expect(body.shards[2].size).to.equal(1504);
+        expect(body.shards).to.have.lengthOf(6);
+        expect(body.shards[0].size).to.equal(752);
+        expect(body.shards[1].size).to.equal(752);
+        expect(body.shards[2].size).to.equal(752);
         expect(body.status).to.equal('finished');
         expect(body.mimetype).to.equal('application/octet-stream');
         expect(body.name).to.equal('random');
@@ -279,7 +277,7 @@ describe('@class Bridge (integration)', function() {
       auth: 'orctest:orctest',
       hostname: 'localhost',
       port,
-      path: `/${id}/magnet`
+      path: `/objects/${id}/magnet`
     });
     req.on('response', (res) => {
       res.on('data', (data) => body += data.toString());
@@ -306,7 +304,7 @@ describe('@class Bridge (integration)', function() {
       auth: 'orctest:orctest',
       hostname: 'localhost',
       port,
-      path: `/${id}`,
+      path: `/objects/${id}`,
       method: 'PUT'
     });
     req.on('response', (res) => {
@@ -326,7 +324,7 @@ describe('@class Bridge (integration)', function() {
       auth: 'orctest:orctest',
       hostname: 'localhost',
       port,
-      path: '/',
+      path: '/objects',
       method: 'PUT'
     });
     req.on('response', (res) => {
@@ -334,11 +332,11 @@ describe('@class Bridge (integration)', function() {
       res.on('end', () => {
         body = JSON.parse(body);
         expect(body.size).to.equal(3000);
-        expect(body.shards.length).to.equal(3);
-        expect(body.shards).to.have.lengthOf(3);
-        expect(body.shards[0].size).to.equal(1504);
-        expect(body.shards[1].size).to.equal(1504);
-        expect(body.shards[2].size).to.equal(1504);
+        expect(body.shards.length).to.equal(6);
+        expect(body.shards).to.have.lengthOf(6);
+        expect(body.shards[0].size).to.equal(752);
+        expect(body.shards[1].size).to.equal(752);
+        expect(body.shards[2].size).to.equal(752);
         expect(body.status).to.equal('finished');
         expect(body.mimetype).to.equal('application/octet-stream');
         expect(body.name).to.equal('random');
@@ -354,7 +352,7 @@ describe('@class Bridge (integration)', function() {
       auth: 'orctest:orctest',
       hostname: 'localhost',
       port,
-      path: '/',
+      path: '/objects',
       method: 'PUT'
     });
     req.on('response', (res) => {
@@ -372,7 +370,7 @@ describe('@class Bridge (integration)', function() {
       node.database.PeerProfile,
       'find'
     ).callsArgWith(1, new Error('Failed'));
-    node.onion = { createSecureAgent: sandbox.stub() };
+    node.onion = { createClearAgent: sandbox.stub() };
     let form = new FormData();
     form.append('file', file, {
       filename: 'random-bytes',
@@ -383,7 +381,7 @@ describe('@class Bridge (integration)', function() {
     form.submit({
       hostname: 'localhost',
       port,
-      path: '/',
+      path: '/objects',
       method: 'POST',
       auth: 'orctest:orctest'
     }, (err, res) => {
@@ -403,7 +401,7 @@ describe('@class Bridge (integration)', function() {
       node,
       'claimProviderCapacity'
     ).callsArgWith(2, new Error('Cannot claim capacity'));
-    node.onion = { createSecureAgent: sandbox.stub() };
+    node.onion = { createClearAgent: sandbox.stub() };
     let form = new FormData();
     form.append('file', file, {
       filename: 'random-bytes',
@@ -414,7 +412,7 @@ describe('@class Bridge (integration)', function() {
     form.submit({
       hostname: 'localhost',
       port,
-      path: '/',
+      path: '/objects',
       method: 'POST',
       auth: 'orctest:orctest'
     }, (err, res) => {
@@ -435,7 +433,7 @@ describe('@class Bridge (integration)', function() {
       auth: 'orctest:orctest',
       hostname: 'localhost',
       port,
-      path: '/',
+      path: '/objects',
       headers: { Accept: 'application/json' }
     });
     req.on('response', (res) => {
@@ -444,10 +442,10 @@ describe('@class Bridge (integration)', function() {
         body = JSON.parse(body);
         id = body[0].id;
         expect(body).to.have.lengthOf(4);
-        expect(body[0].shards).to.have.lengthOf(3);
-        expect(body[0].shards[0].size).to.equal(1504);
-        expect(body[0].shards[1].size).to.equal(1504);
-        expect(body[0].shards[2].size).to.equal(1504);
+        expect(body[0].shards).to.have.lengthOf(6);
+        expect(body[0].shards[0].size).to.equal(752);
+        expect(body[0].shards[1].size).to.equal(752);
+        expect(body[0].shards[2].size).to.equal(752);
         expect(body[0].status).to.equal('finished');
         expect(body[0].mimetype).to.equal('application/octet-stream');
         expect(body[0].name).to.equal('random');
@@ -470,7 +468,7 @@ describe('@class Bridge (integration)', function() {
       auth: 'orctest:orctest',
       hostname: 'localhost',
       port,
-      path: `/${queued}`,
+      path: `/objects/${queued}`,
       method: 'PUT'
     });
     req.on('response', (res) => {
@@ -496,7 +494,7 @@ describe('@class Bridge (integration)', function() {
       auth: 'orctest:orctest',
       hostname: 'localhost',
       port,
-      path: `/${queued}`,
+      path: `/objects/${queued}`,
       method: 'PUT'
     });
     req.on('response', (res) => {
@@ -526,13 +524,13 @@ describe('@class Bridge (integration)', function() {
       auth: 'orctest:orctest',
       hostname: 'localhost',
       port,
-      path: `/${id}`
+      path: `/objects/${id}`
     });
     req.on('response', (res) => {
       res.on('data', (data) => body = Buffer.concat([body, data]));
       res.on('end', () => {
         authorizeRetrieval.restore();
-        expect(authorizeRetrieval.callCount).to.equal(3);
+        expect(authorizeRetrieval.callCount).to.equal(6);
         expect(Buffer.compare(body, file)).to.equal(0);
         done();
       });
@@ -561,13 +559,13 @@ describe('@class Bridge (integration)', function() {
       auth: 'orctest:orctest',
       hostname: 'localhost',
       port,
-      path: `/${id}`
+      path: `/objects/${id}`
     });
     req.on('response', (res) => {
       res.on('data', (data) => body = Buffer.concat([body, data]));
       res.on('end', () => {
         authorizeRetrieval.restore();
-        expect(authorizeRetrieval.callCount).to.equal(3);
+        expect(authorizeRetrieval.callCount).to.equal(6);
         expect(Buffer.compare(body, file)).to.equal(0);
         done();
       });
@@ -644,7 +642,7 @@ describe('@class Bridge (integration)', function() {
       auth: 'orctest:orctest',
       hostname: 'localhost',
       port,
-      path: `/${id}`,
+      path: `/objects/${id}`,
       method: 'DELETE'
     });
     req.on('response', (res) => {
@@ -660,7 +658,7 @@ describe('@class Bridge (integration)', function() {
       auth: 'orctest:orctest',
       hostname: 'localhost',
       port,
-      path: '/',
+      path: '/objects',
       headers: { Accept: 'application/json' }
     });
     req.on('response', (res) => {

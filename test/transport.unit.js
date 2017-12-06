@@ -3,8 +3,6 @@
 const sinon = require('sinon');
 const { EventEmitter } = require('events');
 const http = require('http');
-const https = require('https');
-const pem = require('pem');
 const createMocks = require('./fixtures/http-mocks');
 const { expect } = require('chai');
 const Transport = require('../lib/transport');
@@ -12,20 +10,11 @@ const Transport = require('../lib/transport');
 
 describe('@class Transport', function() {
 
-  let ssl = null;
-
-  before(function(done) {
-    pem.createCertificate({ days: 1, selfSigned: true }, (err, keys) => {
-      ssl = { key: keys.serviceKey, cert: keys.certificate };
-      done(err);
-    });
-  });
-
   describe('@private _createRequest', function() {
 
-    it('should return a https request object', function() {
-      const transport = new Transport(ssl);
-      const request = transport._createRequest();
+    it('should return a http request object', function() {
+      const transport = new Transport();
+      const request = transport._createRequest({});
       expect(request).to.be.instanceOf(http.ClientRequest);
     });
 
@@ -34,14 +23,14 @@ describe('@class Transport', function() {
   describe('@private _createServer', function() {
 
     it('should return a https server object', function() {
-      const transport = new Transport(ssl);
-      const server = transport._createServer(ssl);
-      expect(server).to.be.instanceOf(https.Server);
+      const transport = new Transport();
+      const server = transport._createServer();
+      expect(server).to.be.instanceOf(http.Server);
     });
 
     it('should disable nagle on connection', function(done) {
-      const transport = new Transport(ssl);
-      const server = transport._createServer(ssl);
+      const transport = new Transport();
+      const server = transport._createServer();
       const setNoDelay = sinon.stub();
       const socket = new EventEmitter();
       socket.setNoDelay = setNoDelay;
@@ -59,7 +48,7 @@ describe('@class Transport', function() {
   describe('@private _handle', function() {
 
     it('should respond via the middleware stack', function(done) {
-      const transport = new Transport(ssl);
+      const transport = new Transport();
       const [req, res] = createMocks({
         method: 'OPTIONS',
         path: '/rpc/',
@@ -112,7 +101,7 @@ describe('@class Transport', function() {
   describe('@private _shards', function() {
 
     it('should emit upload event with request and response', function(done) {
-      const transport = new Transport(ssl);
+      const transport = new Transport();
       const request = {
         originalUrl: 'https://localhost:8080/shards/{hash}?token={token}',
         method: 'POST'
@@ -128,7 +117,7 @@ describe('@class Transport', function() {
     });
 
     it('should emit download event qith request and response', function(done) {
-      const transport = new Transport(ssl);
+      const transport = new Transport();
       const request = {
         originalUrl: 'https://localhost:8080/shards/{hash}?token={token}',
         method: 'GET'
@@ -144,7 +133,7 @@ describe('@class Transport', function() {
     });
 
     it('should end the response with a 405 status code', function(done) {
-      const transport = new Transport(ssl);
+      const transport = new Transport();
       const request = {
         originalUrl: 'https://localhost:8080/shards/{hash}?token={token}',
         method: 'PUT'

@@ -6,100 +6,82 @@ const { existsSync, writeFileSync } = require('fs');
 const mkdirp = require('mkdirp');
 const { tmpdir, homedir } = require('os');
 const { join } = require('path');
-const datadir = join(homedir(), '.config/orc');
 
-module.exports = {
+const DEFAULT_DATADIR = join(homedir(), '.config/orcd');
 
-  // Identity/Cryptography
-  PrivateExtendedKeyPath: join(datadir, 'x_private_key'),
-  ChildDerivationIndex: '0',
+module.exports = function(datadir) {
 
-  // Database
-  MongoDBDataDirectory: join(datadir, 'data'),
-  MongoDBPort: '37017',
+  datadir = datadir || DEFAULT_DATADIR;
 
-  // Shard Database
-  ShardStorageBaseDir: datadir,
-  ShardStorageMaxAllocation: '5GB',
-  ShardReaperInterval: '24HR',
-  ShardCapacityAnnounceInterval: '15M',
+  const options = {
 
-  // Server SSL
-  TransportServiceKeyPath: join(datadir, 'service_key.pem'),
-  TransportCertificatePath: join(datadir, 'certificate.pem'),
-  TransportResponseTimeout: '30S',
+    // Process PID
+    DaemonPidFilePath: join(datadir, 'orcd.pid'),
 
-  // Public Addressability
-  PublicPort: '443',
-  ListenPort: '4443',
+    // Identity/Cryptography
+    PrivateExtendedKeyPath: join(datadir, 'x_private_key'),
+    ChildDerivationIndex: '0',
 
-  // Network Bootstrapping
-  NetworkBootstrapNodes: [
-    'https://orcjfg52ty6ljv54.onion:443',
-    'https://orce4nqoa6muz3gt.onion:443',
-    'https://orcjd7xgshpovm6i.onion:443',
-    'https://orcwfkilxjxo63mr.onion:443'
-  ],
+    // Database
+    MongoDBDataDirectory: join(datadir, 'node_data'),
+    MongoDBPort: '37017',
 
-  // Tor Behavior
-  ServiceAvailabilityCheckInterval: '10M',
+    // Shard Database
+    ShardStorageDataDirectory: join(datadir, 'provider_vault'),
+    ShardStorageMaxAllocation: '0GB',
+    ShardReaperInterval: '24HR',
+    ShardReaperInvalidationBlocks: '432',
+    ShardCapacityUpdateInterval: '30M',
 
-  // Bandwidth Metering
-  BandwidthAccountingEnabled: '0',
-  BandwidthAccountingMax: '5GB',
-  BandwidthAccountingReset: '24HR',
+    // Node Options
+    NodeVirtualPort: '80',
+    NodeListenPort: '9088',
+    NodeOnionServiceDataDirectory: join(datadir, 'node_hs'),
 
-  // Debugging/Developer
-  VerboseLoggingEnabled: '1',
-  LogFilePath: join(datadir, 'orcd.log'),
-  LogFileMaxBackCopies: '3',
-  TorPassthroughLoggingEnabled: '0',
-  TorLoggingVerbosity: 'notice',
-  ControlPort: '4444',
-  ControlHostname: '127.0.0.1',
+    // Network Bootstrapping
+    NetworkBootstrapNodes: [
+      'http://nmtebeffpimexmoyhhv2uytqixvrpcykalndagfogccbtfrizdnzprid.onion:80'
+    ],
 
-  // Onion Service
-  OnionServicePrivateKeyPath: join(datadir, 'onion_key'),
+    // Bandwidth Metering
+    BandwidthAccountingEnabled: '0',
+    BandwidthAccountingMax: '5GB',
+    BandwidthAccountingReset: '24HR',
 
-  // Local Bridge
-  BridgeEnabled: '1',
-  BridgeHostname: '127.0.0.1',
-  BridgePort: '4445',
-  BridgeUseSSL: '1',
-  BridgeOnionServiceEnabled: '0',
-  BridgeOnionServicePrivateKeyPath: join(datadir, 'bridge_key'),
-  BridgeServiceKeyPath: join(datadir, 'service_key.pem'),
-  BridgeCertificatePath: join(datadir, 'certificate.pem'),
-  BridgeAuthorityChains: [],
-  BridgeAuthenticationEnabled: '1',
-  BridgeAuthenticationUser: 'orc',
-  BridgeAuthenticationPassword: randomBytes(16).toString('hex'),
-  BridgeTempStagingBaseDir: join(datadir, 'tmp'),
-  BridgeControlProxyEnabled: '0',
+    // Debugging/Developer
+    VerboseLoggingEnabled: '1',
+    LogFilePath: join(datadir, 'orcd.log'),
+    LogFileMaxBackCopies: '3',
+    TorPassthroughLoggingEnabled: '0',
+    TorLoggingVerbosity: 'notice',
 
-  // Additional Bridge Options
-  PeerCapacityPoolTimeout: '24HR',
-  PeerFailureBlacklistTimeout: '6HR',
+    // Local Bridge
+    BridgeHostname: '127.0.0.1',
+    BridgePort: '9089',
+    BridgeAuthenticationEnabled: '1',
+    BridgeAuthenticationUser: 'orc',
+    BridgeAuthenticationPassword: randomBytes(16).toString('hex'),
+    BridgeTempStagingBaseDir: join(datadir, 'tmp'),
 
-  // Directory Server
-  DirectoryEnabled: '1',
-  DirectoryPort: '4446',
-  DirectoryHostname: '127.0.0.1',
-  DirectoryUseSSL: '1',
-  DirectoryOnionServiceEnabled: '0',
-  DirectoryOnionServicePrivateKeyPath: join(datadir, 'directory_key'),
-  DirectoryServiceKeyPath: join(datadir, 'service_key.pem'),
-  DirectoryCertificatePath: join(datadir, 'certificate.pem'),
-  DirectoryAuthorityChains: [],
-  DirectoryBootstrapService: 'https://orcucqxc54fkhupb.onion:443'
+    // Additional Bridge Options
+    ProviderCapacityPoolTimeout: '48HR',
+    ProviderFailureBlacklistTimeout: '12HR',
+    ProviderBondDepositAmount: '0'
 
+  };
+
+  if (!existsSync(join(datadir, 'config'))) {
+    mkdirp.sync(datadir);
+    writeFileSync(join(datadir, 'config'), ini.stringify(options));
+  }
+
+  if (!existsSync(join(datadir, 'node_data'))) {
+    mkdirp.sync(join(datadir, 'node_data'));
+  }
+
+  if (!existsSync(join(datadir, 'provider_vault'))) {
+    mkdirp.sync(join(datadir, 'provider_vault'));
+  }
+
+  return options;
 };
-
-if (!existsSync(join(datadir, 'config'))) {
-  mkdirp.sync(datadir);
-  writeFileSync(join(datadir, 'config'), ini.stringify(module.exports));
-}
-
-if (!existsSync(join(datadir, 'data'))) {
-  mkdirp.sync(join(datadir, 'data'));
-}

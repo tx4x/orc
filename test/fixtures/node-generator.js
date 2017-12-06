@@ -6,7 +6,7 @@ const async = require('async');
 const pem = require('pem');
 const path = require('path');
 const bunyan = require('bunyan');
-const orc = require('../../lib');
+const orc = require('../../index');
 const mkdirp = require('mkdirp');
 const getDatabase = require('./database');
 
@@ -37,7 +37,7 @@ module.exports = function(numNodes, callback) {
       const contact = {
         hostname: 'localhost',
         port: startPort++,
-        protocol: 'https:'
+        protocol: 'http:'
       };
       const shards = new orc.Shards(shardsPath, {
         maxSpaceAllocated: 1024 * 1024 * 1024
