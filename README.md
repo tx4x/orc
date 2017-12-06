@@ -8,8 +8,8 @@ the discussion in `#orc` on our [community chat](https://matrix.counterpointhack
 [![Docker Hub](https://img.shields.io/docker/pulls/orcproject/orc.svg?style=flat-square)](https://hub.docker.com/r/orcproject/orc) | 
 [![License (AGPL-3.0)](https://img.shields.io/badge/license-AGPL3.0-blue.svg?style=flat-square)](https://raw.githubusercontent.com/orcproject/orc/master/LICENSE)
 
-> **Warning!** ORC is *alpha* software and is still highly experimental! Be 
-> smart, keep backups, and stay safe out there! 
+> **Warning!** ORC is *alpha* software and is still a highly experimental 
+> *test* network! Be smart, keep backups, and stay safe out there! 
 
 ### Installation
 
@@ -36,11 +36,11 @@ docker run \
 
 Modify the created configuration at `~/.config/orcd/config` as desired (see 
 the {@tutorial config}) and restart the container for the changes to take 
-effect. Once the container has started, you can navigate in your browser to 
-`http://127.0.0.1:9089` to access your node's dashboard! 
+effect. If you want to provide storage capacity to the network, be sure to 
+set your desired allocation for `ShardStorageMaxAllocation`.
 
-If you did not disable `BridgeAuthenticationEnabled`, you will be asked to supply the 
-credentials in your configuration file.
+Once the container has started, you can use use the guide for {@tutorial api} 
+to interact with it! 
 
 See the [`docker run` documentation](https://docs.docker.com/engine/reference/commandline/run/) 
 for more information. If you prefer to install ORC manually, see the guide for 
