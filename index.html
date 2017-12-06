@@ -120,16 +120,22 @@ the discussion in <code>#orc</code> on our <a href="https://matrix.counterpointh
 </blockquote>
 <h3>Installation</h3><p>Pull the <a href="https://hub.docker.com/r/orcproject/orc/">image from Docker Hub</a>.</p>
 <pre class="prettyprint source"><code>docker pull orcproject/orc</code></pre><p>Create a data directory on the host.</p>
-<pre class="prettyprint source"><code>mkdir ~/.config/orcd</code></pre><p>Run the ORC container, publish API port, and mount directory for persistence.</p>
+<pre class="prettyprint source"><code>mkdir ~/.config/orcd</code></pre><p>If you are running ORC for the first time, mount the data directory and run it 
+normally.</p>
+<pre class="prettyprint source"><code>docker run --volume ~/.config/orcd:/root/.config/orcd orcproject/orc</code></pre><p>This will generate a fresh configuration and setup the data directory. Modify 
+the created configuration at <code>~/.config/orcd/config</code> as desired (see the 
+<a href="tutorial-config.html">Configuration Guide</a>) and send <code>SIGINT</code> to the process (<code>Ctrl+C</code>). If you want to 
+provide storage capacity to the network, be sure to set your desired allocation 
+for <code>ShardStorageMaxAllocation</code>.</p>
+<p>Once you are finished, run the ORC container again, but expose the API to the 
+host, mount the data directory, allocate a pseudo TTY, detach the process, and 
+tell docker to keep it running (even starting automatically on system boot).</p>
 <pre class="prettyprint source"><code>docker run \
   --publish 127.0.0.1:9089:9089 \
   --volume ~/.config/orcd:/root/.config/orcd \
-  --tty orcproject/orc</code></pre><p>Modify the created configuration at <code>~/.config/orcd/config</code> as desired (see 
-the <a href="tutorial-config.html">Configuration Guide</a>) and restart the container for the changes to take 
-effect. If you want to provide storage capacity to the network, be sure to 
-set your desired allocation for <code>ShardStorageMaxAllocation</code>.</p>
-<p>Once the container has started, you can use use the guide for <a href="tutorial-api.html">Using the REST API</a> 
-to interact with it! </p>
+  --tty --detach orcproject/orc</code></pre><p>Once the container has started, you can use use the guide for <a href="tutorial-api.html">Using the REST API</a> 
+to interact with it! You can watch your logs with 
+<code>tail -f ~/.config/orcd/orcd.log</code>.</p>
 <p>See the <a href="https://docs.docker.com/engine/reference/commandline/run/"><code>docker run</code> documentation</a> 
 for more information. If you prefer to install ORC manually, see the guide for 
 <a href="tutorial-install.html">Manual Installation</a>. Once installed, simply run <code>orcd</code> with an optional 
