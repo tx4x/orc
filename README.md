@@ -25,22 +25,33 @@ Create a data directory on the host.
 mkdir ~/.config/orcd
 ```
 
-Run the ORC container, publish API port, and mount directory for persistence.
+If you are running ORC for the first time, mount the data directory and run it 
+normally.
+
+```
+docker run --volume ~/.config/orcd:/root/.config/orcd orcproject/orc
+```
+
+This will generate a fresh configuration and setup the data directory. Modify 
+the created configuration at `~/.config/orcd/config` as desired (see the 
+{@tutorial config}) and send `SIGINT` to the process (`Ctrl+C`). If you want to 
+provide storage capacity to the network, be sure to set your desired allocation 
+for `ShardStorageMaxAllocation`.
+
+Once you are finished, run the ORC container again, but expose the API to the 
+host, mount the data directory, allocate a pseudo TTY, detach the process, and 
+tell docker to keep it running (even starting automatically on system boot).
 
 ```
 docker run \
   --publish 127.0.0.1:9089:9089 \
   --volume ~/.config/orcd:/root/.config/orcd \
-  --tty orcproject/orc
+  --tty --detach orcproject/orc
 ```
 
-Modify the created configuration at `~/.config/orcd/config` as desired (see 
-the {@tutorial config}) and restart the container for the changes to take 
-effect. If you want to provide storage capacity to the network, be sure to 
-set your desired allocation for `ShardStorageMaxAllocation`.
-
 Once the container has started, you can use use the guide for {@tutorial api} 
-to interact with it! 
+to interact with it! You can watch your logs with 
+`tail -f ~/.config/orcd/orcd.log`.
 
 See the [`docker run` documentation](https://docs.docker.com/engine/reference/commandline/run/) 
 for more information. If you prefer to install ORC manually, see the guide for 
