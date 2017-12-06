@@ -157,10 +157,7 @@ Maximum number of rotated log files to keep.
 
 #### NetworkBootstrapNodes[]
 
-##### Default: `https://orcjfg52ty6ljv54.onion:443`
-##### Default: `https://orcjd7xgshpovm6i.onion:443`
-##### Default: `https://orce4nqoa6muz3gt.onion:443`
-##### Default: `https://orcwfkilxjxo63mr.onion:443`
+##### Default: `http://z2ybz7kjxjtfiwcervfh376swy4je3ye4yne2atoi727634qzjonk7id.onion:80`
 
 Add a map of network bootstrap nodes to this section to use for discovering 
 other peers. Default configuration should come with a list of known and 
