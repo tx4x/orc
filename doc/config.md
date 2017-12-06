@@ -77,14 +77,14 @@ storing. Accepts human-readable strings like `3DAYS` or `72HOURS`
 
 #### ShardStorageMaxAllocation
 
-##### Default: `5GB`
+##### Default: `0GB`
 
 Define the maximum size you wish to allocate for farming shards. This can be 
 increased later, but decreasing it will not delete existing data.
 
 #### ShardReaperInvalidationBlocks
 
-##### Default: `432`
+##### Default: `240`
 
 The number of blocks added to chain without payment since a contract was stored
 to determine whether or not the data should be reaped.
@@ -94,12 +94,6 @@ to determine whether or not the data should be reaped.
 ##### Default: `30M`
 
 The frequency interval we update our flags to reflect our available capacity.
-
-#### TransportMessageResponseTimeout
-
-##### Default: `10S`
-
-How long we should wait on a response back from a peer for any given message.
 
 #### NodeOnionServiceDataDirectory
 
@@ -248,32 +242,3 @@ Defines the verbosity level of the Tor process logging. Valid options are: `debu
 
 Minimum tokens bonded in order to establish baseline trust with a storage provider.
 
-#### WalletDataDirectory
-
-##### Default: `$HOME/.config/orcd/z_wallet`
-
-The path to store all wallet data.
-
-#### WalletHostname
-
-##### Default: `127.0.0.1`
-
-The hostname for communicating with wallet over RPC.
-
-#### WalletPort
-
-##### Default: `9090`
-
-The port for communicating with wallet over RPC.
-
-#### WalletAuthenticationUser
-
-##### Default: `orc`
-
-The authentication user name for communicating with wallet over RPC.
-
-#### WalletAuthenticationPassword
-
-##### Default: `<random>`
-
-The authentication password for communicating with wallet over RPC.

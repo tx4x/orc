@@ -66,14 +66,7 @@ module.exports = function(datadir) {
     // Additional Bridge Options
     ProviderCapacityPoolTimeout: '48HR',
     ProviderFailureBlacklistTimeout: '12HR',
-    ProviderBondDepositAmount: '0',
-
-    // Wallet Options
-    WalletDataDirectory: join(datadir, 'z_wallet'),
-    WalletHostname: '127.0.0.1',
-    WalletPort: '9090',
-    WalletAuthenticationUser: 'orc',
-    WalletAuthenticationPassword: randomBytes(16).toString('hex')
+    ProviderBondDepositAmount: '0'
 
   };
 
