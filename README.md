@@ -46,6 +46,7 @@ tell docker to keep it running (even starting automatically on system boot).
 docker run \
   --publish 127.0.0.1:9089:9089 \
   --volume ~/.config/orcd:/root/.config/orcd \
+  --restart always \
   --tty --detach orcproject/orc
 ```
 
