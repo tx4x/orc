@@ -133,6 +133,7 @@ tell docker to keep it running (even starting automatically on system boot).</p>
 <pre class="prettyprint source"><code>docker run \
   --publish 127.0.0.1:9089:9089 \
   --volume ~/.config/orcd:/root/.config/orcd \
+  --restart always \
   --tty --detach orcproject/orc</code></pre><p>Once the container has started, you can use use the guide for <a href="tutorial-api.html">Using the REST API</a> 
 to interact with it! You can watch your logs with 
 <code>tail -f ~/.config/orcd/orcd.log</code>.</p>
