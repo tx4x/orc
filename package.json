@@ -41,7 +41,7 @@
   ],
   "license": "AGPL-3.0",
   "engines": {
-    "node": "^8.9.0"
+    "node": "^8.9.3"
   },
   "dependencies": {
     "@ronomon/reed-solomon": "^4.0.1",
