@@ -12,4 +12,4 @@ services:
       - ./node_modules:/root/orc/node_modules
       - ./package.json:/root/orc/package.json
     ports:
-      - "127.0.0.1:9089:9089"
+      - "127.0.0.1:10089:9089"

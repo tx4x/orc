@@ -14,8 +14,6 @@ const bunyan = require('bunyan');
 
 describe('@class Bridge', function() {
 
-  const reportAuditResults = sinon.stub().callsArg(1);
-
   let bridge, profiles, reports;
 
   let key1 = keyutils.toHDKeyFromSeed(Buffer.from('1')).deriveChild(1);
@@ -43,7 +41,6 @@ describe('@class Bridge', function() {
         spartacus: {
           privateKey: key1.privateKey
         },
-        reportAuditResults,
         logger: bunyan.createLogger({ name: '-', level: 'fatal' })
       }, {});
       bridge.listen(0);
@@ -349,17 +346,16 @@ describe('@class Bridge', function() {
   });
 
   it('should score the peer profiles based on audits', function(done) {
-    bridge.scoreAndPublishAuditReports((err) => {
+    bridge.scoreAuditReports((err) => {
       expect(err).to.equal(null);
-      expect(reportAuditResults.called).to.equal(true);
       bridge.database.PeerProfile.find({}, (err, profiles) => {
         let map = new Map();
         profiles.forEach((p) => map.set(p.identity, p.reputation.score));
-        expect(map.get(identity1.toString('hex'))).to.equal(9);
-        expect(map.get(identity2.toString('hex'))).to.equal(4);
+        expect(map.get(identity1.toString('hex'))).to.equal(15);
+        expect(map.get(identity2.toString('hex'))).to.equal(6);
         expect(map.get(identity3.toString('hex'))).to.equal(0);
-        expect(map.get(identity4.toString('hex'))).to.equal(4);
-        expect(map.get(identity5.toString('hex'))).to.equal(2);
+        expect(map.get(identity4.toString('hex'))).to.equal(5);
+        expect(map.get(identity5.toString('hex'))).to.equal(4);
         expect(map.get(identity6.toString('hex'))).to.equal(3);
         done();
       });
@@ -400,11 +396,11 @@ describe('@class Bridge', function() {
 
       let expected = [
         [1, 4500],
-        [0.44, 240],
+        [0.4, 240],
         [0, 300],
-        [0.44, 240],
-        [0.22, 600],
-        [0.33, 400]
+        [0.33, 300],
+        [0.27, 400],
+        [0.2, 900]
       ];
 
       expected.forEach(([perc, avail], i) => {

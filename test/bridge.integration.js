@@ -617,20 +617,17 @@ describe('@class Bridge (integration)', function() {
     ).callsFake(function(a, b, cb) {
       cb(null, [b]);
     });
-    let eventTriggered = false;
     node.database.ObjectPointer.findOne({}, (err, obj) => {
       obj._lastAuditTimestamp = 0;
       obj.shards[0].decayed = true;
       obj.shards[0].audits.challenges = [obj.shards[0].audits.challenges[0]];
       obj.save(() => {
-        bridge.on('auditInternalFinished', () => eventTriggered = true);
         bridge.audit((err) => {
           claimProviderCapacity.restore();
           authorizeRetrieval.restore();
           auditRemoteShards.restore();
           requestContractRenewal.restore();
-          expect(err).to.equal(undefined);
-          expect(eventTriggered).to.equal(true);
+          expect(err).to.equal(null);
           done();
         });
       });

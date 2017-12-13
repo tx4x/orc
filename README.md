@@ -88,7 +88,7 @@ docker-compose up --force-recreate --build
 
 This will volume mount the the appropriate directories for development, and 
 then boots up a complete sandboxed ORC network, including a complete sandboxed 
-Tor network and once bootstrapped, binds port `9089` to the host for full 
+Tor network and once bootstrapped, binds port `10089` to the host for full 
 end-to-end testing. The development container does not persist state between 
 runs. Note that stable releases are tagged and the `master` branch may contain 
 unstable or bleeding-edge code.

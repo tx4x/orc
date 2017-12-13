@@ -352,6 +352,7 @@ function init() {
         `(http://${entry[1].hostname}:${entry[1].port})`
       );
       logger.info(`discovered ${node.router.size} peers from seed`);
+      setInterval(() => bridge.audit(), orc.constants.AUDIT_INTERVAL);
     });
   });
 }
