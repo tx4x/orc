@@ -11,6 +11,7 @@ ShardCapacityAnnounceInterval=30M
 NodeVirtualPort=80
 NodeListenPort=1088
 NodeOnionServiceDataDirectory=/root/providers/1/node_hs
+NetworkBootstrapNodes[]=http://l466qntstik7falkkzxttgrtlu4u7g6yaxmyvjs2qamlzymsdsiqxdqd.onion:80
 BandwidthAccountingEnabled=0
 BandwidthAccountingMax=5GB
 BandwidthAccountingReset=24HR

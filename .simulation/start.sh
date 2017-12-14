@@ -14,7 +14,7 @@ echo "starting orc provider 2 as daemon"
 node /root/orc/bin/orcd.js --datadir /root/providers/2 --daemon
 
 echo "starting orc provider 3 as daemon"
-node /root/orc/bin/orcd.js --datadir /root/providers/3 --daemon 
+node /root/orc/bin/orcd.js --datadir /root/providers/3 --daemon
 
 echo "waiting 1 minute for hs descriptors to be ready..."
 sleep 60
