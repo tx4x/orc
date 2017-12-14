@@ -353,6 +353,8 @@ function init() {
       );
       logger.info(`discovered ${node.router.size} peers from seed`);
       setInterval(() => bridge.audit(), orc.constants.AUDIT_INTERVAL);
+      setInterval(() => node.reapExpiredShards(),
+                  orc.constants.CLEAN_INTERVAL);
     });
   });
 }
