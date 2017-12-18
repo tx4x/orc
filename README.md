@@ -1,6 +1,10 @@
-The [**Onion Routed Cloud**](https://orc.network). ORC is a distributed 
-anonymous cloud storage network owned and operated by _all of us_. Join 
-the discussion in `#orc` on our [community chat](https://matrix.counterpointhackers.org/_matrix/client/#/room/#orc:matrix.counterpointhackers.org)!
+---
+
+The [**Onion Routed Cloud**](https://orc.network). ORC is a decentralized, 
+anonymous, object storage platform owned and operated by allies in defense of 
+human rights and opposition to censorship. 
+
+Join the discussion in `#orc` on our [community chat](https://matrix.counterpointhackers.org/_matrix/client/#/room/#orc:matrix.counterpointhackers.org)!
 
 [![Build Status](https://img.shields.io/travis/orcproject/orc.svg?style=flat-square)](https://travis-ci.org/orcproject/orc) | 
 [![Test Coverage](https://img.shields.io/coveralls/orcproject/orc.svg?style=flat-square)](https://coveralls.io/r/orcproject/orc) | 
