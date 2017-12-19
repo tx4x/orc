@@ -54,10 +54,9 @@ Run as administrator in PowerShell or cmd:
 npm install -g windows-build-tools
 ```
 
-### Daemon + Utilities CLI
+### Daemon
 
-This package exposes 3 programs: `orc`, `orcd`,  and `orctool`. To install 
-these, use the `--global` flag.
+This package exposes the program `orcd`. To install, use the `--global` flag.
 
 ```
 GRANAX_USE_TOR_ALPHA=1 npm install -g @orcproject/orc
