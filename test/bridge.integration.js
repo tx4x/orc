@@ -26,7 +26,6 @@ const ProofStream = require('../lib/proof');
 describe('@class Bridge (integration)', function() {
 
   let sandbox = sinon.sandbox.create();
-  let clock = sandbox.useFakeTimers('setTimeout', 'setInterval');
   let shardsdir = path.join(tmpdir(), crypto.randomBytes(6).toString('hex'));
   let file = crypto.randomBytes(3000);
   let id = null;
@@ -128,17 +127,6 @@ describe('@class Bridge (integration)', function() {
   });
 
   after(() => sandbox.restore());
-
-  it('should start audit interval', function(done) {
-    let audit = sinon.spy(bridge, 'audit');
-    clock.tick(21600005);
-    setImmediate(() => {
-      audit.restore();
-      clock.restore();
-      expect(audit.called).to.equal(true);
-      done();
-    });
-  });
 
   it('should respond with no objects stored', function(done) {
     let body = '';
@@ -509,7 +497,7 @@ describe('@class Bridge (integration)', function() {
     req.end();
   });
 
-  it('should download the file requested and repair', function(done) {
+  it('should download file requested and repair (timeout)', function(done) {
     let authorizeRetrieval = sandbox.stub(
       node,
       'authorizeRetrieval'
@@ -538,7 +526,7 @@ describe('@class Bridge (integration)', function() {
     req.end();
   });
 
-  it('should download the file requested and repair', function(done) {
+  it('should download file requested and repair (failed)', function(done) {
     let authorizeRetrieval = sandbox.stub(
       node,
       'authorizeRetrieval'
@@ -617,20 +605,17 @@ describe('@class Bridge (integration)', function() {
     ).callsFake(function(a, b, cb) {
       cb(null, [b]);
     });
-    let eventTriggered = false;
     node.database.ObjectPointer.findOne({}, (err, obj) => {
       obj._lastAuditTimestamp = 0;
       obj.shards[0].decayed = true;
       obj.shards[0].audits.challenges = [obj.shards[0].audits.challenges[0]];
       obj.save(() => {
-        bridge.on('auditInternalFinished', () => eventTriggered = true);
         bridge.audit((err) => {
           claimProviderCapacity.restore();
           authorizeRetrieval.restore();
           auditRemoteShards.restore();
           requestContractRenewal.restore();
-          expect(err).to.equal(undefined);
-          expect(eventTriggered).to.equal(true);
+          expect(err).to.equal(null);
           done();
         });
       });

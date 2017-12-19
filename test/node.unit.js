@@ -9,6 +9,8 @@ const utils = require('../lib/utils');
 const Node = require('../lib/node');
 const proxyquire = require('proxyquire');
 const getDatabase = require('./fixtures/database');
+const stream = require('stream');
+const bunyan = require('bunyan');
 
 
 let database = null;
@@ -18,7 +20,8 @@ function createNode(opts, NodeConstructor) {
 
   const node = new Ctor({
     database,
-    shards: opts.shards
+    shards: opts.shards,
+    logger: bunyan.createLogger({ name: 'node-test', level: 'fatal' })
   });
 
   return node;
@@ -477,7 +480,31 @@ describe('@class Node', function() {
 
   describe('@method reapExpiredShards', function() {
 
-    // TODO: Not implemented
+    it('should unlink shards returned from query', function(done) {
+      let node = createNode({});
+      let remove = sinon.stub().callsArg(0);
+      let data = [
+        { shardHash: '1', remove },
+        { shardHash: '2', remove },
+        { shardHash: '3', remove },
+        { shardHash: '4', remove },
+        null
+      ];
+      let contracts = new stream.Readable({
+        read: () => contracts.push(data.shift()),
+        objectMode: true
+      });
+      node.shards = {};
+      node.shards.unlink = sinon.stub().callsArg(1);
+      node.shards.unlink.onCall(0).callsArgWith(1, new Error('ENOENT'));
+      node.database.ShardContract.find = sinon.stub().returns({
+        cursor: sinon.stub().returns(contracts)
+      });
+      node.reapExpiredShards(err => {
+        expect(remove.callCount).to.equal(3);
+        done(err);
+      });
+    });
 
   });
 

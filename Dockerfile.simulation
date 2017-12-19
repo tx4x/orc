@@ -71,6 +71,7 @@ RUN mkdir -p /root/.config/orcd
 COPY .simulation/providers /root/providers
 COPY .simulation/main/config /root/.config/orcd/config
 COPY .simulation/start.sh /root/start.sh
+RUN chmod 700 /root/providers/1/node_hs/hidden_service
 
 # Starting the Container
 EXPOSE 9089

@@ -503,7 +503,7 @@ describe('@class Rules', function() {
         }
         rules.renew(request, response, (err) => {
           expect(err.message).to.equal(
-            'Rejecting renewal of providerIdentity'
+            'Rejecting renewal of providerSignature'
           );
           done();
         });
