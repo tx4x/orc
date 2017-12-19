@@ -184,7 +184,6 @@ class Bridge extends EventEmitter {
     this.server.setTimeout(0);
     this._bindRoutes();
     this._addLoggerStream();
-    setInterval(() => this.audit(), constants.AUDIT_INTERVAL);
   }
 
   /**
@@ -626,10 +625,21 @@ class Bridge extends EventEmitter {
 
     const uploadShards = (shards, object, callback) => {
       let completed = 0;
+      let providerRequirements = shards.map((shard, i) => {
+        let [range, pool] = i &lt; rsparams.shards
+          // NB: Store primary shards with most trusted providers
+          ? [[0.75, 1], shards.length - rsparams.parity]
+          // NB: Store parity shards with unknown/untrusted providers
+          : [(i % 2 === 0 ? [0, 0.25] : [0.25, 0.75]), rsparams.parity];
 
-      async.eachLimit(shards, 3, (shard, next) => {
+        return { range, pool };
+      });
+
+      async.eachOfLimit(shards, 3, (shard, i, next) => {
         async.retry({ times: 10 }, (done) => {
-          this._pluckStorageProvider(shard.size, (err, target) => {
+          const { range, pool } = providerRequirements[i];
+
+          this._pluckStorageProvider(shard.size, range, pool, (err, target) => {
             if (err) {
               return done(err);
             }
@@ -741,19 +751,18 @@ class Bridge extends EventEmitter {
    * @param {function} next
    */
   downloadObject(req, res, next) {
-    this._downloadObject(req.params.id, (err, buffer, object, info) => {
+    this._downloadObject(req.params.id, (err, buffer, object) => {
       /* istanbul ignore if */
       if (err) {
         return next(err);
       }
 
-      const { rsparams } = info;
       const decipher = utils.createDecipher(
         Buffer.from(object.ecpub, 'hex'),
         Buffer.from(object.ecprv, 'hex')
       );
 
-      decipher.on('error', (err) => {
+      decipher.on('error', err => {
         this.node.logger.error(err.message);
         res.end();
       });
@@ -764,7 +773,7 @@ class Bridge extends EventEmitter {
         'Transfer-Encoding': ''
       });
 
-      decipher.pipe(slice(0, object.size - rsparams.padding)).pipe(res);
+      decipher.pipe(slice(0, object.size)).pipe(res);
       decipher.end(buffer);
     });
   }
@@ -900,29 +909,12 @@ class Bridge extends EventEmitter {
           }
         );
       }, () => {
-        assembleShards(object, size, rs, err => {
-          /* istanbul ignore if */
-          if (err) {
-            return next(err);
-          }
+        object._lastAccessTimestamp = Date.now();
 
-          const decipher = utils.createDecipher(
-            Buffer.from(object.ecpub, 'hex'),
-            Buffer.from(object.ecprv, 'hex')
-          );
-
-          decipher.on('error', (err) => {
-            this.node.logger.error(err.message);
+        object.save(() => {
+          assembleShards(object, size, rs, err => {
+            next(err, buffer, object, { failed, rsparams });
           });
-
-          decipher.pipe(slice(0, object.size - rsparams.padding)),
-          decipher.end(buffer);
-
-          next(null,
-            buffer,
-            object,
-            { failed, rsparams }
-          );
         });
       });
     });
@@ -1101,8 +1093,8 @@ class Bridge extends EventEmitter {
             return callback(err);
           }
 
-          this.emit('auditInternalFinished');
-          callback();
+          this.node.logger.info('finished auditing objects');
+          this.scoreAuditReports(callback);
         }
       );
     });
@@ -1182,6 +1174,12 @@ class Bridge extends EventEmitter {
         } else if (shard.audits.challenges.length === 0) {
           this.node.logger.info(`regenerating challenges for ${shard.hash}`);
           this._regenerateChallenges(shard, (err) => {
+            if (err) {
+              this.node.logger.warn(
+                `failed to regenerate challenges for ${shard.hash}` +
+                  err.message
+              );
+            }
             object.save(() => done(err, [shard, contract]));
           });
         } else {
@@ -1208,6 +1206,10 @@ class Bridge extends EventEmitter {
 
         this.node.auditRemoteShards(contact, audits, (err, proofs) => {
           const fail = (err, expected, actual) => {
+            this.node.logger.warn(
+              `shard audit failed, ${err.message}, ${expected} !== ${actual}`
+            );
+
             shard.decayed = true;
 
             const report = new this.database.AuditReport({
@@ -1226,6 +1228,7 @@ class Bridge extends EventEmitter {
           }
 
           const pass = (report) => {
+            shard.decayed = false;
             report.save(() => contract.save(() => done()));
           };
 
@@ -1250,12 +1253,22 @@ class Bridge extends EventEmitter {
           });
 
           if (shard.audits.challenges.length === 0) {
-            this._regenerateChallenges(shard, () => pass(report));
+            this.node.logger.info(`regenerating challenges for ${shard.hash}`);
+            this._regenerateChallenges(shard, (err) => {
+              if (err) {
+                this.node.logger.warn(
+                  `failed to regenerate challenges for ${shard.hash}, ` +
+                    err.message
+                );
+              }
+              pass(report);
+            });
           } else {
             pass(report);
           }
         });
       }, () => {
+        object._lastAuditTimestamp = Date.now();
         object.save((err) => {
           /* istanbul ignore if */
           if (err) {
@@ -1291,6 +1304,10 @@ class Bridge extends EventEmitter {
       }
 
       const { failed, rsparams } = info;
+      const range = failed.length &lt;= rsparams.parity
+        ? [0, 0.5] // NB: Parity shards failed, choose from low/unknown trust
+        : [0.75, 1]; // NB: Primary shards failed, choose trusted providers
+      const pool = failed.length;
 
       async.eachLimit(failed, 3, (recovery, done) => {
         const { shard, offset, length } = recovery;
@@ -1315,7 +1332,7 @@ class Bridge extends EventEmitter {
             accessPolicies: object.policies
           });
 
-          this._pluckStorageProvider(shard.size, (err, target) => {
+          this._pluckStorageProvider(shard.size, range, pool, (err, target) => {
             /* istanbul ignore if */
             if (err) {
               return done(err);
@@ -1354,9 +1371,13 @@ class Bridge extends EventEmitter {
   /**
    * @private
    * @param {number} size
+   * @param {number} trustPercentileRange
+   * @param {number} minPoolSize
    * @param {function} callback
    */
-  _pluckStorageProvider(size, callback) {
+  _pluckStorageProvider(size, trustPercentileRange, minPoolSize, callback) {
+    const [low, high] = trustPercentileRange;
+
     this.database.PeerProfile.find({
       updated: {
         $gt: Date.now() - this.options.providerCapacityPoolTimeout
@@ -1379,33 +1400,59 @@ class Bridge extends EventEmitter {
         profiles = [];
       }
 
-      let target = undefined;
-      let contact = undefined;
+      async.mapLimit(profiles, 6, (peer, done) => {
+        this.getPeerReputationScore(peer.identity, (err, score) => {
+          if (err) {
+            this.node.logger.warn(`failed to get peer rank, ${err.message}`);
+          }
 
-      knuthShuffle(profiles);
+          peer.score = score;
+          done(null, peer);
+        });
+      }, (err, profiles) => {
+        let target = undefined;
+        let contact = undefined;
+        let matches = profiles.filter(filter);
 
-      for (let i = 0; i &lt; profiles.length; i++) {
-        contact = this.node.router.getContactByNodeId(
-          profiles[i].identity
-        );
-        target = contact
-               ? [profiles[i].identity, contact]
-               : [profiles[i].identity, profiles[i].contact];
-
-        /* istanbul ignore else */
-        if (target !== undefined) {
-          break;
+        function filter(p) {
+          return p.score &amp;&amp;
+            p.score.percentile >= low &amp;&amp;
+            p.score.percentile &lt;= high;
         }
-      }
 
-      if (target === undefined) {
-        this.node.logger.warn(
-          'not enough capacity data collected to upload'
-        );
-        callback(new Error('Not enough capacity information'));
-      } else {
-        callback(null, target);
-      }
+        if (matches.length &lt; minPoolSize) {
+          this.node.logger.warn(
+            'not enough trust data to filter providers, choosing blindly'
+          );
+        } else {
+          profiles = matches;
+        }
+
+        knuthShuffle(profiles);
+
+        for (let i = 0; i &lt; profiles.length; i++) {
+          contact = this.node.router.getContactByNodeId(
+            profiles[i].identity
+          );
+          target = contact
+                 ? [profiles[i].identity, contact]
+                 : [profiles[i].identity, profiles[i].contact];
+
+          /* istanbul ignore else */
+          if (target !== undefined) {
+            break;
+          }
+        }
+
+        if (target === undefined) {
+          this.node.logger.warn(
+            'not enough capacity data collected to upload'
+          );
+          callback(new Error('Not enough capacity information'));
+        } else {
+          callback(null, target);
+        }
+      });
     });
   }
 
@@ -1452,8 +1499,13 @@ class Bridge extends EventEmitter {
               return callback(err);
             }
 
-            this.node.requestContractRenewal(shard.service,
-                                             contract.toObject(), callback);
+            async.retry({ times: 10 }, done => {
+              this.node.logger.info(
+                `trying contract renewal for ${shard.hash}`
+              );
+              this.node.requestContractRenewal(shard.service,
+                contract.toObject(), done);
+            }, callback);
           });
         });
       }).on('error', callback);
@@ -1476,7 +1528,7 @@ class Bridge extends EventEmitter {
    * payload to the bootstrap directory
    * @param {function} callback
    */
-  scoreAndPublishAuditReports(callback = () => null) {
+  scoreAuditReports(callback = () => null) {
     const payload = [];
     const profiles = new Set();
 
@@ -1508,61 +1560,54 @@ class Bridge extends EventEmitter {
     const queue = async.queue(worker, 1);
 
     queue.drain = () => {
-      this.node.reportAuditResults(payload, (err) => {
-        /* istanbul ignore if */
-        if (err) {
-          this.node.logger.warn(err.message);
+      async.series([
+        // NB: Keep track of reporting streaks
+        (done) => {
+          this.database.PeerProfile.update({
+            identity: { $in: [...profiles] }
+          }, {
+            $inc: { '_reports.streak': 1 },
+            $set: { '_reports.missed': 0 }
+          }, done);
+        },
+        // NB: Keep track of missed reports
+        (done) => {
+          this.database.PeerProfile.update({
+            identity: { $not: { $in: [...profiles] } }
+          }, {
+            $set: { '_reports.streak': 0 },
+            $inc: { '_reports.missed': 1 }
+          }, done);
+        },
+        // NB: Apply reward for 10+ streak
+        (done) => {
+          this.database.PeerProfile.update({
+            '_reports.streak': { $gte: 10 }
+          }, {
+            $inc: { 'reputation.score': 6 }
+          }, done);
+        },
+        // NB: Apply penalty for 2+ missed
+        (done) => {
+          this.database.PeerProfile.update({
+            '_reports.missed': { $gt: 2 },
+          }, {
+            $inc: { 'reputation.score': -3 }
+          }, done);
+        },
+        // NB: Rebalance any negative scores
+        (done) => {
+          this.database.PeerProfile.update({
+            'reputation.score': { $lt: 0 }
+          }, {
+            $set: { 'reputation.score': 0 }
+          }, done);
+        },
+        // NB: Clean up all consumed reports
+        (done) => {
+          this.database.AuditReport.remove({}, done);
         }
-
-        async.series([
-          // NB: Keep track of reporting streaks
-          (done) => {
-            this.database.PeerProfile.update({
-              identity: { $in: [...profiles] }
-            }, {
-              $inc: { '_reports.streak': 1 },
-              $set: { '_reports.missed': 0 }
-            }, done);
-          },
-          // NB: Keep track of missed reports
-          (done) => {
-            this.database.PeerProfile.update({
-              identity: { $not: { $in: [...profiles] } }
-            }, {
-              $set: { '_reports.streak': 0 },
-              $inc: { '_reports.missed': 1 }
-            }, done);
-          },
-          // NB: Apply reward for 10+ streak
-          (done) => {
-            this.database.PeerProfile.update({
-              '_reports.streak': { $gte: 10 }
-            }, {
-              $inc: { 'reputation.score': 6 }
-            }, done);
-          },
-          // NB: Apply penalty for 2+ missed
-          (done) => {
-            this.database.PeerProfile.update({
-              '_reports.missed': { $gt: 2 },
-            }, {
-              $inc: { 'reputation.score': -3 }
-            }, done);
-          },
-          // NB: Rebalance any negative scores
-          (done) => {
-            this.database.PeerProfile.update({
-              'reputation.score': { $lt: 0 }
-            }, {
-              $set: { 'reputation.score': 0 }
-            }, done);
-          },
-          // NB: Clean up all consumed reports
-          (done) => {
-            this.database.AuditReport.remove({}, done);
-          }
-        ], callback);
-      });
+      ], callback);
     };
 
     cursor.on('data', (report) => queue.push(report)).on('error', callback);
@@ -1573,25 +1618,17 @@ class Bridge extends EventEmitter {
    */
   _applyScore(auditReport, callback) {
     async.series([
-      // NB: Reporter loses 1 per report
+      // NB: Provider gains/loses 1 per report
       (done) => {
         this.database.PeerProfile.findOneAndUpdate({
-          identity: auditReport.reporter
+          identity: auditReport.provider
         }, {
-          $inc: { 'reputation.score': -1 }
+          $inc: {
+            'reputation.score': auditReport.expected === auditReport.actual
+              ? 1
+              : -1
+          }
         }, done);
-      },
-      // NB: Reporter gains 1 per positive report
-      (done) => {
-        if (auditReport.expected === auditReport.actual) {
-          this.database.PeerProfile.findOneAndUpdate({
-            identity: auditReport.reporter
-          }, {
-            $inc: { 'reputation.score': 1 }
-          }, done);
-        } else {
-          done();
-        }
       },
       // NB: Reporter gains 1 if another peer reports the same outcome
       (done) => {

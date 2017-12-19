@@ -277,6 +277,7 @@ class Rules {
       }
 
       const allowed = [
+        'ownerSignature',
         'ownerIdentity',
         'ownerParentKey',
         'ownerIndex',
@@ -288,19 +289,20 @@ class Rules {
         renewal
       );
 
-      for (let prop of difference.filter(p => !p.includes('Signature'))) {
+      for (let prop of difference) {
         if (!allowed.includes(prop)) {
           return next(new Error(`Rejecting renewal of ${prop}`));
         }
+        contract[prop] = renewal[prop];
       }
 
-      renewal.sign('provider', this.node.spartacus.privateKey);
-      renewal.save((err) => {
+      contract.sign('provider', this.node.spartacus.privateKey);
+      contract.save((err) => {
         if (err) {
           return next(err);
         }
 
-        response.send([renewal.toObject()]);
+        response.send([contract.toObject()]);
       });
     });
   }

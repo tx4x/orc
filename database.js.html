@@ -92,6 +92,7 @@
         <pre
             class="sunlight-highlight-javascript ">'use strict';
 
+const constants = require('./constants');
 const ms = require('ms');
 const { Readable: ReadableStream } = require('stream');
 const { EventEmitter } = require('events');
@@ -672,6 +673,10 @@ const ObjectPointer = new Schema({
     type: Date,
     default: Date.now
   },
+  _lastAccessTimestamp: {
+    type: Date,
+    default: Date.now
+  },
   _isOwner: {
     type: Boolean,
     default: true
@@ -683,9 +688,11 @@ ObjectPointer.set('toObject', {
     delete ret._id;
     delete ret.__v;
     delete ret._lastAuditTimestamp;
+    delete ret._lastAccessTimestamp;
     delete ret._isOwner;
     delete ret.ecprv;
     ret.id = doc._id;
+    ret.decay = doc.percentDecayed;
     ret.shards = doc.shards.map(s => {
       return {
         size: s.size,
@@ -693,10 +700,20 @@ ObjectPointer.set('toObject', {
         service: s.service
       };
     });
-  }
+  },
+  virtuals: false
 });
 
 ObjectPointer.virtual('percentDecayed').get(function() {
+  const decayTime = Date.now() - (constants.SCORE_INTERVAL +
+                                  constants.REAPER_GRACE);
+  const auditDecay = this._lastAuditTimestamp &lt; decayTime;
+  const accessDecay = this._lastAccessTimestamp &lt; decayTime;
+
+  if (auditDecay &amp;&amp; accessDecay) {
+    return 1;
+  }
+
   let total = this.shards.length;
   let decayed = this.shards.filter(s => s.decayed).length;
 
