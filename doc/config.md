@@ -233,9 +233,3 @@ debugging.
 
 Defines the verbosity level of the Tor process logging. Valid options are: `debug`, `info`, `notice`.
 
-#### ProviderBondDepositAmount
-
-##### Default: `0`
-
-Minimum tokens bonded in order to establish baseline trust with a storage provider.
-

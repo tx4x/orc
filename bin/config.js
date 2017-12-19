@@ -65,8 +65,7 @@ module.exports = function(datadir) {
 
     // Additional Bridge Options
     ProviderCapacityPoolTimeout: '48HR',
-    ProviderFailureBlacklistTimeout: '12HR',
-    ProviderBondDepositAmount: '0'
+    ProviderFailureBlacklistTimeout: '12HR'
 
   };
 
