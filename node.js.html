@@ -103,7 +103,6 @@ const spartacus = require('kad-spartacus');
 const cas = require('kad-content');
 const hashcash = require('kad-hashcash');
 const constants = require('./constants');
-const async = require('async');
 const ms = require('ms');
 const utils = require('./utils');
 const version = require('./version');
@@ -502,22 +501,6 @@ class Node extends kad.KademliaNode {
    * @param {object} result.0 - Completed contract result
    * @param {string} result.1 - Consignment token
    */
-
-  /**
-   * Publishes the supplied audit reports to nearest neighbors
-   * @param {array[]} report
-   * @param {Node~reportAuditResultsCallback} callback
-   */
-  reportAuditResults(report, callback) {
-    const peers = this.router.getClosestContactsToKey(
-      this.identity,
-      kad.constants.ALPHA
-    );
-
-    async.each(peers, (peer, done) => {
-      this.send('REPORT', report, peer, done);
-    }, callback);
-  }
 
   /**
    * Make sure incompatible nodes don't make it into our routing table
