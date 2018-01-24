@@ -59,7 +59,7 @@ npm install -g windows-build-tools
 This package exposes the program `orcd`. To install, use the `--global` flag.
 
 ```
-GRANAX_USE_TOR_ALPHA=1 npm install -g @orcproject/orc
+npm install -g @orcproject/orc
 ```
 
 ### Core Library
@@ -69,7 +69,7 @@ protocol. To use it in your project, from your project's root directory,
 install as a dependency.
 
 ```
-GRANAX_USE_TOR_ALPHA=1 npm install @orcproject/orc --save
+npm install @orcproject/orc --save
 ```
 
 Then you can require the library with:
