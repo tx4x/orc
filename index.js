@@ -75,6 +75,3 @@ module.exports.utils = require('./lib/utils');
 
 /** {@link module:orc/version} */
 module.exports.version = require('./lib/version');
-
-/** {@link module:orc/logger} */
-module.exports.logger = require('./lib/logger');

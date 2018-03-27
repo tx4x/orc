@@ -3,8 +3,8 @@
 const { EventEmitter } = require('events');
 const { expect } = require('chai');
 const sinon = require('sinon');
-const { KademliaNode } = require('kad');
-const { utils: keyutils } = require('kad-spartacus');
+const kadence = require('@kadenceproject/kadence');
+const { KademliaNode } = kadence;
 const utils = require('../lib/utils');
 const Node = require('../lib/node');
 const proxyquire = require('proxyquire');
@@ -273,12 +273,12 @@ describe('@class Node', function() {
     it('should callback error if peer returns one', function(done) {
       const node = createNode({});
       const peer = ['identity', { xpub: 'xpub' }];
-      const renterHdKey = keyutils.toHDKeyFromSeed().deriveChild(1);
-      const farmerHdKey = keyutils.toHDKeyFromSeed().deriveChild(1);
+      const renterHdKey = kadence.utils.toHDKeyFromSeed().deriveChild(1);
+      const farmerHdKey = kadence.utils.toHDKeyFromSeed().deriveChild(1);
       const contract = new database.ShardContract({
-        ownerIdentity: keyutils.toPublicKeyHash(renterHdKey.publicKey)
+        ownerIdentity: kadence.utils.toPublicKeyHash(renterHdKey.publicKey)
                          .toString('hex'),
-        providerIdentity: keyutils.toPublicKeyHash(farmerHdKey.publicKey)
+        providerIdentity: kadence.utils.toPublicKeyHash(farmerHdKey.publicKey)
                             .toString('hex'),
         ownerParentKey: renterHdKey.publicExtendedKey,
         providerParentKey: farmerHdKey.publicExtendedKey,
@@ -303,12 +303,12 @@ describe('@class Node', function() {
     it('should callback error if descriptor invalid', function(done) {
       const node = createNode({});
       const peer = ['identity', { xpub: 'xpub' }];
-      const renterHdKey = keyutils.toHDKeyFromSeed().deriveChild(1);
-      const farmerHdKey = keyutils.toHDKeyFromSeed().deriveChild(1);
+      const renterHdKey = kadence.utils.toHDKeyFromSeed().deriveChild(1);
+      const farmerHdKey = kadence.utils.toHDKeyFromSeed().deriveChild(1);
       const contract = new database.ShardContract({
-        ownerIdentity: keyutils.toPublicKeyHash(renterHdKey.publicKey)
+        ownerIdentity: kadence.utils.toPublicKeyHash(renterHdKey.publicKey)
                          .toString('hex'),
-        providerIdentity: keyutils.toPublicKeyHash(farmerHdKey.publicKey)
+        providerIdentity: kadence.utils.toPublicKeyHash(farmerHdKey.publicKey)
                             .toString('hex'),
         ownerParentKey: renterHdKey.publicExtendedKey,
         providerParentKey: farmerHdKey.publicExtendedKey,
@@ -336,12 +336,12 @@ describe('@class Node', function() {
     it('should callback error if descriptor not complete', function(done) {
       const node = createNode({});
       const peer = ['identity', { xpub: 'xpub' }];
-      const renterHdKey = keyutils.toHDKeyFromSeed().deriveChild(1);
-      const farmerHdKey = keyutils.toHDKeyFromSeed().deriveChild(1);
+      const renterHdKey = kadence.utils.toHDKeyFromSeed().deriveChild(1);
+      const farmerHdKey = kadence.utils.toHDKeyFromSeed().deriveChild(1);
       const contract = new database.ShardContract({
-        ownerIdentity: keyutils.toPublicKeyHash(renterHdKey.publicKey)
+        ownerIdentity: kadence.utils.toPublicKeyHash(renterHdKey.publicKey)
                          .toString('hex'),
-        providerIdentity: keyutils.toPublicKeyHash(farmerHdKey.publicKey)
+        providerIdentity: kadence.utils.toPublicKeyHash(farmerHdKey.publicKey)
                             .toString('hex'),
         ownerParentKey: renterHdKey.publicExtendedKey,
         providerParentKey: farmerHdKey.publicExtendedKey,
@@ -369,12 +369,12 @@ describe('@class Node', function() {
     it('should store the completed contract and callback', function(done) {
       const node = createNode({});
       const peer = ['identity', { xpub: 'xpub' }];
-      const renterHdKey = keyutils.toHDKeyFromSeed().deriveChild(1);
-      const farmerHdKey = keyutils.toHDKeyFromSeed().deriveChild(1);
+      const renterHdKey = kadence.utils.toHDKeyFromSeed().deriveChild(1);
+      const farmerHdKey = kadence.utils.toHDKeyFromSeed().deriveChild(1);
       const contract = new database.ShardContract({
-        ownerIdentity: keyutils.toPublicKeyHash(renterHdKey.publicKey)
+        ownerIdentity: kadence.utils.toPublicKeyHash(renterHdKey.publicKey)
                          .toString('hex'),
-        providerIdentity: keyutils.toPublicKeyHash(farmerHdKey.publicKey)
+        providerIdentity: kadence.utils.toPublicKeyHash(farmerHdKey.publicKey)
                             .toString('hex'),
         ownerParentKey: renterHdKey.publicExtendedKey,
         providerParentKey: farmerHdKey.publicExtendedKey,
