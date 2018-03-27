@@ -6,9 +6,7 @@ const async = require('async');
 const program = require('commander');
 const bytes = require('bytes');
 const hdkey = require('hdkey');
-const hibernate = require('kad-hibernate');
-const spartacus = require('kad-spartacus');
-const onion = require('kad-onion');
+const kadence = require('@kadenceproject/kadence');
 const ms = require('ms');
 const bunyan = require('bunyan');
 const RotatingLogStream = require('bunyan-rotating-file-stream');
@@ -44,7 +42,6 @@ if (program.datadir && !program.config) {
 }
 
 const config = require('rc')('orcd', options(program.datadir), argv);
-const kad = require('kad');
 const mongodb = require('mongodb-bin-wrapper');
 const mongodargs = [
   '--port', config.MongoDBPort,
@@ -52,7 +49,7 @@ const mongodargs = [
 ];
 
 // Extend the Kad T_RESPONSETIMEOUT to 30s because Tor
-kad.constants.T_RESPONSETIMEOUT = ms('30S');
+kadence.constants.T_RESPONSETIMEOUT = ms('30S');
 
 let xprivkey, parentkey, childkey, identity, logger, mongod, bridge;
 
@@ -60,7 +57,7 @@ let xprivkey, parentkey, childkey, identity, logger, mongod, bridge;
 if (!fs.existsSync(config.PrivateExtendedKeyPath)) {
   fs.writeFileSync(
     config.PrivateExtendedKeyPath,
-    spartacus.utils.toHDKeyFromSeed().privateExtendedKey
+    kadence.utils.toHDKeyFromSeed().privateExtendedKey
   );
 }
 
@@ -70,7 +67,7 @@ function _init() {
   parentkey = hdkey.fromExtendedKey(xprivkey)
                 .derive(orc.constants.HD_KEY_DERIVATION_PATH);
   childkey = parentkey.deriveChild(parseInt(config.ChildDerivationIndex));
-  identity = spartacus.utils.toPublicKeyHash(childkey.publicKey)
+  identity = kadence.utils.toPublicKeyHash(childkey.publicKey)
                .toString('hex');
 
   // Initialize logging
@@ -207,7 +204,7 @@ function init() {
   });
 
   // Establish onion hidden service
-  node.plugin(onion({
+  node.plugin(kadence.onion({
     dataDirectory: config.NodeOnionServiceDataDirectory,
     virtualPort: config.NodeVirtualPort,
     localMapping: `127.0.0.1:${config.NodeListenPort}`,
@@ -245,7 +242,7 @@ function init() {
 
   // Plugin bandwidth metering if enabled
   if (!!parseInt(config.BandwidthAccountingEnabled)) {
-    node.plugin(hibernate({
+    node.plugin(kadence.hibernate({
       limit: config.BandwidthAccountingMax,
       interval: config.BandwidthAccountingReset,
       reject: ['CLAIM', 'FIND_VALUE', 'STORE', 'CONSIGN']
@@ -254,8 +251,8 @@ function init() {
 
   // Use verbose logging if enabled
   if (!!parseInt(config.VerboseLoggingEnabled)) {
-    node.rpc.deserializer.append(new orc.logger.IncomingMessage(logger));
-    node.rpc.serializer.prepend(new orc.logger.OutgoingMessage(logger));
+    node.rpc.deserializer.append(new kadence.logger.IncomingMessage(logger));
+    node.rpc.serializer.prepend(new kadence.logger.OutgoingMessage(logger));
   }
 
   // Cast network nodes to an array
@@ -275,7 +272,7 @@ function init() {
 
       return node.router.events.once('add', (identity) => {
         config.NetworkBootstrapNodes = [
-          orc.utils.getContactURL([
+          kadence.utils.getContactURL([
             identity,
             node.router.getContactByNodeId(identity)
           ])
