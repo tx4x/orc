@@ -3,7 +3,7 @@
 const { expect } = require('chai');
 const getDatabase = require('./fixtures/database');
 const { KadStorageAdapter } = require('../lib/database');
-const { utils: keyutils } = require('kad-spartacus');
+const { utils: keyutils } = require('@kadenceproject/kadence');
 const crypto = require('crypto');
 
 

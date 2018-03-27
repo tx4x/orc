@@ -19,7 +19,7 @@ const ws = require('ws');
 const getDatabase = require('./fixtures/database');
 const url = require('url');
 const qs = require('querystring');
-const { utils: keyutils } = require('kad-spartacus');
+const { utils: keyutils } = require('@kadenceproject/kadence');
 const ProofStream = require('../lib/proof');
 
 
