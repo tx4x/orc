@@ -1,4 +1,4 @@
-FROM debian:8
+FROM debian:9
 LABEL maintainer "gordonh@member.fsf.org"
 RUN apt-get update
 RUN DEBIAN_FRONTEND=noninteractive apt-get -yq upgrade
@@ -36,7 +36,6 @@ RUN ARCH= && dpkgArch="$(dpkg --print-architecture)" \
   && tar -xJf "node-v$NODE_VERSION-linux-$ARCH.tar.xz" -C /usr/local --strip-components=1 --no-same-owner \
   && rm "node-v$NODE_VERSION-linux-$ARCH.tar.xz" SHASUMS256.txt.asc SHASUMS256.txt \
   && ln -s /usr/local/bin/node /usr/local/bin/nodejs
-ENV GRANAX_USE_TOR_ALPHA="1"
 RUN git clone https://github.com/orcproject/orc /root/orc; \
     git fetch --tags; \
     git checkout $(git describe --tags `git rev-list --tags --max-count=1`); \

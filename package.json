@@ -1,7 +1,7 @@
 {
   "name": "@orcproject/orc",
-  "version": "10.0.0-alpha.6",
-  "description": "distributed anonymous storage network",
+  "version": "10.1.0",
+  "description": "distributed, private, anonymous storage network",
   "main": "index.js",
   "bin": {
     "orcd": "bin/orcd.js"
@@ -44,7 +44,7 @@
     "node": "^8.9.3"
   },
   "dependencies": {
-    "@kadenceproject/kadence": "^3.2.2",
+    "@kadenceproject/kadence": "^3.3.0",
     "@ronomon/reed-solomon": "^4.0.1",
     "async": "^2.4.1",
     "basic-auth": "^1.1.0",
