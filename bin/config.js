@@ -28,10 +28,9 @@ module.exports = function(datadir) {
 
     // Shard Database
     ShardStorageDataDirectory: join(datadir, 'provider_vault'),
-    ShardStorageMaxAllocation: '0GB',
+    ShardStorageMaxAllocation: '5GB',
     ShardReaperInterval: '24HR',
-    ShardReaperInvalidationBlocks: '432',
-    ShardCapacityUpdateInterval: '30M',
+    ShardCapacityUpdateInterval: '60M',
 
     // Node Options
     NodeVirtualPort: '80',
@@ -42,6 +41,11 @@ module.exports = function(datadir) {
     NetworkBootstrapNodes: [
       'http://z2ybz7kjxjtfiwcervfh376swy4je3ye4yne2atoi727634qzjonk7id.onion:80'
     ],
+
+    // Trusted Identities
+    TrustedIdentities: {
+      '*': 'PING,FIND_NODE,FIND_VALUE,STORE'
+    },
 
     // Bandwidth Metering
     BandwidthAccountingEnabled: '0',

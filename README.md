@@ -1,69 +1,92 @@
+<p align="center" class="docstrap-hideme">
+  <a href="https://orc.network"><img src="https://avatars2.githubusercontent.com/u/29236106?s=256"></a>
+</p>
+<p style="font-size:18px" align="center"><strong>Decentralized, Anonymous, Object Storage</strong></p>
+<p align="center">
+  Join the discussion in <code>#orc</code> on our <a href="https://matrix.counterpointhackers.org/_matrix/client/#/room/#orc:matrix.counterpointhackers.org">Matrix server</a>!
+</p>
+<div align="center">
+  <a href="https://travis-ci.org/orcproject/orc">
+    <img src="https://img.shields.io/travis/orcproject/orc.svg?style=flat-square" alt="Build Status">
+  </a> | 
+  <a href="https://coveralls.io/r/orcproject/orc">
+    <img src="https://img.shields.io/coveralls/orcproject/orc.svg?style=flat-square" alt="Test Coverage">
+  </a> | 
+  <a href="https://www.npmjs.com/package/@orcproject/orc">
+    <img src="https://img.shields.io/npm/v/@orcproject/orc.svg?style=flat-square" alt="NPM Package">
+  </a> | 
+  <a href="https://hub.docker.com/r/orcproject/orc">
+    <img src="https://img.shields.io/docker/pulls/orcproject/orc.svg?style=flat-square" alt="Docker Hub">
+  </a> | 
+  <a href="https://raw.githubusercontent.com/orcproject/orc/master/LICENSE">
+    <img src="https://img.shields.io/badge/license-AGPLv3-blue.svg?style=flat-square" alt="AGPL-3.0 License">
+  </a> | 
+  <a href="https://github.com/orcproject/orc">
+    <img src="https://img.shields.io/github/last-commit/orcproject/orc.svg?style=flat-square" alt="Source Code">
+  </a>
+</div>
+
+
 ---
 
 The [**Onion Routed Cloud**](https://orc.network). ORC is a decentralized, 
 anonymous, object storage platform owned and operated by allies in defense of 
 human rights and opposition to censorship. 
 
-Join the discussion in `#orc` on our [community chat](https://matrix.counterpointhackers.org/_matrix/client/#/room/#orc:matrix.counterpointhackers.org)!
-
-[![Build Status](https://img.shields.io/travis/orcproject/orc.svg?style=flat-square)](https://travis-ci.org/orcproject/orc) | 
-[![Test Coverage](https://img.shields.io/coveralls/orcproject/orc.svg?style=flat-square)](https://coveralls.io/r/orcproject/orc) | 
-[![Node Package](https://img.shields.io/npm/v/@orcproject/orc.svg?style=flat-square)](https://www.npmjs.com/package/@orcproject/orc) | 
-[![Docker Hub](https://img.shields.io/docker/pulls/orcproject/orc.svg?style=flat-square)](https://hub.docker.com/r/orcproject/orc) | 
-[![License (AGPL-3.0)](https://img.shields.io/badge/license-AGPL3.0-blue.svg?style=flat-square)](https://raw.githubusercontent.com/orcproject/orc/master/LICENSE)
-
-> **Warning!** ORC is *alpha* software and is still a highly experimental 
-> *test* network! Be smart, keep backups, and stay safe out there! 
-
 ### Installation
 
-Pull the [image from Docker Hub](https://hub.docker.com/r/orcproject/orc/).
+#### Using NPM
+
+```
+npm install -g @orcproject/orc
+orcd
+```
+
+#### Using Docker
 
 ```
 docker pull orcproject/orc
-```
-
-Create a data directory on the host.
-
-```
 mkdir ~/.config/orcd
+docker run -p 9089:9089 -v ~/.config/orcd:/root/.config/orcd orcproject/orc
 ```
 
-If you are running ORC for the first time, mount the data directory and run it 
-normally.
+### Usage
 
+On first run, ORC will generate a fresh configuration and setup the data 
+directory. Modify the created configuration at `~/.config/orcd/config` as 
+desired (see the {@tutorial config}) and send `SIGINT` to the process 
+(`Ctrl+C`). Once you are satisfied with your configuration, run ORC again.
+
+Once started, you can use use the guide for {@tutorial api} to interact with 
+it! You can watch your logs with `tail -f ~/.config/orcd/orcd.log`.
+
+ORC works on an explicit trust model. By default, ORC will only trust unknown 
+nodes for discovering peers, retreiving public objects, and storing object 
+metadata. If you want to store objects, you must establish trust with other
+nodes. This is done explicity by all parties who trust each other. Run ORC with 
+your friends, other activists, or complementary organizations.
+
+Each node is identified by the hash of their public key. You'll see this on 
+every log line under the `name` property. For example, 
+`b605647afc146760fc15ef7cd59720f1ee7d82e1`. To establish trust with a friend, 
+each of you must provide your identity to each other out of band (we recommend 
+using [Ricochet](https://ricochet.im)). Once you've exchanged identity keys, 
+add a trust policy to your configuration file.
+
+```ini
+[TrustedIdenties]
+b605647afc146760fc15ef7cd59720f1ee7d82e1=*
 ```
-docker run --volume ~/.config/orcd:/root/.config/orcd orcproject/orc
-```
 
-This will generate a fresh configuration and setup the data directory. Modify 
-the created configuration at `~/.config/orcd/config` as desired (see the 
-{@tutorial config}) and send `SIGINT` to the process (`Ctrl+C`). If you want to 
-provide storage capacity to the network, be sure to set your desired allocation 
-for `ShardStorageMaxAllocation`.
+For every node you wish to add to your storage grid, each must add a policy 
+like the above which says "allow `b605647afc146760fc15ef7cd59720f1ee7d82e1` 
+to perform any (`*`) calls". See the {@tutorial config} for more information.
 
-Once you are finished, run the ORC container again, but expose the API to the 
-host, mount the data directory, allocate a pseudo TTY, detach the process, and 
-tell docker to keep it running (even starting automatically on system boot).
+> If you are a press organization or activist group and would like help 
+> getting setup with ORC, please reach out to us by email at 
+> `counterpoint[at]openmailbox.org` - we'd love to assist you!
 
-```
-docker run \
-  --publish 127.0.0.1:9089:9089 \
-  --volume ~/.config/orcd:/root/.config/orcd \
-  --restart always \
-  --tty --detach orcproject/orc
-```
-
-Once the container has started, you can use use the guide for {@tutorial api} 
-to interact with it! You can watch your logs with 
-`tail -f ~/.config/orcd/orcd.log`.
-
-See the [`docker run` documentation](https://docs.docker.com/engine/reference/commandline/run/) 
-for more information. If you prefer to install ORC manually, see the guide for 
-{@tutorial install}. Once installed, simply run `orcd` with an optional 
-configuration file using the `--config <path/to/config>` option.
-
-#### Automatic Security Updates
+### Automatic Security Updates
 
 When running the ORC server installation with Docker, you can configure your 
 node to periodically check for updates and automatically download the latest 
@@ -106,6 +129,7 @@ Happy hacking!
 
 ### License
 
+```
 ORC - Distributed Anonymous Cloud  
 Copyright (C) 2017  Counterpoint Hackerspace, Ltd.  
 Copyright (C) 2017  Gordon Hall  
@@ -121,5 +145,5 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU Affero General Public License for more details.
 
 You should have received a copy of the GNU Affero General Public License
-along with this program.  If not, see
-[http://www.gnu.org/licenses/](http://www.gnu.org/licenses/).
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+```

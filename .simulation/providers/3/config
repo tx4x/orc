@@ -28,3 +28,6 @@ BridgeAuthenticationPassword=8a9810d52c4a1a56166731155f651e16
 BridgeTempStagingBaseDir=/root/providers/3/tmp
 ProviderCapacityPoolTimeout=48HR
 ProviderFailureBlacklistTimeout=12HR
+
+[TrustedIdentities]
+*=*

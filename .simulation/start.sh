@@ -5,7 +5,6 @@ echo "starting chutney tor sandbox nodes"
 
 echo "starting orc provider 1 (seed) as daemon..."
 node /root/orc/bin/orcd.js --datadir /root/providers/1 --daemon 
-echo "done."
 
 echo "waiting 30 seconds for hs descriptors to be ready..."
 sleep 30

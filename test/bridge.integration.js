@@ -378,7 +378,7 @@ describe('@class Bridge (integration)', function() {
       let body = '';
       res.on('data', (data) => body += data);
       res.on('end', () => {
-        expect(body).to.equal('Not enough capacity information');
+        expect(body).to.equal('Not enough capacity/trust information');
         done();
       });
     });
@@ -409,7 +409,7 @@ describe('@class Bridge (integration)', function() {
       let body = '';
       res.on('data', (data) => body += data);
       res.on('end', () => {
-        expect(body).to.equal('Not enough capacity information');
+        expect(body).to.equal('Not enough capacity/trust information');
         done();
       });
     });

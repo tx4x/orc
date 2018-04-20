@@ -233,3 +233,19 @@ debugging.
 
 Defines the verbosity level of the Tor process logging. Valid options are: `debug`, `info`, `notice`.
 
+#### [TrustedIdenties]
+
+##### Default: `*=PING,FIND_NODE,FIND_VALUE,STORE,RETRIEVE`
+
+Defines a map of identities to allowed RPC calls. The default policy allows all
+nodes to perform RPC calls necessary for discovering peers, storing metadata, and 
+downloading public objects.
+
+To establish a full trust policy with another known node, exchange your identity 
+keys and add a wildcard policy:
+
+```
+b605647afc146760fc15ef7cd59720f1ee7d82e1=*
+```
+
+You can also provide a comma-delimited list of methods to allow.

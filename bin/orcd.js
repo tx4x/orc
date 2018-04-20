@@ -106,7 +106,8 @@ function _init() {
   try {
     npid.create(config.DaemonPidFilePath).removeOnExit();
   } catch (err) {
-    logger.error('Failed to create PID file, is orcd already running?');
+    logger.error(err.message);
+    logger.error('failed to create pid file, is orcd already running?');
     process.exit(1);
   }
 
@@ -131,9 +132,6 @@ function _init() {
       process.exit(code);
     }
   });
-
-  // TODO: Start Zcash process
-  // TODO: Connect wallet RPC
 
   // Shutdown children cleanly on exit
   process.on('exit', killChildrenAndExit);
@@ -186,8 +184,34 @@ function init() {
     agent: orc.version.protocol
   };
 
-  // Initialize protocol implementation
+  // Apply trust policy rules
+  const trustPolicies = [];
+
+  for (let identity in config.TrustedIdentities) {
+    trustPolicies.push({
+      identity,
+      methods: config.TrustedIdentities[identity].split(',').map(m => m.trim())
+    });
+  }
+
+  // Warn about permissive trust policies
+  trustPolicies.forEach(policy => {
+    if (policy.identity === '*') {
+      if (policy.methods.includes('*')) {
+        logger.warn('using a global whitelist trust policy not recommended');
+      }
+      if (policy.methods.includes('CONSIGN')) {
+        logger.warn('trust policy allows anyone to store object on this node');
+      }
+      logger.warn(`methods ${policy.methods} globally whitelisted`);
+    } else {
+      logger.info(`policy ${policy.identity} = ${policy.methods} enabled`);
+    }
+  });
+
   logger.info('initializing orc node');
+
+  // Initialize protocol implementation
   const node = new orc.Node({
     database,
     shards,
@@ -195,7 +219,8 @@ function init() {
     transport,
     contact,
     privateExtendedKey: xprivkey,
-    keyDerivationIndex: parseInt(config.ChildDerivationIndex)
+    keyDerivationIndex: parseInt(config.ChildDerivationIndex),
+    trustPolicies
   });
 
   // Handle any fatal errors
