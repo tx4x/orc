@@ -6,11 +6,9 @@ RUN apt-get update
 RUN DEBIAN_FRONTEND=noninteractive apt-get -yq upgrade
 RUN DEBIAN_FRONTEND=noninteractive apt-get -yq install wget apt-transport-https gnupg curl libssl-dev git python build-essential
 
-# Setup Tor Alpha (for v3 Hidden Services Support)
+# Setup Tor
 RUN echo "deb http://deb.torproject.org/torproject.org stretch main" >> /etc/apt/sources.list
 RUN echo "deb-src http://deb.torproject.org/torproject.org stretch main" >> /etc/apt/sources.list
-RUN echo "deb http://deb.torproject.org/torproject.org tor-experimental-0.3.2.x-stretch main" >> /etc/apt/sources.list
-RUN echo "deb-src http://deb.torproject.org/torproject.org tor-experimental-0.3.2.x-stretch main" >> /etc/apt/sources.list
 RUN gpg --keyserver keys.gnupg.net --recv A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89
 RUN gpg --export A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89 | apt-key add -
 RUN apt-get update
@@ -57,7 +55,6 @@ RUN git clone https://git.torproject.org/chutney.git /root/chutney
 RUN /root/chutney/chutney configure /root/chutney/networks/hs-v3-intro
 
 # Setup ORC Daemon
-ENV GRANAX_USE_TOR_ALPHA="1"
 ENV GRANAX_USE_SYSTEM_TOR="1"
 ENV GRANAX_TOR_ARGS="--defaults-torrc /root/chutney/net/nodes/012c/torrc --SocksPort auto --ControlPort auto --RunAsDaemon 0"
 RUN git clone https://github.com/orcproject/orc /root/orc; \

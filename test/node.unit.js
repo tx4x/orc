@@ -50,7 +50,7 @@ describe('@class Node', function() {
       const serverUpload = sandbox.stub(node.server, 'upload');
       const serverDownload = sandbox.stub(node.server, 'download');
       expect(node).to.be.instanceOf(Node);
-      expect(plugin.callCount).to.equal(4);
+      expect(plugin.callCount).to.equal(5);
       node.transport.emit('download');
       node.transport.emit('upload');
       setImmediate(() => {
