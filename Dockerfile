@@ -42,6 +42,6 @@ RUN git clone https://github.com/orcproject/orc /root/orc; \
     cd /root/orc && npm install --unsafe-perm --production
 ENV orcd_BridgeHostname="0.0.0.0"
 VOLUME ["/root/.config/orcd"]
-EXPOSE 9088 9099 37017
+EXPOSE 9089
 ENTRYPOINT ["node", "/root/orc/bin/orcd.js"]
 CMD []
