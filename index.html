@@ -34,7 +34,7 @@
 			<li class="dropdown">
 				<a href="modules.list.html" class="dropdown-toggle" data-toggle="dropdown">Modules<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="module-orc_constants.html">orc/constants</a></li><li><a href="module-orc_logger.html">orc/logger</a></li><li><a href="module-orc_utils.html">orc/utils</a></li><li><a href="module-orc_version.html">orc/version</a></li>
+					<li><a href="module-orc_constants.html">orc/constants</a></li><li><a href="module-orc_utils.html">orc/utils</a></li><li><a href="module-orc_version.html">orc/version</a></li>
 				</ul>
 			</li>
 			
@@ -106,44 +106,69 @@
 
 
     <section class="readme-section">
-        <article><hr>
+        <article><p><p align="center" class="docstrap-hideme">
+  <a href="https://orc.network"><img src="https://avatars2.githubusercontent.com/u/29236106?s=256"></a>
+</p></p>
+<p><p style="font-size:18px" align="center"><strong>Decentralized, Anonymous, Object Storage</strong></p></p>
+<p><p align="center">
+  Join the discussion in <code>#orc</code> on our <a href="https://matrix.counterpointhackers.org/_matrix/client/#/room/#orc:matrix.counterpointhackers.org">Matrix server</a>!
+</p></p>
+<div align="center">
+  <a href="https://travis-ci.org/orcproject/orc">
+    <img src="https://img.shields.io/travis/orcproject/orc.svg?style=flat-square" alt="Build Status">
+  </a> | 
+  <a href="https://coveralls.io/r/orcproject/orc">
+    <img src="https://img.shields.io/coveralls/orcproject/orc.svg?style=flat-square" alt="Test Coverage">
+  </a> | 
+  <a href="https://www.npmjs.com/package/@orcproject/orc">
+    <img src="https://img.shields.io/npm/v/@orcproject/orc.svg?style=flat-square" alt="NPM Package">
+  </a> | 
+  <a href="https://hub.docker.com/r/orcproject/orc">
+    <img src="https://img.shields.io/docker/pulls/orcproject/orc.svg?style=flat-square" alt="Docker Hub">
+  </a> | 
+  <a href="https://raw.githubusercontent.com/orcproject/orc/master/LICENSE">
+    <img src="https://img.shields.io/badge/license-AGPLv3-blue.svg?style=flat-square" alt="AGPL-3.0 License">
+  </a> | 
+  <a href="https://github.com/orcproject/orc">
+    <img src="https://img.shields.io/github/last-commit/orcproject/orc.svg?style=flat-square" alt="Source Code">
+  </a>
+</div>
+
+
+<hr>
 <p>The <a href="https://orc.network"><strong>Onion Routed Cloud</strong></a>. ORC is a decentralized, 
 anonymous, object storage platform owned and operated by allies in defense of 
 human rights and opposition to censorship. </p>
-<p>Join the discussion in <code>#orc</code> on our <a href="https://matrix.counterpointhackers.org/_matrix/client/#/room/#orc:matrix.counterpointhackers.org">community chat</a>!</p>
-<p><a href="https://travis-ci.org/orcproject/orc"><img src="https://img.shields.io/travis/orcproject/orc.svg?style=flat-square" alt="Build Status"></a> | 
-<a href="https://coveralls.io/r/orcproject/orc"><img src="https://img.shields.io/coveralls/orcproject/orc.svg?style=flat-square" alt="Test Coverage"></a> | 
-<a href="https://www.npmjs.com/package/@orcproject/orc"><img src="https://img.shields.io/npm/v/@orcproject/orc.svg?style=flat-square" alt="Node Package"></a> | 
-<a href="https://hub.docker.com/r/orcproject/orc"><img src="https://img.shields.io/docker/pulls/orcproject/orc.svg?style=flat-square" alt="Docker Hub"></a> | 
-<a href="https://raw.githubusercontent.com/orcproject/orc/master/LICENSE"><img src="https://img.shields.io/badge/license-AGPL3.0-blue.svg?style=flat-square" alt="License (AGPL-3.0)"></a></p>
+<h3>Installation</h3><h4>Using NPM</h4><pre class="prettyprint source"><code>npm install -g @orcproject/orc
+orcd</code></pre><h4>Using Docker</h4><pre class="prettyprint source"><code>docker pull orcproject/orc
+mkdir ~/.config/orcd
+docker run -p 9089:9089 -v ~/.config/orcd:/root/.config/orcd orcproject/orc</code></pre><h3>Usage</h3><p>On first run, ORC will generate a fresh configuration and setup the data 
+directory. Modify the created configuration at <code>~/.config/orcd/config</code> as 
+desired (see the <a href="tutorial-config.html">Configuration Guide</a>) and send <code>SIGINT</code> to the process 
+(<code>Ctrl+C</code>). Once you are satisfied with your configuration, run ORC again.</p>
+<p>Once started, you can use use the guide for <a href="tutorial-api.html">Using the REST API</a> to interact with 
+it! You can watch your logs with <code>tail -f ~/.config/orcd/orcd.log</code>.</p>
+<p>ORC works on an explicit trust model. By default, ORC will only trust unknown 
+nodes for discovering peers, retreiving public objects, and storing object 
+metadata. If you want to store objects, you must establish trust with other
+nodes. This is done explicity by all parties who trust each other. Run ORC with 
+your friends, other activists, or complementary organizations.</p>
+<p>Each node is identified by the hash of their public key. You'll see this on 
+every log line under the <code>name</code> property. For example, 
+<code>b605647afc146760fc15ef7cd59720f1ee7d82e1</code>. To establish trust with a friend, 
+each of you must provide your identity to each other out of band (we recommend 
+using <a href="https://ricochet.im">Ricochet</a>). Once you've exchanged identity keys, 
+add a trust policy to your configuration file.</p>
+<pre class="prettyprint source lang-ini"><code>[TrustedIdenties]
+b605647afc146760fc15ef7cd59720f1ee7d82e1=*</code></pre><p>For every node you wish to add to your storage grid, each must add a policy 
+like the above which says &quot;allow <code>b605647afc146760fc15ef7cd59720f1ee7d82e1</code> 
+to perform any (<code>*</code>) calls&quot;. See the <a href="tutorial-config.html">Configuration Guide</a> for more information.</p>
 <blockquote>
-<p><strong>Warning!</strong> ORC is <em>alpha</em> software and is still a highly experimental 
-<em>test</em> network! Be smart, keep backups, and stay safe out there! </p>
+<p>If you are a press organization or activist group and would like help 
+getting setup with ORC, please reach out to us by email at 
+<code>counterpoint[at]openmailbox.org</code> - we'd love to assist you!</p>
 </blockquote>
-<h3>Installation</h3><p>Pull the <a href="https://hub.docker.com/r/orcproject/orc/">image from Docker Hub</a>.</p>
-<pre class="prettyprint source"><code>docker pull orcproject/orc</code></pre><p>Create a data directory on the host.</p>
-<pre class="prettyprint source"><code>mkdir ~/.config/orcd</code></pre><p>If you are running ORC for the first time, mount the data directory and run it 
-normally.</p>
-<pre class="prettyprint source"><code>docker run --volume ~/.config/orcd:/root/.config/orcd orcproject/orc</code></pre><p>This will generate a fresh configuration and setup the data directory. Modify 
-the created configuration at <code>~/.config/orcd/config</code> as desired (see the 
-<a href="tutorial-config.html">Configuration Guide</a>) and send <code>SIGINT</code> to the process (<code>Ctrl+C</code>). If you want to 
-provide storage capacity to the network, be sure to set your desired allocation 
-for <code>ShardStorageMaxAllocation</code>.</p>
-<p>Once you are finished, run the ORC container again, but expose the API to the 
-host, mount the data directory, allocate a pseudo TTY, detach the process, and 
-tell docker to keep it running (even starting automatically on system boot).</p>
-<pre class="prettyprint source"><code>docker run \
-  --publish 127.0.0.1:9089:9089 \
-  --volume ~/.config/orcd:/root/.config/orcd \
-  --restart always \
-  --tty --detach orcproject/orc</code></pre><p>Once the container has started, you can use use the guide for <a href="tutorial-api.html">Using the REST API</a> 
-to interact with it! You can watch your logs with 
-<code>tail -f ~/.config/orcd/orcd.log</code>.</p>
-<p>See the <a href="https://docs.docker.com/engine/reference/commandline/run/"><code>docker run</code> documentation</a> 
-for more information. If you prefer to install ORC manually, see the guide for 
-<a href="tutorial-install.html">Manual Installation</a>. Once installed, simply run <code>orcd</code> with an optional 
-configuration file using the <code>--config &lt;path/to/config&gt;</code> option.</p>
-<h4>Automatic Security Updates</h4><p>When running the ORC server installation with Docker, you can configure your 
+<h3>Automatic Security Updates</h3><p>When running the ORC server installation with Docker, you can configure your 
 node to periodically check for updates and automatically download the latest 
 image and restart your node to make sure you are always running the latest 
 stable release. Since you already have Docker installed, pull the 
@@ -166,18 +191,22 @@ unstable or bleeding-edge code.</p>
 <li><a href="https://orcproject.github.io/orc/">Documentation</a></li>
 <li><a href="https://raw.githubusercontent.com/orcproject/protocol/master/protocol.pdf">Specification</a></li>
 </ul>
-<h3>License</h3><p>ORC - Distributed Anonymous Cloud<br>Copyright (C) 2017  Counterpoint Hackerspace, Ltd.<br>Copyright (C) 2017  Gordon Hall  </p>
-<p>This program is free software: you can redistribute it and/or modify
+<h3>License</h3><pre class="prettyprint source"><code>ORC - Distributed Anonymous Cloud  
+Copyright (C) 2017  Counterpoint Hackerspace, Ltd.  
+Copyright (C) 2017  Gordon Hall  
+
+This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published
 by the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.</p>
-<p>This program is distributed in the hope that it will be useful,
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU Affero General Public License for more details.</p>
-<p>You should have received a copy of the GNU Affero General Public License
-along with this program.  If not, see
-<a href="http://www.gnu.org/licenses/">http://www.gnu.org/licenses/</a>.</p></article>
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see &lt;http://www.gnu.org/licenses/>.</code></pre></article>
     </section>
 
 

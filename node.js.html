@@ -34,7 +34,7 @@
 			<li class="dropdown">
 				<a href="modules.list.html" class="dropdown-toggle" data-toggle="dropdown">Modules<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="module-orc_constants.html">orc/constants</a></li><li><a href="module-orc_logger.html">orc/logger</a></li><li><a href="module-orc_utils.html">orc/utils</a></li><li><a href="module-orc_version.html">orc/version</a></li>
+					<li><a href="module-orc_constants.html">orc/constants</a></li><li><a href="module-orc_utils.html">orc/utils</a></li><li><a href="module-orc_version.html">orc/version</a></li>
 				</ul>
 			</li>
 			
@@ -97,11 +97,7 @@ const url = require('url');
 const { createLogger } = require('bunyan');
 const merge = require('merge');
 const http = require('http');
-const kad = require('kad');
-const quasar = require('kad-quasar');
-const spartacus = require('kad-spartacus');
-const cas = require('kad-content');
-const hashcash = require('kad-hashcash');
+const kadence = require('@kadenceproject/kadence');
 const constants = require('./constants');
 const ms = require('ms');
 const utils = require('./utils');
@@ -117,7 +113,7 @@ const Database = require('./database');
  * Extends Kademlia with Orc protocol rules
  * @license AGPL-3.0
  */
-class Node extends kad.KademliaNode {
+class Node extends kadence.KademliaNode {
 
   static get DEFAULTS() {
     return {
@@ -125,7 +121,8 @@ class Node extends kad.KademliaNode {
       transport: new Transport(),
       privateExtendedKey: null,
       keyDerivationIndex: 1,
-      flags: []
+      flags: [],
+      trustPolicies: [{ identity: '*', methods: ['*'] }]
     };
   }
 
@@ -139,6 +136,7 @@ class Node extends kad.KademliaNode {
    * @param {Database} options.database
    * @param {Shards} options.shards
    * @param {number} [options.keyDerivationIndex] - HD derivation index
+   * @param {object[]} [options.trustPolicies] - Kadence trust policies
    */
   constructor(options) {
     /* eslint max-statements: [2, 16] */
@@ -150,20 +148,22 @@ class Node extends kad.KademliaNode {
 
     this.flags = opts.flags;
     this.contact.agent = this.contact.agent || version.protocol;
-    this.hashcash = this.plugin(hashcash({
+    this.hashcash = this.plugin(kadence.hashcash({
       methods: ['PUBLISH', 'STORE', 'CLAIM'],
       difficulty: 4
     }));
-    this.quasar = this.plugin(quasar);
-    this.spartacus = this.plugin(spartacus(
+    this.quasar = this.plugin(kadence.quasar());
+    this.spartacus = this.plugin(kadence.spartacus(
       options.privateExtendedKey,
       options.keyDerivationIndex,
       constants.HD_KEY_DERIVATION_PATH
     ));
-    this.cas = this.plugin(cas({
+    this.cas = this.plugin(kadence.contentaddress({
       keyAlgorithm: 'rmd160',
       valueEncoding: 'base64'
     }));
+    this.trust = this.plugin(kadence.trust(opts.trustPolicies,
+      kadence.trust.MODE_WHITELIST));
     this.database = opts.database;
     this.shards = opts.shards;
     this.server = new Server({

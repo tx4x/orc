@@ -34,7 +34,7 @@
 			<li class="dropdown">
 				<a href="modules.list.html" class="dropdown-toggle" data-toggle="dropdown">Modules<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="module-orc_constants.html">orc/constants</a></li><li><a href="module-orc_logger.html">orc/logger</a></li><li><a href="module-orc_utils.html">orc/utils</a></li><li><a href="module-orc_version.html">orc/version</a></li>
+					<li><a href="module-orc_constants.html">orc/constants</a></li><li><a href="module-orc_utils.html">orc/utils</a></li><li><a href="module-orc_version.html">orc/version</a></li>
 				</ul>
 			</li>
 			
@@ -120,7 +120,7 @@ const BUFFER = require('buffer');
 const bytes = require('bytes');
 const cors = require('cors');
 const url = require('url');
-const { utils: keyutils } = require('kad-spartacus');
+const { utils: keyutils } = require('@kadenceproject/kadence');
 const concat = require('concat-stream');
 const qs = require('querystring');
 const jsonrpc = require('jsonrpc-lite');
@@ -1378,12 +1378,33 @@ class Bridge extends EventEmitter {
   _pluckStorageProvider(size, trustPercentileRange, minPoolSize, callback) {
     const [low, high] = trustPercentileRange;
 
+    let identities = [], permissive = false;
+
+    for (let [identity, methods] of this.node.trust.policies) {
+      if (!methods.includes('CONSIGN') &amp;&amp; !methods.includes('*')) {
+        continue;
+      }
+
+      if (identity === '*') {
+        permissive = true;
+        continue;
+      }
+
+      identities.push(identity);
+    }
+
+    const identity = { $ne: this.node.identity.toString('hex') };
+
+    if (!permissive) {
+      identity.$in = identities;
+    }
+
     this.database.PeerProfile.find({
       updated: {
         $gt: Date.now() - this.options.providerCapacityPoolTimeout
       },
       'capacity.available': { $gt: size },
-      identity: { $ne: this.node.identity.toString('hex') },
+      identity,
       $or: [
         {
           _failed: {
@@ -1446,9 +1467,9 @@ class Bridge extends EventEmitter {
 
         if (target === undefined) {
           this.node.logger.warn(
-            'not enough capacity data collected to upload'
+            'not enough capacity data or trust collected to upload'
           );
-          callback(new Error('Not enough capacity information'));
+          callback(new Error('Not enough capacity/trust information'));
         } else {
           callback(null, target);
         }

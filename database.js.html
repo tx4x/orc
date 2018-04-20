@@ -34,7 +34,7 @@
 			<li class="dropdown">
 				<a href="modules.list.html" class="dropdown-toggle" data-toggle="dropdown">Modules<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="module-orc_constants.html">orc/constants</a></li><li><a href="module-orc_logger.html">orc/logger</a></li><li><a href="module-orc_utils.html">orc/utils</a></li><li><a href="module-orc_version.html">orc/version</a></li>
+					<li><a href="module-orc_constants.html">orc/constants</a></li><li><a href="module-orc_utils.html">orc/utils</a></li><li><a href="module-orc_version.html">orc/version</a></li>
 				</ul>
 			</li>
 			
@@ -100,7 +100,7 @@ const mongoose = require('mongoose');
 const { Schema, createConnection } = mongoose;
 const utils = require('./utils');
 const secp256k1 = require('secp256k1');
-const { utils: keyutils } = require('kad-spartacus');
+const { utils: keyutils } = require('@kadenceproject/kadence');
 const crypto = require('crypto');
 const stringify = require('json-stable-stringify');
 
