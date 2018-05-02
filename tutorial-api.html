@@ -403,8 +403,9 @@ size, name, hash, location of shards, and more.</p>
   &quot;name&quot;: &quot;avatar.png&quot;,
   &quot;id&quot;: &quot;59d2627ebb28977b0e6ab841&quot;
 }</code></pre><h3><code>POST /objects</code></h3><p>You can upload a file to the network my sending a multipart/form-upload request 
-to <code>POST /</code>. This works the same as if using a <code>&lt;input type=&quot;file&quot;/&gt;</code> on a web
-page. You can also add <code>policy</code> fields to specify access policies as defined in 
+to <code>POST /objects</code>. This works the same as if using a <code>&lt;input type=&quot;file&quot;/&gt;</code> on 
+a web page. You can also add <code>policy</code> fields to specify access policies 
+as defined in 
 <a href="https://github.com/orcproject/imps/blob/master/imp-0010.md">IMP-0010</a>.</p>
 <pre class="prettyprint source"><code>$ curl -F &quot;file=@avatar.png;type=image/png;&quot; -F &quot;policy=::RETRIEVE&quot; http://127.0.0.1:4445/objects | jq</code></pre><p>Once the object is completely distributed, the metadata will be returned. You 
 can check on the status of an object while the request is pending by listing 
