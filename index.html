@@ -177,9 +177,11 @@ image for <a href="https://github.com/v2tec/watchtower">Watchtower</a> and run i
 docker run -d --name watchtower -v /var/run/docker.sock:/var/run/docker.sock v2tec/watchtower</code></pre><p>Now, Watchtower will check for the latest stable images for running containers 
 and automatically update them.</p>
 <h3>Development</h3><p>To hack on the ORC project, clone this repository and use 
-<a href="https://docs.docker.com/compose/">Docker Compose</a>:</p>
+<a href="https://docs.docker.com/compose/">Docker Compose</a>. See <a href="tutorial-install.html">Manual Installation</a> 
+for more detailed instructions about installing prerequisites.</p>
 <pre class="prettyprint source"><code>git clone https://github.com/orcproject/orc
 cd orc
+npm install
 docker-compose up --force-recreate --build</code></pre><p>This will volume mount the the appropriate directories for development, and 
 then boots up a complete sandboxed ORC network, including a complete sandboxed 
 Tor network and once bootstrapped, binds port <code>10089</code> to the host for full 
