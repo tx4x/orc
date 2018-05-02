@@ -105,11 +105,13 @@ and automatically update them.
 ### Development 
 
 To hack on the ORC project, clone this repository and use 
-[Docker Compose](https://docs.docker.com/compose/):
+[Docker Compose](https://docs.docker.com/compose/). See {@tutorial install} 
+for more detailed instructions about installing prerequisites.
 
 ```
 git clone https://github.com/orcproject/orc
 cd orc
+npm install
 docker-compose up --force-recreate --build
 ```
 
