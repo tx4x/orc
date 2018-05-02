@@ -361,8 +361,9 @@ $ curl http://127.0.0.1:4445/objects/59d2627ebb28977b0e6ab841/info | jq
 ### `POST /objects`
 
 You can upload a file to the network my sending a multipart/form-upload request 
-to `POST /`. This works the same as if using a `<input type="file"/>` on a web
-page. You can also add `policy` fields to specify access policies as defined in 
+to `POST /objects`. This works the same as if using a `<input type="file"/>` on 
+a web page. You can also add `policy` fields to specify access policies 
+as defined in 
 [IMP-0010](https://github.com/orcproject/imps/blob/master/imp-0010.md).
 
 ```
