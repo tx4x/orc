@@ -35,7 +35,7 @@ node_modules
 .node_repl_history
 
 # Ignore compiled docs, but leave the directory
-jsdoc
+public
 
 # Ignore swp files from the beloved vim
 *.swp

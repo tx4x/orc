@@ -1,28 +1,19 @@
 <p align="center" class="docstrap-hideme">
-  <a href="https://orc.network"><img src="https://avatars2.githubusercontent.com/u/29236106?s=256"></a>
+  <a href="https://orc.network"><img src="https://assets.gitlab-static.net/uploads/-/system/group/avatar/3071240/29236106.png"></a>
 </p>
 <p style="font-size:18px" align="center"><strong>Decentralized, Anonymous, Object Storage</strong></p>
 <p align="center">
   Join the discussion in <code>#orc</code> on our <a href="https://matrix.counterpointhackers.org/_matrix/client/#/room/#orc:matrix.counterpointhackers.org">Matrix server</a>!
 </p>
 <div align="center">
-  <a href="https://travis-ci.org/orcproject/orc">
-    <img src="https://img.shields.io/travis/orcproject/orc.svg?style=flat-square" alt="Build Status">
-  </a> | 
-  <a href="https://coveralls.io/r/orcproject/orc">
-    <img src="https://img.shields.io/coveralls/orcproject/orc.svg?style=flat-square" alt="Test Coverage">
-  </a> | 
   <a href="https://www.npmjs.com/package/@orcproject/orc">
     <img src="https://img.shields.io/npm/v/@orcproject/orc.svg?style=flat-square" alt="NPM Package">
   </a> | 
   <a href="https://hub.docker.com/r/orcproject/orc">
     <img src="https://img.shields.io/docker/pulls/orcproject/orc.svg?style=flat-square" alt="Docker Hub">
   </a> | 
-  <a href="https://raw.githubusercontent.com/orcproject/orc/master/LICENSE">
+  <a href="https://gitlab.com/orcproject/orc/raw/master/LICENSE">
     <img src="https://img.shields.io/badge/license-AGPLv3-blue.svg?style=flat-square" alt="AGPL-3.0 License">
-  </a> | 
-  <a href="https://github.com/orcproject/orc">
-    <img src="https://img.shields.io/github/last-commit/orcproject/orc.svg?style=flat-square" alt="Source Code">
   </a>
 </div>
 
@@ -109,7 +100,7 @@ To hack on the ORC project, clone this repository and use
 for more detailed instructions about installing prerequisites.
 
 ```
-git clone https://github.com/orcproject/orc
+git clone https://gitlab.com/orcproject/orc
 cd orc
 npm install
 docker-compose up --force-recreate --build
@@ -126,8 +117,8 @@ Happy hacking!
 
 ### Resources
 
-* [Documentation](https://orcproject.github.io/orc/)
-* [Specification](https://raw.githubusercontent.com/orcproject/protocol/master/protocol.pdf)
+* [Documentation](https://orcproject.gitlab.io/orc/)
+* [Specification](https://gitlab.com/orcproject/protocol/raw/master/protocol.pdf)
 
 ### License
 
